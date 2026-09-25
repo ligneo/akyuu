@@ -10,7 +10,7 @@ target_link_libraries(akyuu-deps
 )
 
 # utf8proc is linked statically, so its own install rules only get in the way: they would put
-# utf8proc.h, libutf8proc.a and the pkg-config and CMake files next to Taiga, over the files of
+# utf8proc.h, libutf8proc.a and the pkg-config and CMake files next to Akyuu, over the files of
 # the system package.
 # `option()` there would override a plain variable: utf8proc still asks for CMake 3.10, so
 # CMP0077 is OLD in its directory and the cache entry is what counts.
