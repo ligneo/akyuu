@@ -36,9 +36,12 @@ QString getAboutDialogText(QWidget* parent) {
   const auto version = QString::fromStdString(akyuu::version().to_string());
 
   const QStringList links{
+      u"<a href='https://github.com/ligneo/akyuu'>GitHub</a>"_s,
+  };
+
+  const QStringList taigaLinks{
       u"<a href='https://taiga.moe/'>Website</a>"_s,
       u"<a href='https://github.com/erengy/taiga'>GitHub</a>"_s,
-      u"<a href='https://discord.gg/yeGNktZ'>Discord</a>"_s,
   };
 
   // clang-format off
@@ -93,12 +96,25 @@ QString getAboutDialogText(QWidget* parent) {
     sections.append(u"<b>%1:</b><br>%2"_s.arg(title).arg(text));
   };
 
-  sections.append(u"<big><b>Taiga</b> %1</big>"_s.arg(version));
+  sections.append(u"<big><b>Akyuu</b> %1</big>"_s.arg(version));
   sections.append(links.join(" · "));
-  addSection(parent->tr("Author"), "erengy (Eren Okka)");
-  addSection(parent->tr("Contributors"), contributors.join(", "));
-  addSection(parent->tr("Donators"), donators.join(", "));
+  addSection(parent->tr("Author"),
+             u"cenky (<a href='mailto:cenkkgl@gmail.com'>cenkkgl@gmail.com</a>)"_s);
+  addSection(parent->tr("Based on"),
+             u"Taiga by Eren Okka (erengy) · %1"_s.arg(taigaLinks.join(" · ")));
+  addSection(parent->tr("Taiga contributors"), contributors.join(", "));
+  addSection(parent->tr("Taiga donators"), donators.join(", "));
   addSection(parent->tr("Third-party components"), components.join(", "));
+
+  // GPLv3 section 5 asks a modified version to say so, with a date, and section 0 asks an
+  // interactive program to show the copyright, the lack of warranty and where to find the license.
+  addSection(parent->tr("License"),
+             parent->tr("Copyright (C) 2010-2026, Eren Okka<br>"
+                        "Copyright (C) 2026, cenky<br>"
+                        "Akyuu is a modified version of Taiga, changed since September 2026.<br>"
+                        "This program comes with ABSOLUTELY NO WARRANTY. It is free software, "
+                        "released under the <a href='https://www.gnu.org/licenses/gpl-3.0.html'>"
+                        "GNU General Public License v3</a> or later."));
 
   return sections.join("<br><br>");
 }

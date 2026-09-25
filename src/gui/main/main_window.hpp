@@ -91,8 +91,6 @@ private slots:
   void notifyEpisodeDetected(std::optional<track::Episode> episode);
   void shareEpisode(const std::optional<track::Episode>& episode) const;
   void updateDiscordPresence(const track::Episode& episode, const bool force) const;
-  void donate() const;
-  void support() const;
   void synchronize();
   void profile();
 
