@@ -254,6 +254,9 @@
    </property>
   </action>
   <action name="actionDonate">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Donate</string>
    </property>
@@ -262,6 +265,9 @@
    </property>
   </action>
   <action name="actionSupport">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Support</string>
    </property>

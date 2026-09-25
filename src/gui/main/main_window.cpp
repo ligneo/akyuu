@@ -216,8 +216,6 @@ void MainWindow::initActions() {
   connect(ui_->menuServices, &QMenu::aboutToShow, this, &MainWindow::initServicesMenu);
   connect(ui_->menuView, &QMenu::aboutToShow, this, &MainWindow::initViewMenu);
   connect(ui_->actionAbout, &QAction::triggered, this, &MainWindow::about);
-  connect(ui_->actionDonate, &QAction::triggered, this, &MainWindow::donate);
-  connect(ui_->actionSupport, &QAction::triggered, this, &MainWindow::support);
   connect(ui_->actionProfile, &QAction::triggered, this, &MainWindow::profile);
   connect(ui_->actionDisplayWindow, &QAction::triggered, this, &MainWindow::displayWindow);
   connect(ui_->actionSynchronize, &QAction::triggered, this, &MainWindow::synchronize);
@@ -622,7 +620,7 @@ void MainWindow::exportList(const ExportFormat format) {
 // is a Windows mechanism; on Linux Akyuu is installed by the user or a package manager, so the
 // honest thing to do is say whether there is something newer and where to get it.
 void MainWindow::checkForUpdates() {
-  static const QUrl url{u"https://api.github.com/repos/erengy/taiga/releases/latest"_s};
+  static const QUrl url{u"https://api.github.com/repos/ligneo/akyuu/releases/latest"_s};
 
   QNetworkRequest request{url};
   request.setHeaders(akyuu::NetworkAccessManager::commonHeaders());
@@ -945,14 +943,6 @@ void MainWindow::notifyEpisodeDetected(std::optional<track::Episode> episode) {
     m_trayIcon->showMessage(tr("Episode not recognized"),
                             QString::fromStdString(episode->element(anitomy::ElementKind::Title)));
   }
-}
-
-void MainWindow::donate() const {
-  QDesktopServices::openUrl(QUrl("https://taiga.moe/#donate"));
-}
-
-void MainWindow::support() const {
-  QDesktopServices::openUrl(QUrl("https://taiga.moe/#support"));
 }
 
 void MainWindow::synchronize() {
