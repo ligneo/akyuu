@@ -39,8 +39,8 @@
 #include "sync/myanimelist/myanimelist.hpp"
 #include "sync/myanimelist/myanimelist_utils.hpp"
 #include "sync/service.hpp"
-#include "taiga/accounts.hpp"
-#include "taiga/settings.hpp"
+#include "akyuu/accounts.hpp"
+#include "akyuu/settings.hpp"
 #include "ui_main_window.h"
 
 namespace gui {

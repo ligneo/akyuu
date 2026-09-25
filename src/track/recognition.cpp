@@ -28,7 +28,7 @@
 #include "base/string.hpp"
 #include "media/anime.hpp"
 #include "media/anime_db.hpp"
-#include "taiga/settings.hpp"
+#include "akyuu/settings.hpp"
 #include "track/episode.hpp"
 #include "track/recognition_cache.hpp"
 #include "track/recognition_normalize.hpp"

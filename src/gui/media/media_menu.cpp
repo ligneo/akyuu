@@ -49,7 +49,7 @@
 #include "media/anime_list_utils.hpp"
 #include "media/anime_utils.hpp"
 #include "sync/service.hpp"
-#include "taiga/settings.hpp"
+#include "akyuu/settings.hpp"
 #include "track/feed_aggregator.hpp"
 #include "track/library.hpp"
 #include "track/media.hpp"

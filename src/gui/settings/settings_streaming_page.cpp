@@ -24,7 +24,7 @@
 
 #include "gui/settings/settings_player_list.hpp"
 #include "gui/settings/settings_stream_list.hpp"
-#include "taiga/settings.hpp"
+#include "akyuu/settings.hpp"
 
 namespace gui {
 

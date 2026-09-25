@@ -27,8 +27,8 @@
 #include "gui/models/anime_list_model.hpp"
 #include "gui/models/anime_list_proxy_model.hpp"
 #include "gui/utils/painters.hpp"
-#include "taiga/session.hpp"
-#include "taiga/settings.hpp"
+#include "akyuu/session.hpp"
+#include "akyuu/settings.hpp"
 #include "track/play.hpp"
 
 namespace gui {

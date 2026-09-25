@@ -26,7 +26,7 @@
 #include "media/anime_db.hpp"
 #include "media/anime_list.hpp"
 #include "media/anime_utils.hpp"
-#include "taiga/settings.hpp"
+#include "akyuu/settings.hpp"
 #include "track/feed_filter_util.hpp"
 
 namespace track {

@@ -29,9 +29,9 @@
 #include "media/anime_db.hpp"
 #include "media/anime_list_utils.hpp"
 #include "sync/service.hpp"
-#include "taiga/accounts.hpp"
-#include "taiga/path.hpp"
-#include "taiga/settings.hpp"
+#include "akyuu/accounts.hpp"
+#include "akyuu/path.hpp"
+#include "akyuu/settings.hpp"
 
 namespace sync {
 

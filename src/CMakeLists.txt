@@ -95,27 +95,27 @@ target_sources(taiga PRIVATE
 	sync/service.cpp
 	sync/service.hpp
 
-	taiga/accounts.cpp
-	taiga/autostart.cpp
-	taiga/autostart.hpp
-	taiga/accounts.hpp
-	taiga/application.cpp
-	taiga/application.hpp
-	taiga/config.h
-	taiga/network.cpp
-	taiga/network.hpp
-	taiga/orange.cpp
-	taiga/orange.hpp
-	taiga/path.cpp
-	taiga/path.hpp
-	taiga/session.cpp
-	taiga/session.hpp
-	taiga/script.cpp
-	taiga/script.hpp
-	taiga/settings.cpp
-	taiga/settings.hpp
-	taiga/version.cpp
-	taiga/version.hpp
+	akyuu/accounts.cpp
+	akyuu/autostart.cpp
+	akyuu/autostart.hpp
+	akyuu/accounts.hpp
+	akyuu/application.cpp
+	akyuu/application.hpp
+	akyuu/config.h
+	akyuu/network.cpp
+	akyuu/network.hpp
+	akyuu/orange.cpp
+	akyuu/orange.hpp
+	akyuu/path.cpp
+	akyuu/path.hpp
+	akyuu/session.cpp
+	akyuu/session.hpp
+	akyuu/script.cpp
+	akyuu/script.hpp
+	akyuu/settings.cpp
+	akyuu/settings.hpp
+	akyuu/version.cpp
+	akyuu/version.hpp
 
 	track/episode.cpp
 	track/library.cpp

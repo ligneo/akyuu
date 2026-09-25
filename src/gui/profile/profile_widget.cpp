@@ -30,8 +30,8 @@
 #include "base/string.hpp"
 #include "gui/utils/format.hpp"
 #include "media/anime_list.hpp"
-#include "taiga/application.hpp"
-#include "taiga/session.hpp"
+#include "akyuu/application.hpp"
+#include "akyuu/session.hpp"
 
 namespace gui {
 

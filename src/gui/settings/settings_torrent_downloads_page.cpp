@@ -30,7 +30,7 @@
 #include <QRadioButton>
 #include <QVBoxLayout>
 
-#include "taiga/settings.hpp"
+#include "akyuu/settings.hpp"
 
 namespace gui {
 

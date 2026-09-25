@@ -33,10 +33,10 @@
 #include "compat/list.hpp"
 #include "compat/settings.hpp"
 #include "media/anime_utils.hpp"
-#include "taiga/accounts.hpp"
-#include "taiga/path.hpp"
-#include "taiga/settings.hpp"
-#include "taiga/version.hpp"
+#include "akyuu/accounts.hpp"
+#include "akyuu/path.hpp"
+#include "akyuu/settings.hpp"
+#include "akyuu/version.hpp"
 
 namespace {
 

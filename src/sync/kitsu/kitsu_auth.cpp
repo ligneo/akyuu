@@ -27,7 +27,7 @@
 #include "kitsu.hpp"
 #include "sync/kitsu/kitsu_error.hpp"
 #include "sync/kitsu/kitsu_utils.hpp"
-#include "taiga/accounts.hpp"
+#include "akyuu/accounts.hpp"
 
 namespace sync::kitsu {
 

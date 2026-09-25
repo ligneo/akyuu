@@ -21,7 +21,7 @@
 #include "base/string.hpp"
 #include "sync/anilist/anilist_ratings.hpp"
 #include "sync/kitsu/kitsu_ratings.hpp"
-#include "taiga/path.hpp"
+#include "akyuu/path.hpp"
 
 namespace taiga {
 

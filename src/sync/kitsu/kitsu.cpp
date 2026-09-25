@@ -33,7 +33,7 @@
 #include "sync/kitsu/kitsu_parsers.hpp"
 #include "sync/kitsu/kitsu_utils.hpp"
 #include "sync/queue.hpp"
-#include "taiga/accounts.hpp"
+#include "akyuu/accounts.hpp"
 
 // Kitsu API documentation:
 // https://kitsu.docs.apiary.io

@@ -27,7 +27,7 @@
 #include "gui/models/anime_list_model.hpp"
 #include "gui/models/anime_list_proxy_model.hpp"
 #include "media/anime_season.hpp"
-#include "taiga/path.hpp"
+#include "akyuu/path.hpp"
 
 namespace taiga {
 

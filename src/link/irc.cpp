@@ -24,8 +24,8 @@
 #include <QRegularExpression>
 
 #include "base/log.hpp"
-#include "taiga/script.hpp"
-#include "taiga/settings.hpp"
+#include "akyuu/script.hpp"
+#include "akyuu/settings.hpp"
 
 namespace link::irc {
 

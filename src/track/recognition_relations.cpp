@@ -25,7 +25,7 @@
 #include "base/log.hpp"
 #include "base/string.hpp"
 #include "sync/service.hpp"
-#include "taiga/path.hpp"
+#include "akyuu/path.hpp"
 
 namespace track::recognition {
 

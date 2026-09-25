@@ -25,9 +25,9 @@
 #include "base/file.hpp"
 #include "base/string.hpp"
 #include "compat/history.hpp"
-#include "taiga/accounts.hpp"
-#include "taiga/path.hpp"
-#include "taiga/settings.hpp"
+#include "akyuu/accounts.hpp"
+#include "akyuu/path.hpp"
+#include "akyuu/settings.hpp"
 
 namespace anime {
 

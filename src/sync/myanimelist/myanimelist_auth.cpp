@@ -26,7 +26,7 @@
 #include "myanimelist.hpp"
 #include "sync/myanimelist/myanimelist_error.hpp"
 #include "sync/myanimelist/myanimelist_utils.hpp"
-#include "taiga/accounts.hpp"
+#include "akyuu/accounts.hpp"
 
 namespace sync::myanimelist {
 

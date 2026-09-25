@@ -27,7 +27,7 @@
 #include "sync/kitsu/kitsu_ratings.hpp"
 #include "sync/myanimelist/myanimelist_ratings.hpp"
 #include "sync/service.hpp"
-#include "taiga/accounts.hpp"
+#include "akyuu/accounts.hpp"
 
 namespace gui {
 

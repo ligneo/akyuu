@@ -24,7 +24,7 @@
 #include <QVBoxLayout>
 
 #include "link/discord.hpp"
-#include "taiga/settings.hpp"
+#include "akyuu/settings.hpp"
 
 namespace gui {
 

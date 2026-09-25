@@ -35,8 +35,8 @@
 #include "media/anime_db.hpp"
 #include "media/anime_utils.hpp"
 #include "sync/service.hpp"
-#include "taiga/network.hpp"
-#include "taiga/path.hpp"
+#include "akyuu/network.hpp"
+#include "akyuu/path.hpp"
 
 namespace gui {
 

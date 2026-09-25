@@ -26,9 +26,9 @@
 #include "base/string.hpp"
 #include "compat/settings.hpp"
 #include "sync/service.hpp"
-#include "taiga/accounts.hpp"
-#include "taiga/path.hpp"
-#include "taiga/version.hpp"
+#include "akyuu/accounts.hpp"
+#include "akyuu/path.hpp"
+#include "akyuu/version.hpp"
 
 namespace taiga {
 

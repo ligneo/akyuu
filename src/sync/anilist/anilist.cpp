@@ -32,7 +32,7 @@
 #include "sync/anilist/anilist_parsers.hpp"
 #include "sync/anilist/anilist_utils.hpp"
 #include "sync/queue.hpp"
-#include "taiga/accounts.hpp"
+#include "akyuu/accounts.hpp"
 
 // AniList API documentation:
 // https://docs.anilist.co/

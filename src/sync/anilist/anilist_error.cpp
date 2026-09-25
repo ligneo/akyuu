@@ -27,7 +27,7 @@
 
 #include "base/string.hpp"
 #include "sync/service.hpp"
-#include "taiga/network.hpp"
+#include "akyuu/network.hpp"
 
 namespace sync::anilist {
 

@@ -26,7 +26,7 @@
 #include "gui/main/main_window.hpp"
 #include "gui/models/library_model.hpp"
 #include "gui/utils/theme.hpp"
-#include "taiga/settings.hpp"
+#include "akyuu/settings.hpp"
 #include "ui_main_window.h"
 
 namespace gui {

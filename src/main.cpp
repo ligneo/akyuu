@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "taiga/application.hpp"
+#include "akyuu/application.hpp"
 
 int main(int argc, char* argv[]) {
   taiga::Application app(argc, argv);

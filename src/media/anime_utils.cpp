@@ -25,7 +25,7 @@
 #include "base/chrono.hpp"
 #include "media/anime.hpp"
 #include "media/anime_db.hpp"
-#include "taiga/settings.hpp"
+#include "akyuu/settings.hpp"
 
 namespace {
 

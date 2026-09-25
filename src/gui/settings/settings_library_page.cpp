@@ -32,7 +32,7 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 
-#include "taiga/settings.hpp"
+#include "akyuu/settings.hpp"
 #include "track/library.hpp"
 
 namespace gui {

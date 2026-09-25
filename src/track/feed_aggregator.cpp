@@ -35,8 +35,8 @@
 #include "base/string.hpp"
 #include "media/anime_db.hpp"
 #include "media/anime_utils.hpp"
-#include "taiga/path.hpp"
-#include "taiga/settings.hpp"
+#include "akyuu/path.hpp"
+#include "akyuu/settings.hpp"
 #include "track/feed_archive.hpp"
 #include "track/feed_filter_manager.hpp"
 

@@ -20,8 +20,8 @@
 
 #include <QJsonArray>
 
-#include "taiga/path.hpp"
-#include "taiga/settings.hpp"
+#include "akyuu/path.hpp"
+#include "akyuu/settings.hpp"
 
 namespace track {
 

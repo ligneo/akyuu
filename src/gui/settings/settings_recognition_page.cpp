@@ -27,7 +27,7 @@
 #include <QSpinBox>
 #include <QVBoxLayout>
 
-#include "taiga/settings.hpp"
+#include "akyuu/settings.hpp"
 #include "track/media.hpp"
 
 namespace gui {

@@ -27,8 +27,8 @@
 
 #include "base/log.hpp"
 #include "sync/service.hpp"
-#include "taiga/accounts.hpp"
-#include "taiga/settings.hpp"
+#include "akyuu/accounts.hpp"
+#include "akyuu/settings.hpp"
 
 namespace link {
 

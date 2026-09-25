@@ -36,7 +36,7 @@
 #include "media/anime_utils.hpp"
 #include "sync/queue.hpp"
 #include "sync/service.hpp"
-#include "taiga/settings.hpp"
+#include "akyuu/settings.hpp"
 
 namespace gui {
 

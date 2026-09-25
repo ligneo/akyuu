@@ -1,5 +1,5 @@
 #include <windows.h>
-#include "taiga/config.h"
+#include "akyuu/config.h"
 
 IDI_MAIN ICON "icons\\taiga.ico"
 
