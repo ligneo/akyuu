@@ -830,7 +830,11 @@ void MainWindow::initTrayIcon() {
   menu->addSeparator();
   menu->addAction(ui_->actionExit);
 
-  m_trayIcon = new TrayIcon(this, windowIcon(), menu);
+  m_trayIcon = new TrayIcon(this, menu);
+  m_trayIcon->setSleeping(!akyuu::settings.mediaDetectionEnabled());
+
+  connect(track::media::detection(), &track::media::Detection::enabledChanged, this,
+          [this](const bool enabled) { m_trayIcon->setSleeping(!enabled); });
 
   connect(track::aggregator(), &track::Aggregator::newEpisodesFound, this,
           [this](const QStringList& lines) {

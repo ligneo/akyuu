@@ -39,12 +39,13 @@ public:
     Error,
   };
 
-  TrayIcon(QObject* parent, const QIcon& icon, QMenu* menu);
+  TrayIcon(QObject* parent, QMenu* menu);
 
   void showMessage(const QString& title, const QString& text) const;
   bool isVisible() const;
 
   void setBadge(Badge badge);
+  void setSleeping(bool sleeping);
 
 signals:
   void activated();
@@ -52,10 +53,11 @@ signals:
 
 private:
   void updateIcon();
+  QIcon moodIcon() const;
   void paintBadge(QPixmap& pixmap) const;
 
   Badge m_badge = Badge::None;
-  QIcon m_baseIcon;
+  bool m_sleeping = false;
   QMenu* m_contextMenu = nullptr;
   QSystemTrayIcon* m_icon = nullptr;
 };
