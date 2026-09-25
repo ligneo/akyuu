@@ -31,7 +31,7 @@ namespace gui {
 class MainWindow;
 }
 
-namespace taiga {
+namespace akyuu {
 
 class Application final : public QApplication {
   Q_OBJECT
@@ -76,4 +76,4 @@ inline Application* app() {
   return static_cast<Application*>(qApp);
 }
 
-}  // namespace taiga
+}  // namespace akyuu

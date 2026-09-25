@@ -43,7 +43,7 @@ PlayerListWidget::PlayerListWidget(bool webBrowsers, QWidget* parent) : QListWid
 }
 
 void PlayerListWidget::load() {
-  const auto disabledPlayers = taiga::settings.disabledMediaPlayers();
+  const auto disabledPlayers = akyuu::settings.disabledMediaPlayers();
 
   for (int i = 0; i < count(); ++i) {
     const auto name = item(i)->text().toStdString();
@@ -63,12 +63,12 @@ void PlayerListWidget::save() const {
     if (item(i)->checkState() == Qt::Unchecked) disabledPlayers.push_back(name);
   }
 
-  for (const auto& name : taiga::settings.disabledMediaPlayers()) {
+  for (const auto& name : akyuu::settings.disabledMediaPlayers()) {
     if (!listed.contains(name)) disabledPlayers.push_back(name);
   }
 
   std::ranges::sort(disabledPlayers);
-  taiga::settings.setDisabledMediaPlayers(disabledPlayers);
+  akyuu::settings.setDisabledMediaPlayers(disabledPlayers);
 }
 
 }  // namespace gui

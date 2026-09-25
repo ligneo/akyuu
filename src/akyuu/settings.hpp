@@ -29,7 +29,7 @@
 #include "media/anime.hpp"
 #include "track/update_trigger.hpp"
 
-namespace taiga {
+namespace akyuu {
 
 class Settings final : public base::Settings {
 public:
@@ -202,4 +202,4 @@ private:
 
 inline Settings settings;
 
-}  // namespace taiga
+}  // namespace akyuu

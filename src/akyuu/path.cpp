@@ -24,11 +24,11 @@
 
 #include "akyuu/config.h"
 
-namespace taiga {
+namespace akyuu {
 
 // Returns current path in portable mode, AppData location otherwise
 std::string get_data_path() {
-#ifdef TAIGA_PORTABLE
+#ifdef AKYUU_PORTABLE
   return std::format("{}/data", QCoreApplication::applicationDirPath().toStdString());
 #else
   const auto location = QStandardPaths::standardLocations(QStandardPaths::AppDataLocation);
@@ -36,4 +36,4 @@ std::string get_data_path() {
 #endif
 }
 
-}  // namespace taiga
+}  // namespace akyuu

@@ -22,10 +22,10 @@
 #include <chrono>
 #include <functional>
 
+#include "akyuu/settings.hpp"
 #include "base/log.hpp"
 #include "media/anime.hpp"
 #include "media/anime_db.hpp"
-#include "akyuu/settings.hpp"
 #include "track/episode.hpp"
 #include "track/recognition.hpp"
 
@@ -46,7 +46,7 @@ void Library::walk(const QString& folder,
     if (!recognition::isVideoFile(episode)) continue;
 
     // v1 skips anything smaller than the threshold, which keeps samples and stubs out.
-    if (const auto minimum = taiga::settings.libraryMinimumFileSize();
+    if (const auto minimum = akyuu::settings.libraryMinimumFileSize();
         minimum > 0 && info.size() < minimum) {
       continue;
     }
@@ -73,7 +73,7 @@ void Library::scan() {
   decltype(episodes_) episodes;
   int episodeCount = 0;
 
-  for (const auto& folder : taiga::settings.libraryFolders()) {
+  for (const auto& folder : akyuu::settings.libraryFolders()) {
     walk(QString::fromStdString(folder),
          [&episodes, &episodeCount](const int animeId, const int number, const QString& path) {
            if (episodes[animeId].try_emplace(number, path).second) ++episodeCount;
@@ -96,7 +96,7 @@ void Library::scan(const int animeId) {
   if (const auto settings = anime::db.settings(animeId); settings && !settings->folder.empty()) {
     folders.append(QString::fromStdString(settings->folder));
   }
-  const auto libraryFolders = taiga::settings.libraryFolders();
+  const auto libraryFolders = akyuu::settings.libraryFolders();
   const auto first = folders.size();
   for (const auto& folder : libraryFolders) folders.append(QString::fromStdString(folder));
 
@@ -167,11 +167,11 @@ void Library::applyWatchSettings() {
 
   if (!watcher_->directories().isEmpty()) watcher_->removePaths(watcher_->directories());
 
-  if (!taiga::settings.libraryWatchFolders()) return;
+  if (!akyuu::settings.libraryWatchFolders()) return;
 
   QStringList paths;
 
-  for (const auto& folder : taiga::settings.libraryFolders()) {
+  for (const auto& folder : akyuu::settings.libraryFolders()) {
     const auto root = QString::fromStdString(folder);
     if (!QDir{root}.exists()) continue;
     paths.append(root);

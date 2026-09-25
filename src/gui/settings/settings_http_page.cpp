@@ -64,17 +64,17 @@ HttpPage::HttpPage(QWidget* parent)
 }
 
 void HttpPage::load() {
-  m_checkEnabled->setChecked(taiga::settings.httpShareEnabled());
-  m_editUrl->setText(QString::fromStdString(taiga::settings.httpShareUrl()));
-  m_editFormat->setPlainText(QString::fromStdString(taiga::settings.httpShareFormat()));
+  m_checkEnabled->setChecked(akyuu::settings.httpShareEnabled());
+  m_editUrl->setText(QString::fromStdString(akyuu::settings.httpShareUrl()));
+  m_editFormat->setPlainText(QString::fromStdString(akyuu::settings.httpShareFormat()));
   m_editUrl->setEnabled(m_checkEnabled->isChecked());
   m_editFormat->setEnabled(m_checkEnabled->isChecked());
 }
 
 void HttpPage::save() {
-  taiga::settings.setHttpShareEnabled(m_checkEnabled->isChecked());
-  taiga::settings.setHttpShareUrl(m_editUrl->text().trimmed().toStdString());
-  taiga::settings.setHttpShareFormat(m_editFormat->toPlainText().trimmed().toStdString());
+  akyuu::settings.setHttpShareEnabled(m_checkEnabled->isChecked());
+  akyuu::settings.setHttpShareUrl(m_editUrl->text().trimmed().toStdString());
+  akyuu::settings.setHttpShareFormat(m_editFormat->toPlainText().trimmed().toStdString());
 }
 
 }  // namespace gui

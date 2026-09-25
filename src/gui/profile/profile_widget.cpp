@@ -26,12 +26,12 @@
 #include <algorithm>
 #include <chrono>
 
+#include "akyuu/application.hpp"
+#include "akyuu/session.hpp"
 #include "base/chrono.hpp"
 #include "base/string.hpp"
 #include "gui/utils/format.hpp"
 #include "media/anime_list.hpp"
-#include "akyuu/application.hpp"
-#include "akyuu/session.hpp"
 
 namespace gui {
 
@@ -144,8 +144,8 @@ void ProfileWidget::refresh() {
     m_scoreCounts[i]->setText(QString::number(count));
   }
 
-  m_uptime->setText(formatDuration(taiga::app()->uptime()));
-  m_tigersHarmed->setText(QString::number(taiga::session.tigersHarmed()));
+  m_uptime->setText(formatDuration(akyuu::app()->uptime()));
+  m_tigersHarmed->setText(QString::number(akyuu::session.tigersHarmed()));
 }
 
 void ProfileWidget::hideEvent(QHideEvent* event) {

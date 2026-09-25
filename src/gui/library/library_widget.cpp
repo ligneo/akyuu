@@ -22,11 +22,11 @@
 #include <QKeyEvent>
 #include <QLayout>
 
+#include "akyuu/settings.hpp"
 #include "gui/library/library_menu.hpp"
 #include "gui/main/main_window.hpp"
 #include "gui/models/library_model.hpp"
 #include "gui/utils/theme.hpp"
-#include "akyuu/settings.hpp"
 #include "ui_main_window.h"
 
 namespace gui {
@@ -36,7 +36,7 @@ LibraryWidget::LibraryWidget(QWidget* parent)
       m_model(new LibraryModel(parent)),
       m_comboRoot(new ComboBox(this)),
       m_view(new QTreeView(parent)) {
-  const auto libraryFolders = taiga::settings.libraryFolders();
+  const auto libraryFolders = akyuu::settings.libraryFolders();
   const auto rootPath =
       !libraryFolders.empty() ? QString::fromStdString(libraryFolders.front()) : QString{};
 

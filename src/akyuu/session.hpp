@@ -35,7 +35,7 @@ enum class ListViewMode;
 struct AnimeListProxyModelFilter;
 }  // namespace gui
 
-namespace taiga {
+namespace akyuu {
 
 class Session final : public base::Settings {
 public:
@@ -83,4 +83,4 @@ private:
 
 inline Session session;
 
-}  // namespace taiga
+}  // namespace akyuu

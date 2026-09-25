@@ -1,11 +1,11 @@
-add_library(taiga-deps STATIC)
+add_library(akyuu-deps STATIC)
 
-target_link_libraries(taiga-deps
+target_link_libraries(akyuu-deps
 	anisthesia
 	anitomy
 	nstd
 	semaver
-	taiga-config
+	akyuu-config
 	utf8proc
 )
 

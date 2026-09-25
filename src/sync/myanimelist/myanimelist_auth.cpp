@@ -22,11 +22,11 @@
 #include <QRestReply>
 #include <QUrlQuery>
 
+#include "akyuu/accounts.hpp"
 #include "base/string.hpp"
 #include "myanimelist.hpp"
 #include "sync/myanimelist/myanimelist_error.hpp"
 #include "sync/myanimelist/myanimelist_utils.hpp"
-#include "akyuu/accounts.hpp"
 
 namespace sync::myanimelist {
 
@@ -64,8 +64,8 @@ void Service::requestAccessToken(const QString& authorizationCode, const QString
 
     const auto root = json->object();
     const auto accessToken = root["access_token"].toString();
-    taiga::accounts.setMyanimelistAccessToken(accessToken.toStdString());
-    taiga::accounts.setMyanimelistRefreshToken(root["refresh_token"].toString().toStdString());
+    akyuu::accounts.setMyanimelistAccessToken(accessToken.toStdString());
+    akyuu::accounts.setMyanimelistRefreshToken(root["refresh_token"].toString().toStdString());
     api_.setBearerToken(accessToken.toUtf8());
 
     authenticateUser();
@@ -75,7 +75,7 @@ void Service::requestAccessToken(const QString& authorizationCode, const QString
 }
 
 void Service::refreshAccessToken(std::function<void()> onSuccess) {
-  const auto refreshToken = taiga::accounts.myanimelistRefreshToken();
+  const auto refreshToken = akyuu::accounts.myanimelistRefreshToken();
 
   if (refreshToken.empty()) {
     emit errorOccurred("Refresh token is unavailable.");
@@ -108,8 +108,8 @@ void Service::refreshAccessToken(std::function<void()> onSuccess) {
 
     const auto root = json->object();
     const auto accessToken = root["access_token"].toString();
-    taiga::accounts.setMyanimelistAccessToken(accessToken.toStdString());
-    taiga::accounts.setMyanimelistRefreshToken(root["refresh_token"].toString().toStdString());
+    akyuu::accounts.setMyanimelistAccessToken(accessToken.toStdString());
+    akyuu::accounts.setMyanimelistRefreshToken(root["refresh_token"].toString().toStdString());
     api_.setBearerToken(accessToken.toUtf8());
 
     if (onSuccess) onSuccess();
@@ -136,7 +136,7 @@ void Service::authenticateUser() {
       return;
     }
 
-    taiga::accounts.setMyanimelistUsername(json->object()["name"].toString().toStdString());
+    akyuu::accounts.setMyanimelistUsername(json->object()["name"].toString().toStdString());
 
     emit authenticationCompleted(true);
   };

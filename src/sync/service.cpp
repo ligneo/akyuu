@@ -20,6 +20,9 @@
 
 #include <QMap>
 
+#include "akyuu/accounts.hpp"
+#include "akyuu/network.hpp"
+#include "akyuu/settings.hpp"
 #include "base/log.hpp"
 #include "base/string.hpp"
 #include "media/anime_db.hpp"
@@ -30,14 +33,11 @@
 #include "sync/myanimelist/myanimelist.hpp"
 #include "sync/myanimelist/myanimelist_utils.hpp"
 #include "sync/queue.hpp"
-#include "akyuu/accounts.hpp"
-#include "akyuu/network.hpp"
-#include "akyuu/settings.hpp"
 
 namespace sync {
 
-Service::Service(const ServiceId id) : QObject{qApp}, manager_{taiga::network()}, id_{id} {
-  api_.setCommonHeaders(taiga::NetworkAccessManager::commonHeaders());
+Service::Service(const ServiceId id) : QObject{qApp}, manager_{akyuu::network()}, id_{id} {
+  api_.setCommonHeaders(akyuu::NetworkAccessManager::commonHeaders());
 
   connect(this, &Service::authenticationCompleted, this, &Service::onAuthenticationCompleted);
   connect(this, &Service::errorOccurred, this, &Service::logError);
@@ -54,13 +54,13 @@ void Service::logError(const QString& message) {
 void Service::onAuthenticationCompleted(bool authenticated) {
   switch (currentServiceId()) {
     case ServiceId::MyAnimeList:
-      taiga::accounts.setMyanimelistAuthenticated(authenticated);
+      akyuu::accounts.setMyanimelistAuthenticated(authenticated);
       break;
     case ServiceId::Kitsu:
-      taiga::accounts.setKitsuAuthenticated(authenticated);
+      akyuu::accounts.setKitsuAuthenticated(authenticated);
       break;
     case ServiceId::AniList:
-      taiga::accounts.setAnilistAuthenticated(authenticated);
+      akyuu::accounts.setAnilistAuthenticated(authenticated);
       break;
   }
 
@@ -72,7 +72,7 @@ void Service::onAuthenticationCompleted(bool authenticated) {
 ////////////////////////////////////////////////////////////////////////////////
 
 ServiceId currentServiceId() {
-  const auto slug = QString::fromStdString(taiga::settings.service());
+  const auto slug = QString::fromStdString(akyuu::settings.service());
   return serviceIdFromSlug(slug);
 }
 
@@ -177,7 +177,7 @@ bool synchronize() {
 
   if (!isUserAuthenticated()) {
     const auto username =
-        taiga::accounts.serviceUsername(serviceSlug(currentServiceId()).toStdString());
+        akyuu::accounts.serviceUsername(serviceSlug(currentServiceId()).toStdString());
     if (username.empty()) return false;
 
     fetchListEntries();  // can fetch the list without authentication
@@ -238,11 +238,11 @@ void deleteListEntry(const int id) {
 bool isUserAuthenticated() {
   switch (currentServiceId()) {
     case ServiceId::MyAnimeList:
-      return taiga::accounts.myanimelistAuthenticated();
+      return akyuu::accounts.myanimelistAuthenticated();
     case ServiceId::Kitsu:
-      return taiga::accounts.kitsuAuthenticated();
+      return akyuu::accounts.kitsuAuthenticated();
     case ServiceId::AniList:
-      return taiga::accounts.anilistAuthenticated();
+      return akyuu::accounts.anilistAuthenticated();
   }
   return false;
 }
@@ -252,11 +252,11 @@ bool willAuthenticate() {
 
   switch (currentServiceId()) {
     case ServiceId::MyAnimeList:
-      return !taiga::accounts.myanimelistAccessToken().empty();
+      return !akyuu::accounts.myanimelistAccessToken().empty();
     case ServiceId::Kitsu:
-      return !taiga::accounts.kitsuAccessToken().empty();
+      return !akyuu::accounts.kitsuAccessToken().empty();
     case ServiceId::AniList:
-      return !taiga::accounts.anilistToken().empty();
+      return !akyuu::accounts.anilistToken().empty();
   }
   return false;
 }

@@ -22,13 +22,13 @@
 #include <QKeyEvent>
 #include <QMenu>
 
+#include "akyuu/session.hpp"
+#include "akyuu/settings.hpp"
 #include "gui/common/anime_list_item_delegate.hpp"
 #include "gui/common/anime_list_view_base.hpp"
 #include "gui/models/anime_list_model.hpp"
 #include "gui/models/anime_list_proxy_model.hpp"
 #include "gui/utils/painters.hpp"
-#include "akyuu/session.hpp"
-#include "akyuu/settings.hpp"
 #include "track/play.hpp"
 
 namespace gui {
@@ -50,15 +50,15 @@ QList<int> defaultHiddenColumns(const AnimeListContext context) {
 }
 
 std::optional<QList<int>> savedHiddenColumns(const AnimeListContext context) {
-  return context == AnimeListContext::Search ? taiga::session.searchListHiddenColumns()
-                                             : taiga::session.animeListHiddenColumns();
+  return context == AnimeListContext::Search ? akyuu::session.searchListHiddenColumns()
+                                             : akyuu::session.animeListHiddenColumns();
 }
 
 void saveHiddenColumns(const AnimeListContext context, const QList<int>& columns) {
   if (context == AnimeListContext::Search) {
-    taiga::session.setSearchListHiddenColumns(columns);
+    akyuu::session.setSearchListHiddenColumns(columns);
   } else {
-    taiga::session.setAnimeListHiddenColumns(columns);
+    akyuu::session.setAnimeListHiddenColumns(columns);
   }
 }
 
@@ -149,7 +149,7 @@ void ListView::mousePressEvent(QMouseEvent* event) {
       if (m_base->context() == AnimeListContext::Search) {
         m_base->openAnimePage(index);
       } else {
-        m_base->triggerClickAction(index, taiga::settings.listMiddleClickAction());
+        m_base->triggerClickAction(index, akyuu::settings.listMiddleClickAction());
       }
       return;
     }

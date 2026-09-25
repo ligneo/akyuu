@@ -34,6 +34,7 @@
 #include <limits>
 #include <ranges>
 
+#include "akyuu/settings.hpp"
 #include "base/log.hpp"
 #include "base/string.hpp"
 #include "gui/main/main_window.hpp"
@@ -49,7 +50,6 @@
 #include "media/anime_list_utils.hpp"
 #include "media/anime_utils.hpp"
 #include "sync/service.hpp"
-#include "akyuu/settings.hpp"
 #include "track/feed_aggregator.hpp"
 #include "track/library.hpp"
 #include "track/media.hpp"
@@ -241,7 +241,7 @@ void MediaMenu::openFolder() const {
     return;
   }
 
-  const auto libraryFolders = taiga::settings.libraryFolders();
+  const auto libraryFolders = akyuu::settings.libraryFolders();
 
   for (const auto& path : libraryFolders) {
     const auto folder = track::findFolder(QString::fromStdString(path), item.id);

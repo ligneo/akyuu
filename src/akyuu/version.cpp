@@ -18,20 +18,16 @@
 
 #include "version.hpp"
 
-#include "base/preprocessor.h"
 #include "akyuu/config.h"
+#include "base/preprocessor.h"
 
-namespace taiga {
+namespace akyuu {
 
 const semaver::Version& version() {
   static const semaver::Version version(
-      TAIGA_VERSION_MAJOR,
-      TAIGA_VERSION_MINOR,
-      TAIGA_VERSION_PATCH,
-      TAIGA_VERSION_PRE,
-      TAIGA_VERSION_BUILD > 0 ? STRINGIZE(TAIGA_VERSION_BUILD) : ""
-    );
+      AKYUU_VERSION_MAJOR, AKYUU_VERSION_MINOR, AKYUU_VERSION_PATCH, AKYUU_VERSION_PRE,
+      AKYUU_VERSION_BUILD > 0 ? STRINGIZE(AKYUU_VERSION_BUILD) : "");
   return version;
 }
 
-}  // namespace taiga
+}  // namespace akyuu

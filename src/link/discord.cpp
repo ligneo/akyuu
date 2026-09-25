@@ -25,10 +25,10 @@
 #include <QStandardPaths>
 #include <QUuid>
 
-#include "base/log.hpp"
-#include "sync/service.hpp"
 #include "akyuu/accounts.hpp"
 #include "akyuu/settings.hpp"
+#include "base/log.hpp"
+#include "sync/service.hpp"
 
 namespace link {
 
@@ -77,7 +77,7 @@ bool Discord::connectToDiscord() {
     if (socket_.waitForConnected(200)) {
       send(Opcode::Handshake,
            {{u"v"_s, 1},
-            {u"client_id"_s, QString::fromStdString(taiga::settings.discordApplicationId())}});
+            {u"client_id"_s, QString::fromStdString(akyuu::settings.discordApplicationId())}});
       qDebug() << "Connected to Discord:" << path;
       return true;
     }
@@ -103,12 +103,12 @@ void Discord::send(const int opcode, const QJsonObject& payload) {
 }
 
 void Discord::applySettings() {
-  if (!taiga::settings.discordEnabled()) clearPresence();
+  if (!akyuu::settings.discordEnabled()) clearPresence();
 }
 
 void Discord::updatePresence(QString details, QString state, const QString& largeImage,
                              const std::time_t timestamp, const bool force) {
-  if (!force && !taiga::settings.discordEnabled()) return;
+  if (!force && !akyuu::settings.discordEnabled()) return;
 
   // v1 cuts both lines at 64 characters; Discord turns down an activity with longer ones.
   constexpr qsizetype kLimit = 64;
@@ -122,17 +122,17 @@ void Discord::updatePresence(QString details, QString state, const QString& larg
   const auto userName = [service]() -> QString {
     switch (service) {
       case sync::ServiceId::AniList:
-        return QString::fromStdString(taiga::accounts.anilistUsername());
+        return QString::fromStdString(akyuu::accounts.anilistUsername());
       case sync::ServiceId::Kitsu:
-        return QString::fromStdString(taiga::accounts.kitsuUsername());
+        return QString::fromStdString(akyuu::accounts.kitsuUsername());
       case sync::ServiceId::MyAnimeList:
-        return QString::fromStdString(taiga::accounts.myanimelistUsername());
+        return QString::fromStdString(akyuu::accounts.myanimelistUsername());
       default:
         return {};
     }
   }();
 
-  const auto smallText = taiga::settings.discordUsernameEnabled() && !userName.isEmpty()
+  const auto smallText = akyuu::settings.discordUsernameEnabled() && !userName.isEmpty()
                              ? u"%1 at %2"_s.arg(userName).arg(sync::serviceName(service))
                              : sync::serviceName(service);
 
@@ -147,7 +147,7 @@ void Discord::updatePresence(QString details, QString state, const QString& larg
   activity[u"state"_s] = state;
   activity[u"assets"_s] = assets;
 
-  if (taiga::settings.discordTimeEnabled()) {
+  if (akyuu::settings.discordTimeEnabled()) {
     activity[u"timestamps"_s] = QJsonObject{{u"start"_s, static_cast<qint64>(timestamp)}};
   }
 

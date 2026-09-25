@@ -23,10 +23,10 @@
 #include <QStyle>
 #include <QStyleHints>
 
+#include "akyuu/settings.hpp"
 #include "base/file.hpp"
 #include "base/string.hpp"
 #include "gui/utils/svg_icon_engine.hpp"
-#include "akyuu/settings.hpp"
 
 namespace gui {
 
@@ -45,13 +45,13 @@ const QIcon& Theme::getIcon(const QString& key, const QString& extension, bool u
 }
 
 void Theme::applyStyle() {
-  qApp->styleHints()->setColorScheme(taiga::settings.appColorScheme());
+  qApp->styleHints()->setColorScheme(akyuu::settings.appColorScheme());
 
   // Remember the platform's style, so that it can be restored later on.
   if (m_systemStyle.isEmpty()) m_systemStyle = qApp->style()->name();
 
-  auto style = QString::fromStdString(taiga::settings.appStyle());
-  if (style.compare(taiga::Settings::kAppStyleSystem, Qt::CaseInsensitive) == 0) {
+  auto style = QString::fromStdString(akyuu::settings.appStyle());
+  if (style.compare(akyuu::Settings::kAppStyleSystem, Qt::CaseInsensitive) == 0) {
     style = m_systemStyle;
   }
   if (qApp->style()->name().compare(style, Qt::CaseInsensitive) != 0) {

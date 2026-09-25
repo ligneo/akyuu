@@ -22,12 +22,12 @@
 #include <algorithm>
 #include <format>
 
-#include "base/file.hpp"
-#include "base/string.hpp"
-#include "compat/history.hpp"
 #include "akyuu/accounts.hpp"
 #include "akyuu/path.hpp"
 #include "akyuu/settings.hpp"
+#include "base/file.hpp"
+#include "base/string.hpp"
+#include "compat/history.hpp"
 
 namespace anime {
 
@@ -162,9 +162,9 @@ void History::migrateFromV1() {
   if (!q.prepare(sql("insertHistory"))) return;
 
   const auto path = []() {
-    const auto service = taiga::settings.service();
-    return std::format("{}/v1/user/{}@{}/history.xml", taiga::get_data_path(),
-                       taiga::accounts.serviceUsername(service), service);
+    const auto service = akyuu::settings.service();
+    return std::format("{}/v1/user/{}@{}/history.xml", akyuu::get_data_path(),
+                       akyuu::accounts.serviceUsername(service), service);
   }();
 
   db.transaction();

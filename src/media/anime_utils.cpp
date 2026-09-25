@@ -22,10 +22,10 @@
 #include <QTimeZone>
 #include <ranges>
 
+#include "akyuu/settings.hpp"
 #include "base/chrono.hpp"
 #include "media/anime.hpp"
 #include "media/anime_db.hpp"
-#include "akyuu/settings.hpp"
 
 namespace {
 
@@ -178,7 +178,7 @@ std::string preferredTitle(const Details& item) {
     return settings->display_title;
   }
 
-  switch (taiga::settings.titleLanguage()) {
+  switch (akyuu::settings.titleLanguage()) {
     default:
     case TitleLanguage::Romaji:
       return item.titles.romaji;

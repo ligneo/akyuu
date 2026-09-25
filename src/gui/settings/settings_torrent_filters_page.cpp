@@ -30,10 +30,10 @@
 #include <QVBoxLayout>
 #include <algorithm>
 
+#include "akyuu/settings.hpp"
 #include "gui/torrents/filter_dialog.hpp"
 #include "gui/utils/format.hpp"
 #include "gui/utils/widgets.hpp"
-#include "akyuu/settings.hpp"
 #include "track/feed_filter_manager.hpp"
 #include "track/feed_filter_util.hpp"
 
@@ -157,14 +157,14 @@ TorrentFiltersPage::TorrentFiltersPage(QWidget* parent)
 }
 
 void TorrentFiltersPage::load() {
-  m_checkEnabled->setChecked(taiga::settings.torrentFilterEnabled());
+  m_checkEnabled->setChecked(akyuu::settings.torrentFilterEnabled());
   m_filters = track::filterManager.filters();
   refreshList();
   m_listFilters->setEnabled(m_checkEnabled->isChecked());
 }
 
 void TorrentFiltersPage::save() {
-  taiga::settings.setTorrentFilterEnabled(m_checkEnabled->isChecked());
+  akyuu::settings.setTorrentFilterEnabled(m_checkEnabled->isChecked());
   applyCheckStates();
 
   track::filterManager.setFilters(m_filters);

@@ -22,9 +22,9 @@
 #include <QGroupBox>
 #include <QVBoxLayout>
 
+#include "akyuu/settings.hpp"
 #include "gui/settings/settings_player_list.hpp"
 #include "gui/settings/settings_stream_list.hpp"
-#include "akyuu/settings.hpp"
 
 namespace gui {
 
@@ -53,13 +53,13 @@ StreamingPage::StreamingPage(QWidget* parent)
 }
 
 void StreamingPage::load() {
-  m_checkEnabled->setChecked(taiga::settings.streamingMediaEnabled());
+  m_checkEnabled->setChecked(akyuu::settings.streamingMediaEnabled());
   m_listPlayers->load();
   m_listProviders->load();
 }
 
 void StreamingPage::save() {
-  taiga::settings.setStreamingMediaEnabled(m_checkEnabled->isChecked());
+  akyuu::settings.setStreamingMediaEnabled(m_checkEnabled->isChecked());
   m_listPlayers->save();
   m_listProviders->save();
 }

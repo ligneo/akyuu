@@ -21,11 +21,11 @@
 #include <QRegularExpression>
 #include <limits>
 
+#include "akyuu/path.hpp"
 #include "base/file.hpp"
 #include "base/log.hpp"
 #include "base/string.hpp"
 #include "sync/service.hpp"
-#include "akyuu/path.hpp"
 
 namespace track::recognition {
 
@@ -34,7 +34,7 @@ namespace {
 QString readRelationsFile() {
   // The data directory holds a newer copy once one is fetched, so it comes first. Until then the
   // bundled copy is used, the same way media player data is.
-  const auto path = u"%1/anime-relations.txt"_s.arg(taiga::get_data_path());
+  const auto path = u"%1/anime-relations.txt"_s.arg(akyuu::get_data_path());
 
   if (const auto contents = base::readFile(path); !contents.isEmpty()) {
     return contents;

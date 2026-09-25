@@ -1,12 +1,12 @@
-add_library(taiga-gui STATIC)
+add_library(akyuu-gui STATIC)
 
-qt_add_ui(taiga-gui SOURCES
+qt_add_ui(akyuu-gui SOURCES
 	main/main_window.ui
 	media/media_dialog.ui
 	settings/settings_dialog.ui
 )
 
-target_sources(taiga-gui PRIVATE
+target_sources(akyuu-gui PRIVATE
 	common/anime_list_item_delegate.cpp
 	common/anime_list_item_delegate.hpp
 	common/anime_list_item_delegate_cards.cpp
@@ -143,24 +143,24 @@ target_sources(taiga-gui PRIVATE
 	utils/widgets.hpp
 )
 
-target_link_libraries(taiga-gui
+target_link_libraries(akyuu-gui
 	Qt6::Concurrent
 	Qt6::Core
 	Qt6::Gui
 	Qt6::Network
 	Qt6::Sql
 	Qt6::Widgets
-	taiga-config
-	taiga-deps
+	akyuu-config
+	akyuu-deps
 )
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
-	target_sources(taiga-gui PRIVATE platforms/windows.cpp)
-	target_link_libraries(taiga-gui Dwmapi.lib)
+	target_sources(akyuu-gui PRIVATE platforms/windows.cpp)
+	target_link_libraries(akyuu-gui Dwmapi.lib)
 endif()
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-	target_sources(taiga-gui PRIVATE
+	target_sources(akyuu-gui PRIVATE
 		settings/settings_irc_page.cpp
 		settings/settings_irc_page.hpp
 	)

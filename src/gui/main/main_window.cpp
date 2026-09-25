@@ -54,6 +54,14 @@
 #ifdef Q_OS_LINUX
 #include "link/irc.hpp"
 #endif
+#include "akyuu/accounts.hpp"
+#include "akyuu/application.hpp"
+#include "akyuu/config.h"
+#include "akyuu/network.hpp"
+#include "akyuu/script.hpp"
+#include "akyuu/session.hpp"
+#include "akyuu/settings.hpp"
+#include "akyuu/version.hpp"
 #include "media/anime_db.hpp"
 #include "media/anime_list.hpp"
 #include "media/anime_list_export.hpp"
@@ -63,14 +71,6 @@
 #include "sync/myanimelist/myanimelist.hpp"
 #include "sync/queue.hpp"
 #include "sync/service.hpp"
-#include "akyuu/accounts.hpp"
-#include "akyuu/application.hpp"
-#include "akyuu/config.h"
-#include "akyuu/network.hpp"
-#include "akyuu/script.hpp"
-#include "akyuu/session.hpp"
-#include "akyuu/settings.hpp"
-#include "akyuu/version.hpp"
 #include "track/episode.hpp"
 #include "track/feed_aggregator.hpp"
 #include "track/library.hpp"
@@ -94,7 +94,7 @@ MainWindow::MainWindow() : QMainWindow(), ui_(new Ui::MainWindow) {
   enableMicaBackground(this);
 #endif
 
-  if (const auto geometry = taiga::session.mainWindowGeometry(); !geometry.isEmpty()) {
+  if (const auto geometry = akyuu::session.mainWindowGeometry(); !geometry.isEmpty()) {
     restoreGeometry(geometry);
     centerWidgetToScreen(this);
   }
@@ -104,7 +104,7 @@ MainWindow::MainWindow() : QMainWindow(), ui_(new Ui::MainWindow) {
 }
 
 MainWindow* mainWindow() {
-  return taiga::app()->mainWindow();
+  return akyuu::app()->mainWindow();
 }
 
 NavigationWidget* MainWindow::navigation() const {
@@ -140,7 +140,7 @@ void MainWindow::init() {
   updateTitle();
 
   // v1 can synchronize the list as soon as it starts
-  if (taiga::settings.syncOnStartup()) synchronize();
+  if (akyuu::settings.syncOnStartup()) synchronize();
 }
 
 void MainWindow::initShortcuts() {
@@ -238,9 +238,9 @@ void MainWindow::initActions() {
             });
           });
 
-  ui_->actionToggleDetection->setChecked(taiga::settings.mediaDetectionEnabled());
+  ui_->actionToggleDetection->setChecked(akyuu::settings.mediaDetectionEnabled());
   connect(ui_->actionToggleDetection, &QAction::toggled, this, [](const bool checked) {
-    taiga::settings.setMediaDetectionEnabled(checked);
+    akyuu::settings.setMediaDetectionEnabled(checked);
     track::media::detection()->setEnabled(checked);
   });
   connect(track::media::detection(), &track::media::Detection::enabledChanged, this,
@@ -249,18 +249,18 @@ void MainWindow::initActions() {
             ui_->actionToggleDetection->setChecked(enabled);
           });
 
-  ui_->actionToggleSharing->setChecked(taiga::settings.sharingEnabled());
+  ui_->actionToggleSharing->setChecked(akyuu::settings.sharingEnabled());
   connect(ui_->actionToggleSharing, &QAction::toggled, this, [](const bool checked) {
-    taiga::settings.setSharingEnabled(checked);
+    akyuu::settings.setSharingEnabled(checked);
     // Like v1, turning it back on does not repeat the current episode; the next one is shared.
     if (!checked) link::discord()->clearPresence();
   });
 
   connect(ui_->actionCheckForUpdates, &QAction::triggered, this, &MainWindow::checkForUpdates);
 
-  ui_->actionToggleSynchronization->setChecked(taiga::settings.syncEnabled());
+  ui_->actionToggleSynchronization->setChecked(akyuu::settings.syncEnabled());
   connect(ui_->actionToggleSynchronization, &QAction::toggled, this,
-          [](const bool checked) { taiga::settings.setSyncEnabled(checked); });
+          [](const bool checked) { akyuu::settings.setSyncEnabled(checked); });
 }
 
 void MainWindow::initIcons() {
@@ -287,7 +287,7 @@ void MainWindow::initIcons() {
 
 void MainWindow::initNavigation() {
   m_navigationWidget = new NavigationWidget(this);
-  m_navigationWidget->setVisible(taiga::settings.sidebarVisible());
+  m_navigationWidget->setVisible(akyuu::settings.sidebarVisible());
   // Connects to m_navigationWidget's signals on construction, so it must come after.
   m_navigationController = new NavigationController(this);
 
@@ -326,7 +326,7 @@ void MainWindow::shareEpisode(const std::optional<track::Episode>& episode) cons
   // cleared first, so the previous episode is not left on display. Turning sharing off does the
   // same.
   const auto entry = anime::db.entry(episode->animeId());
-  if ((entry && entry->is_private) || !taiga::settings.sharingEnabled()) {
+  if ((entry && entry->is_private) || !akyuu::settings.sharingEnabled()) {
     link::discord()->clearPresence();
     return;
   }
@@ -345,10 +345,10 @@ void MainWindow::updateDiscordPresence(const track::Episode& episode, const bool
 
   // The same lines as v1: "Episode 5/12 by Group", the group being optional.
   auto state = u"$if(%episode%,Episode %episode%$if(%total%,/%total%) )"_s;
-  if (taiga::settings.discordGroupEnabled()) state += u"$if(%group%,by %group%)"_s;
+  if (akyuu::settings.discordGroupEnabled()) state += u"$if(%group%,by %group%)"_s;
 
   // v1 shares what is playing over Discord's rich presence.
-  link::discord()->updatePresence(title, taiga::replaceVariables(state, episode),
+  link::discord()->updatePresence(title, akyuu::replaceVariables(state, episode),
                                   item ? QString::fromStdString(item->image_url) : QString{},
                                   std::time(nullptr), force);
 }
@@ -464,7 +464,7 @@ void MainWindow::initStatusbar() {
 
               const auto sender_service = qobject_cast<sync::Service*>(sender());
               const auto slug = sync::serviceSlug(sender_service->id()).toStdString();
-              const auto username = taiga::accounts.serviceUsername(slug);
+              const auto username = akyuu::accounts.serviceUsername(slug);
 
               m_statusBarController->showMessage({
                   .source = StatusBarController::Source::Sync,
@@ -625,9 +625,9 @@ void MainWindow::checkForUpdates() {
   static const QUrl url{u"https://api.github.com/repos/erengy/taiga/releases/latest"_s};
 
   QNetworkRequest request{url};
-  request.setHeaders(taiga::NetworkAccessManager::commonHeaders());
+  request.setHeaders(akyuu::NetworkAccessManager::commonHeaders());
 
-  const auto reply = taiga::network()->get(request);
+  const auto reply = akyuu::network()->get(request);
 
   m_statusBarController->showMessage({
       .source = StatusBarController::Source::Sync,
@@ -649,7 +649,7 @@ void MainWindow::checkForUpdates() {
     if (tag.startsWith(u'v')) tag.remove(0, 1);
 
     const semaver::Version latest{tag.toStdString()};
-    const auto& current = taiga::version();
+    const auto& current = akyuu::version();
 
     if (!latest || !(latest > current)) {
       QMessageBox::information(
@@ -674,7 +674,7 @@ void MainWindow::checkForUpdates() {
 void MainWindow::initExternalLinksMenu() {
   ui_->menuExternalLinks->clear();
 
-  for (const auto& link : taiga::settings.externalLinks()) {
+  for (const auto& link : akyuu::settings.externalLinks()) {
     const auto text = QString::fromStdString(link);
 
     if (text.trimmed() == u"-"_s) {
@@ -704,14 +704,14 @@ void MainWindow::initServicesMenu() {
 
   switch (service) {
     case sync::ServiceId::AniList: {
-      const auto user = QString::fromStdString(taiga::accounts.anilistUsername());
+      const auto user = QString::fromStdString(akyuu::accounts.anilistUsername());
       if (user.isEmpty()) break;
       addLink(tr("Go to my profile"), u"https://anilist.co/user/%1"_s.arg(user));
       addLink(tr("Go to my stats"), u"https://anilist.co/user/%1/stats"_s.arg(user));
       break;
     }
     case sync::ServiceId::Kitsu: {
-      const auto user = QString::fromStdString(taiga::accounts.kitsuUsername());
+      const auto user = QString::fromStdString(akyuu::accounts.kitsuUsername());
       if (user.isEmpty()) break;
       addLink(tr("Go to my feed"), u"https://kitsu.app"_s);
       addLink(tr("Go to my library"), u"https://kitsu.app/users/%1/library"_s.arg(user));
@@ -719,7 +719,7 @@ void MainWindow::initServicesMenu() {
       break;
     }
     case sync::ServiceId::MyAnimeList: {
-      const auto user = QString::fromStdString(taiga::accounts.myanimelistUsername());
+      const auto user = QString::fromStdString(akyuu::accounts.myanimelistUsername());
       if (user.isEmpty()) break;
       addLink(tr("Go to my panel"), u"https://myanimelist.net/panel.php"_s);
       addLink(tr("Go to my profile"), u"https://myanimelist.net/profile/%1"_s.arg(user));
@@ -753,7 +753,7 @@ void MainWindow::initViewMenu() {
 
   const auto action = ui_->menuView->addAction(tr("Show sidebar"), this, [this](bool checked) {
     m_navigationWidget->setVisible(checked);
-    taiga::settings.setSidebarVisible(checked);
+    akyuu::settings.setSidebarVisible(checked);
   });
   action->setCheckable(true);
   action->setChecked(m_navigationWidget->isVisible());
@@ -763,7 +763,7 @@ void MainWindow::initViewMenu() {
 // what tells us.
 void MainWindow::changeEvent(QEvent* event) {
   if (event->type() == QEvent::WindowStateChange && isMinimized()) {
-    if (taiga::settings.appMinimizeToTray() && m_trayIcon && m_trayIcon->isVisible()) {
+    if (akyuu::settings.appMinimizeToTray() && m_trayIcon && m_trayIcon->isVisible()) {
       QTimer::singleShot(0, this, &QWidget::hide);
     }
   }
@@ -876,13 +876,13 @@ void MainWindow::initTrayIcon() {
 
 void MainWindow::closeEvent(QCloseEvent* event) {
   // v1's `program/general/close`: the window goes away but Taiga keeps detecting.
-  if (taiga::settings.appCloseToTray() && m_trayIcon && m_trayIcon->isVisible()) {
+  if (akyuu::settings.appCloseToTray() && m_trayIcon && m_trayIcon->isVisible()) {
     hide();
     event->ignore();
     return;
   }
 
-  taiga::session.setMainWindowGeometry(saveGeometry());
+  akyuu::session.setMainWindowGeometry(saveGeometry());
   if (m_listWidget) m_listWidget->saveState();
   if (m_searchWidget) m_searchWidget->saveState();
   if (m_seasonsWidget) m_seasonsWidget->saveState();
@@ -911,7 +911,7 @@ void MainWindow::navigateToListStatus(anime::list::Status status) {
 void MainWindow::updateTitle() {
   auto title = u"Taiga"_s;
 
-  if (taiga::app()->isDebug()) {
+  if (akyuu::app()->isDebug()) {
     title += u" [debug]"_s;
   }
 
@@ -933,14 +933,14 @@ void MainWindow::notifyEpisodeDetected(std::optional<track::Episode> episode) {
   const auto item = anime::db.item(episode->animeId());
 
   if (item) {
-    if (!taiga::settings.syncNotifyRecognized()) return;
+    if (!akyuu::settings.syncNotifyRecognized()) return;
 
     m_trayIcon->showMessage(
         tr("Episode recognized"),
-        taiga::replaceVariables(QString::fromStdString(taiga::settings.syncNotifyFormat()),
+        akyuu::replaceVariables(QString::fromStdString(akyuu::settings.syncNotifyFormat()),
                                 *episode));
   } else {
-    if (!taiga::settings.syncNotifyNotRecognized()) return;
+    if (!akyuu::settings.syncNotifyNotRecognized()) return;
 
     m_trayIcon->showMessage(tr("Episode not recognized"),
                             QString::fromStdString(episode->element(anitomy::ElementKind::Title)));

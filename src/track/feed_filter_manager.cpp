@@ -23,10 +23,10 @@
 #include <QJsonValue>
 #include <algorithm>
 
+#include "akyuu/settings.hpp"
 #include "media/anime_db.hpp"
 #include "media/anime_list.hpp"
 #include "media/anime_utils.hpp"
-#include "akyuu/settings.hpp"
 #include "track/feed_filter_util.hpp"
 
 namespace track {
@@ -145,7 +145,7 @@ void FilterManager::setFilters(const std::vector<Filter>& filters) {
 void FilterManager::load() const {
   loaded_ = true;
 
-  const auto array = taiga::settings.torrentFilters();
+  const auto array = akyuu::settings.torrentFilters();
 
   if (!array) {
     // Nothing has been set up yet, so the user starts with the default presets, as in v1. An
@@ -160,7 +160,7 @@ void FilterManager::load() const {
 }
 
 void FilterManager::save() const {
-  taiga::settings.setTorrentFilters(toJson(filters_));
+  akyuu::settings.setTorrentFilters(toJson(filters_));
 }
 
 QJsonArray FilterManager::toJson(const std::vector<Filter>& filters) {
@@ -232,7 +232,7 @@ std::vector<Filter> FilterManager::fromJson(const QJsonArray& array) {
 }
 
 void FilterManager::filter(Feed& feed) const {
-  if (!taiga::settings.torrentFilterEnabled()) return;
+  if (!akyuu::settings.torrentFilterEnabled()) return;
 
   // Preference filters compare an item against the rest of the feed, so they only make sense once
   // the regular filters have had their say. This is the order v1's `ExamineData()` uses.

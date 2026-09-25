@@ -26,9 +26,9 @@
 #include <QVBoxLayout>
 #include <algorithm>
 
-#include "gui/utils/theme.hpp"
 #include "akyuu/autostart.hpp"
 #include "akyuu/settings.hpp"
+#include "gui/utils/theme.hpp"
 
 namespace gui {
 
@@ -48,9 +48,9 @@ ApplicationPage::ApplicationPage(QWidget* parent)
     const auto form = new QFormLayout(group);
 
     {
-      const QString system{taiga::Settings::kAppStyleSystem};
+      const QString system{akyuu::Settings::kAppStyleSystem};
       auto keys = QStyleFactory::keys();
-      const auto style = QString::fromStdString(taiga::settings.appStyle()).toLower();
+      const auto style = QString::fromStdString(akyuu::settings.appStyle()).toLower();
       if (style != system && !keys.contains(style, Qt::CaseInsensitive)) {
         keys.append(style);  // keep unavailable style
       }
@@ -91,31 +91,31 @@ ApplicationPage::ApplicationPage(QWidget* parent)
 }
 
 void ApplicationPage::load() {
-  const auto style = QString::fromStdString(taiga::settings.appStyle()).toLower();
+  const auto style = QString::fromStdString(akyuu::settings.appStyle()).toLower();
   m_comboStyle->setCurrentIndex(std::max(0, m_comboStyle->findData(style)));
 
-  const auto scheme = static_cast<int>(taiga::settings.appColorScheme());
+  const auto scheme = static_cast<int>(akyuu::settings.appColorScheme());
   m_comboColorScheme->setCurrentIndex(m_comboColorScheme->findData(scheme));
 
-  m_checkAutoStart->setChecked(taiga::settings.appAutoStart());
-  m_checkStartMinimized->setChecked(taiga::settings.appStartMinimized());
-  m_checkCloseToTray->setChecked(taiga::settings.appCloseToTray());
-  m_checkMinimizeToTray->setChecked(taiga::settings.appMinimizeToTray());
+  m_checkAutoStart->setChecked(akyuu::settings.appAutoStart());
+  m_checkStartMinimized->setChecked(akyuu::settings.appStartMinimized());
+  m_checkCloseToTray->setChecked(akyuu::settings.appCloseToTray());
+  m_checkMinimizeToTray->setChecked(akyuu::settings.appMinimizeToTray());
 }
 
 void ApplicationPage::save() {
-  taiga::settings.setAppAutoStart(m_checkAutoStart->isChecked());
-  taiga::settings.setAppStartMinimized(m_checkStartMinimized->isChecked());
-  taiga::settings.setAppCloseToTray(m_checkCloseToTray->isChecked());
-  taiga::settings.setAppMinimizeToTray(m_checkMinimizeToTray->isChecked());
-  taiga::applyAutoStart();
+  akyuu::settings.setAppAutoStart(m_checkAutoStart->isChecked());
+  akyuu::settings.setAppStartMinimized(m_checkStartMinimized->isChecked());
+  akyuu::settings.setAppCloseToTray(m_checkCloseToTray->isChecked());
+  akyuu::settings.setAppMinimizeToTray(m_checkMinimizeToTray->isChecked());
+  akyuu::applyAutoStart();
 
   const auto style = m_comboStyle->currentData().toString().toStdString();
   const auto scheme = m_comboColorScheme->currentData().value<Qt::ColorScheme>();
-  if (style == taiga::settings.appStyle() && scheme == taiga::settings.appColorScheme()) return;
+  if (style == akyuu::settings.appStyle() && scheme == akyuu::settings.appColorScheme()) return;
 
-  taiga::settings.setAppStyle(style);
-  taiga::settings.setAppColorScheme(scheme);
+  akyuu::settings.setAppStyle(style);
+  akyuu::settings.setAppColorScheme(scheme);
   theme.applyStyle();
 }
 

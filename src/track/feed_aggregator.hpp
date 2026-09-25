@@ -60,7 +60,7 @@ signals:
   void downloadFinished(const QString& title);
 
 private:
-  QRestAccessManager manager_{taiga::network()};
+  QRestAccessManager manager_{akyuu::network()};
   QTimer timer_{this};
   Feed feed_;
   bool fetching_ = false;

@@ -23,15 +23,15 @@
 
 #include "media/anime_settings.hpp"
 
-namespace taiga {
+namespace akyuu {
 class Accounts;
 class Settings;
-}  // namespace taiga
+}  // namespace akyuu
 
 namespace compat::v1 {
 
-void readSettings(const std::string& path, const taiga::Settings& settings,
-                  const taiga::Accounts& accounts);
+void readSettings(const std::string& path, const akyuu::Settings& settings,
+                  const akyuu::Accounts& accounts);
 
 QList<anime::Settings> readAnimeSettings(const std::string& path);
 

@@ -24,7 +24,7 @@
 
 class QRestReply;
 
-namespace taiga {
+namespace akyuu {
 
 class NetworkAccessManager final : public QNetworkAccessManager {
   Q_OBJECT
@@ -46,4 +46,4 @@ inline NetworkAccessManager* network() {
 
 bool isDdosProtectionActive(const QRestReply& reply);
 
-}  // namespace taiga
+}  // namespace akyuu

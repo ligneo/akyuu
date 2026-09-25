@@ -27,8 +27,8 @@
 #include <QVBoxLayout>
 #include <initializer_list>
 
-#include "link/irc.hpp"
 #include "akyuu/settings.hpp"
+#include "link/irc.hpp"
 
 namespace gui {
 
@@ -85,12 +85,12 @@ IrcPage::IrcPage(QWidget* parent)
 }
 
 void IrcPage::load() {
-  m_checkEnabled->setChecked(taiga::settings.ircShareEnabled());
-  m_editChannels->setText(QString::fromStdString(taiga::settings.ircShareChannels()));
-  m_checkUseAction->setChecked(taiga::settings.ircShareUseAction());
-  m_editFormat->setPlainText(QString::fromStdString(taiga::settings.ircShareFormat()));
+  m_checkEnabled->setChecked(akyuu::settings.ircShareEnabled());
+  m_editChannels->setText(QString::fromStdString(akyuu::settings.ircShareChannels()));
+  m_checkUseAction->setChecked(akyuu::settings.ircShareUseAction());
+  m_editFormat->setPlainText(QString::fromStdString(akyuu::settings.ircShareFormat()));
 
-  if (taiga::settings.ircShareAllChannels()) {
+  if (akyuu::settings.ircShareAllChannels()) {
     m_radioAllChannels->setChecked(true);
   } else {
     m_radioCustomChannels->setChecked(true);
@@ -107,11 +107,11 @@ void IrcPage::load() {
 }
 
 void IrcPage::save() {
-  taiga::settings.setIrcShareEnabled(m_checkEnabled->isChecked());
-  taiga::settings.setIrcShareAllChannels(m_radioAllChannels->isChecked());
-  taiga::settings.setIrcShareChannels(m_editChannels->text().trimmed().toStdString());
-  taiga::settings.setIrcShareUseAction(m_checkUseAction->isChecked());
-  taiga::settings.setIrcShareFormat(m_editFormat->toPlainText().trimmed().toStdString());
+  akyuu::settings.setIrcShareEnabled(m_checkEnabled->isChecked());
+  akyuu::settings.setIrcShareAllChannels(m_radioAllChannels->isChecked());
+  akyuu::settings.setIrcShareChannels(m_editChannels->text().trimmed().toStdString());
+  akyuu::settings.setIrcShareUseAction(m_checkUseAction->isChecked());
+  akyuu::settings.setIrcShareFormat(m_editFormat->toPlainText().trimmed().toStdString());
 }
 
 // Nothing is sent to a client that is not running, so the page says whether one was found.

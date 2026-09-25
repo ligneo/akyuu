@@ -20,15 +20,15 @@
 #include <QJsonObject>
 #include <QRestReply>
 
+#include "akyuu/accounts.hpp"
 #include "anilist.hpp"
 #include "sync/anilist/anilist_error.hpp"
 #include "sync/anilist/anilist_utils.hpp"
-#include "akyuu/accounts.hpp"
 
 namespace sync::anilist {
 
 void Service::setAccessToken(const QString& token) {
-  taiga::accounts.setAnilistToken(token.toStdString());
+  akyuu::accounts.setAnilistToken(token.toStdString());
   api_.setBearerToken(token.toUtf8());
 }
 
@@ -54,8 +54,8 @@ void Service::authenticateUser() {
       return;
     }
 
-    taiga::accounts.setAnilistUsername((*viewer)["name"].toString().toStdString());
-    taiga::accounts.setAnilistRatingSystem(
+    akyuu::accounts.setAnilistUsername((*viewer)["name"].toString().toStdString());
+    akyuu::accounts.setAnilistRatingSystem(
         (*viewer)["mediaListOptions"]["scoreFormat"].toString().toStdString());
 
     emit authenticationCompleted(true);

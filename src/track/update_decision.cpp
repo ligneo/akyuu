@@ -18,8 +18,8 @@
 
 #include "update_decision.hpp"
 
-#include "media/anime_list_utils.hpp"
 #include "akyuu/settings.hpp"
+#include "media/anime_list_utils.hpp"
 
 namespace track {
 
@@ -59,7 +59,7 @@ UpdateDecision decideUpdate(const Episode& episode, const anime::Details& item,
   const auto range = episode.episodeNumberRange();
   const int lowestNumber = range ? range->first : *number;
   if (lowestNumber > watchedEpisodes + 1) {
-    const auto action = taiga::settings.updateOutOfRange() ? Action::Deny : Action::Confirm;
+    const auto action = akyuu::settings.updateOutOfRange() ? Action::Deny : Action::Confirm;
     return {action, Reason::SkipsAhead};
   }
 

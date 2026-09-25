@@ -25,15 +25,15 @@
 #include <QMessageBox>
 #include <QMouseEvent>
 
-#include "base/string.hpp"
 #include "akyuu/orange.hpp"
 #include "akyuu/session.hpp"
 #include "akyuu/version.hpp"
+#include "base/string.hpp"
 
 namespace gui {
 
 QString getAboutDialogText(QWidget* parent) {
-  const auto version = QString::fromStdString(taiga::version().to_string());
+  const auto version = QString::fromStdString(akyuu::version().to_string());
 
   const QStringList links{
       u"<a href='https://taiga.moe/'>Website</a>"_s,
@@ -121,7 +121,7 @@ void displayAboutDialog(QWidget* parent) {
 }
 
 AboutDialogHandler::AboutDialogHandler(QObject* parent)
-    : QObject(parent), orange_(taiga::orange()) {
+    : QObject(parent), orange_(akyuu::orange()) {
   connect(orange_, &QThread::finished, this, &AboutDialogHandler::resetWindowTitle);
 }
 
@@ -138,7 +138,7 @@ bool AboutDialogHandler::eventFilter(QObject* watched, QEvent* event) {
     if (!orange_->isRunning()) {
       previousWindowTitle_ = messageBox()->windowTitle();
       messageBox()->setWindowTitle("Orange");
-      taiga::session.setTigersHarmed(taiga::session.tigersHarmed() + 1);
+      akyuu::session.setTigersHarmed(akyuu::session.tigersHarmed() + 1);
       orange_->start();
     }
     return true;

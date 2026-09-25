@@ -22,11 +22,11 @@
 
 #include "track/episode.hpp"
 
-namespace taiga {
+namespace akyuu {
 
 // Fills in the variables a format string may name, then evaluates its functions. Values are
 // percent-encoded when the result is going into a request, and left alone otherwise.
 QString replaceVariables(const QString& format, const track::Episode& episode,
                          const bool urlEncode = false);
 
-}  // namespace taiga
+}  // namespace akyuu

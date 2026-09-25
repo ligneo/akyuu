@@ -19,6 +19,6 @@
 #include "akyuu/application.hpp"
 
 int main(int argc, char* argv[]) {
-  taiga::Application app(argc, argv);
+  akyuu::Application app(argc, argv);
   return app.run();
 }

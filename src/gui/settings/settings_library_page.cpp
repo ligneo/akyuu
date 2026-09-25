@@ -129,12 +129,12 @@ bool LibraryPage::eventFilter(QObject* watched, QEvent* event) {
 
 void LibraryPage::load() {
   m_listFolders->clear();
-  for (const auto& folder : taiga::settings.libraryFolders()) {
+  for (const auto& folder : akyuu::settings.libraryFolders()) {
     m_listFolders->addItem(QString::fromStdString(folder));
   }
   m_buttonRemove->setEnabled(false);
-  m_checkWatch->setChecked(taiga::settings.libraryWatchFolders());
-  m_checkScanOnStartup->setChecked(taiga::settings.libraryScanOnStartup());
+  m_checkWatch->setChecked(akyuu::settings.libraryWatchFolders());
+  m_checkScanOnStartup->setChecked(akyuu::settings.libraryScanOnStartup());
 }
 
 void LibraryPage::save() {
@@ -142,9 +142,9 @@ void LibraryPage::save() {
   for (int i = 0; i < m_listFolders->count(); ++i) {
     folders.push_back(m_listFolders->item(i)->text().toStdString());
   }
-  taiga::settings.setLibraryFolders(folders);
-  taiga::settings.setLibraryWatchFolders(m_checkWatch->isChecked());
-  taiga::settings.setLibraryScanOnStartup(m_checkScanOnStartup->isChecked());
+  akyuu::settings.setLibraryFolders(folders);
+  akyuu::settings.setLibraryWatchFolders(m_checkWatch->isChecked());
+  akyuu::settings.setLibraryScanOnStartup(m_checkScanOnStartup->isChecked());
 
   track::library()->applyWatchSettings();
 }

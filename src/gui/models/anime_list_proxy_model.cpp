@@ -21,6 +21,7 @@
 #include <limits>
 #include <ranges>
 
+#include "akyuu/settings.hpp"
 #include "base/string.hpp"
 #include "gui/models/anime_list_model.hpp"
 #include "gui/utils/format.hpp"
@@ -29,7 +30,6 @@
 #include "media/anime_list_utils.hpp"
 #include "media/anime_season.hpp"
 #include "media/anime_utils.hpp"
-#include "akyuu/settings.hpp"
 #include "track/library.hpp"
 
 namespace {
@@ -95,7 +95,7 @@ AnimeListProxyModel::AnimeListProxyModel(QObject* parent) : QSortFilterProxyMode
 
   // A scan changes which anime have a new episode, and with it the highlight and its place
   connect(track::library(), &track::Library::availabilityChanged, this, [this]() {
-    if (taiga::settings.listHighlightNewEpisodes()) invalidate();
+    if (akyuu::settings.listHighlightNewEpisodes()) invalidate();
   });
 }
 
@@ -277,7 +277,7 @@ bool AnimeListProxyModel::lessThan(const QModelIndex& lhs, const QModelIndex& rh
   }
 
   // v1 can keep the highlighted anime above the rest, whichever way the list is sorted
-  if (taiga::settings.listHighlightNewEpisodes() && taiga::settings.listHighlightedOnTop()) {
+  if (akyuu::settings.listHighlightNewEpisodes() && akyuu::settings.listHighlightedOnTop()) {
     const bool lhs_new = hasNewEpisode(*lhs_anime, lhs_entry);
     const bool rhs_new = hasNewEpisode(*rhs_anime, rhs_entry);
     if (lhs_new != rhs_new) return sortOrder() == Qt::AscendingOrder ? lhs_new : rhs_new;

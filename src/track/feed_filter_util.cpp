@@ -236,7 +236,7 @@ QString encodeFilters(const std::vector<Filter>& filters) {
 
   if (data.isEmpty()) return {};
 
-  const auto metadata = QString::fromStdString(taiga::version().to_string()).toUtf8();
+  const auto metadata = QString::fromStdString(akyuu::version().to_string()).toUtf8();
   const auto compressed = deflate(data);
 
   QByteArray buffer;

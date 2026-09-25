@@ -35,7 +35,7 @@ enum class RatingSystem;
 
 }  // namespace sync
 
-namespace taiga {
+namespace akyuu {
 
 class Accounts final : public QObject, public base::Settings {
   Q_OBJECT
@@ -96,4 +96,4 @@ private:
 
 inline Accounts accounts;
 
-}  // namespace taiga
+}  // namespace akyuu

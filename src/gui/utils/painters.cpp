@@ -22,6 +22,7 @@
 #include <QPainter>
 #include <QProxyStyle>
 
+#include "akyuu/settings.hpp"
 #include "base/string.hpp"
 #include "gui/models/anime_list_model.hpp"
 #include "gui/utils/format.hpp"
@@ -30,7 +31,6 @@
 #include "media/anime_list.hpp"
 #include "media/anime_list_utils.hpp"
 #include "media/anime_utils.hpp"
-#include "akyuu/settings.hpp"
 #include "track/library.hpp"
 
 namespace gui {
@@ -89,12 +89,12 @@ void paintProgressBar(QPainter* painter, const QStyleOption& option, const Anime
     painter->fillRect(rect, color);
   };
 
-  if (taiga::settings.listShowAvailableEpisodes()) {
+  if (akyuu::settings.listShowAvailableEpisodes()) {
     const auto available = std::min(track::library()->availableEpisodeCount(anime->id), episodes);
     band(watched, available, QColor{12, 164, 12, 64});
   }
 
-  if (taiga::settings.listShowAiredEpisodes()) {
+  if (akyuu::settings.listShowAiredEpisodes()) {
     const auto aired = std::min(anime::estimateLastAiredEpisodeNumber(*anime), episodes);
     band(watched, aired, QColor{190, 190, 190, 40});
   }

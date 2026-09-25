@@ -2,9 +2,9 @@ include(QtSetup)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-add_executable(taiga)
+add_executable(akyuu)
 
-target_sources(taiga PRIVATE
+target_sources(akyuu PRIVATE
 	base/atf.cpp
 	base/atf.hpp
 	base/chrono.cpp
@@ -165,25 +165,25 @@ target_sources(taiga PRIVATE
 	main.cpp
 )
 
-target_link_libraries(taiga PRIVATE
+target_link_libraries(akyuu PRIVATE
 	Qt6::Core
 	Qt6::Gui
 	Qt6::Network
 	Qt6::Sql
 	Qt6::Widgets
-	taiga-config
-	taiga-deps
-	taiga-gui
-	taiga-resources
+	akyuu-config
+	akyuu-deps
+	akyuu-gui
+	akyuu-resources
 )
 
-if (TAIGA_PORTABLE)
-	target_compile_definitions(taiga PRIVATE TAIGA_PORTABLE)
+if (AKYUU_PORTABLE)
+	target_compile_definitions(akyuu PRIVATE AKYUU_PORTABLE)
 endif()
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
-	set_target_properties(taiga PROPERTIES OUTPUT_NAME Taiga)
-	set_target_properties(taiga PROPERTIES WIN32_EXECUTABLE ON)
+	set_target_properties(akyuu PROPERTIES OUTPUT_NAME Akyuu)
+	set_target_properties(akyuu PROPERTIES WIN32_EXECUTABLE ON)
 endif()
 
 # The Orange easter egg needs a way to play its notes; Windows has `Beep`, everywhere else it
@@ -192,14 +192,14 @@ endif()
 if (NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
 	find_package(Qt6 QUIET COMPONENTS Multimedia)
 	if (Qt6Multimedia_FOUND)
-		target_link_libraries(taiga PRIVATE Qt6::Multimedia)
-		target_compile_definitions(taiga PRIVATE TAIGA_HAS_MULTIMEDIA)
+		target_link_libraries(akyuu PRIVATE Qt6::Multimedia)
+		target_compile_definitions(akyuu PRIVATE AKYUU_HAS_MULTIMEDIA)
 	endif()
 endif()
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
 	find_package(Qt6 REQUIRED COMPONENTS DBus)
-	target_sources(taiga PRIVATE
+	target_sources(akyuu PRIVATE
 		link/irc.cpp
 		link/irc.hpp
 		track/media_focus.cpp
@@ -207,18 +207,18 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
 		track/media_mpris.cpp
 		track/media_mpris.hpp
 	)
-	target_link_libraries(taiga PRIVATE Qt6::DBus)
+	target_link_libraries(akyuu PRIVATE Qt6::DBus)
 
 	include(GNUInstallDirs)
-	install(TARGETS taiga RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+	install(TARGETS akyuu RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()
 
 add_subdirectory(gui)
 add_subdirectory(resources)
 
-qt_add_translations(taiga
-	SOURCE_TARGETS taiga-gui
-	TS_FILE_BASE taiga
+qt_add_translations(akyuu
+	SOURCE_TARGETS akyuu-gui
+	TS_FILE_BASE akyuu
 	TS_FILE_DIR resources/translations
 	LUPDATE_OPTIONS -no-obsolete -locations none
 )

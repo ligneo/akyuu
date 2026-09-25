@@ -20,8 +20,8 @@
 
 #include <string>
 
-namespace taiga {
+namespace akyuu {
 
 std::string get_data_path();
 
-}  // namespace taiga
+}  // namespace akyuu

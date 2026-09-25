@@ -27,16 +27,16 @@
 #include <QSqlResult>
 #include <format>
 
+#include "akyuu/accounts.hpp"
+#include "akyuu/path.hpp"
+#include "akyuu/settings.hpp"
+#include "akyuu/version.hpp"
 #include "base/file.hpp"
 #include "base/string.hpp"
 #include "compat/anime.hpp"
 #include "compat/list.hpp"
 #include "compat/settings.hpp"
 #include "media/anime_utils.hpp"
-#include "akyuu/accounts.hpp"
-#include "akyuu/path.hpp"
-#include "akyuu/settings.hpp"
-#include "akyuu/version.hpp"
 
 namespace {
 
@@ -216,7 +216,7 @@ void Database::deleteEntry(const int animeId) {
 }
 
 QString Database::fileName() const {
-  return u"%1/media.sqlite"_s.arg(taiga::get_data_path());
+  return u"%1/media.sqlite"_s.arg(akyuu::get_data_path());
 }
 
 QString Database::sql(const QString& name) const {
@@ -272,7 +272,7 @@ void Database::createTables() {
     q.exec(sql("createMeta"));
     q.prepare("INSERT INTO meta(name, value) VALUES(:name, :value)");
     q.bindValue(":name", "version");
-    q.bindValue(":value", QString::fromStdString(taiga::version().to_string()));
+    q.bindValue(":value", QString::fromStdString(akyuu::version().to_string()));
     q.exec();
   }
 
@@ -473,7 +473,7 @@ void Database::migrateItemsFromV1() {
   QSqlQuery q{db_};
   if (!q.prepare(sql("insertAnime"))) return;
 
-  const auto path = std::format("{}/v1/db/anime.xml", taiga::get_data_path());
+  const auto path = std::format("{}/v1/db/anime.xml", akyuu::get_data_path());
 
   db_.transaction();
 
@@ -494,9 +494,9 @@ void Database::migrateListEntriesFromV1() {
   if (!q.prepare(sql("insertAnimeList"))) return;
 
   const auto path = []() {
-    const auto service = taiga::settings.service();
-    return std::format("{}/v1/user/{}@{}/anime.xml", taiga::get_data_path(),
-                       taiga::accounts.serviceUsername(service), service);
+    const auto service = akyuu::settings.service();
+    return std::format("{}/v1/user/{}@{}/anime.xml", akyuu::get_data_path(),
+                       akyuu::accounts.serviceUsername(service), service);
   }();
 
   db_.transaction();
@@ -518,7 +518,7 @@ void Database::migrateSettingsFromV1() {
   QSqlQuery q{db_};
   if (!q.prepare(sql("insertAnimeSettings"))) return;
 
-  const auto path = std::format("{}/v1/settings.xml", taiga::get_data_path());
+  const auto path = std::format("{}/v1/settings.xml", akyuu::get_data_path());
 
   db_.transaction();
 
