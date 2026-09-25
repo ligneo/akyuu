@@ -23,5 +23,6 @@
 namespace akyuu {
 
 std::string get_data_path();
+void migrate_taiga_data();
 
 }  // namespace akyuu

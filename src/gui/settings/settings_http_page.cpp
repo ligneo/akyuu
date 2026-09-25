@@ -39,7 +39,7 @@ HttpPage::HttpPage(QWidget* parent)
   const auto group = new QGroupBox(tr("HTTP"), this);
   const auto groupLayout = new QVBoxLayout(group);
 
-  m_editUrl->setPlaceholderText(tr("https://example.com/taiga"));
+  m_editUrl->setPlaceholderText(tr("https://example.com/akyuu"));
   m_editFormat->setMaximumHeight(80);
 
   groupLayout->addWidget(m_checkEnabled);

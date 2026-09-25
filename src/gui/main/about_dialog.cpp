@@ -110,7 +110,7 @@ void displayAboutDialog(QWidget* parent) {
   msgBox->setAttribute(Qt::WA_DeleteOnClose);
   msgBox->setIconPixmap(parent->windowIcon().pixmap(QSize(64, 64), msgBox->devicePixelRatio()));
   msgBox->setText(getAboutDialogText(parent));
-  msgBox->setWindowTitle(parent->tr("About Taiga"));
+  msgBox->setWindowTitle(parent->tr("About Akyuu"));
 
   if (const auto iconLabel = msgBox->findChild<QLabel*>()) {
     const auto handler = new AboutDialogHandler(msgBox);

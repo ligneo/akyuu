@@ -93,7 +93,7 @@ QString serviceName(const ServiceId serviceId) {
     case ServiceId::AniList: return "AniList";  
   }
   // clang-format on
-  return "Taiga";
+  return "Akyuu";
 }
 
 QString serviceSlug(const ServiceId serviceId) {
@@ -104,7 +104,7 @@ QString serviceSlug(const ServiceId serviceId) {
     case ServiceId::AniList: return "anilist";
   }
   // clang-format on
-  return "taiga";
+  return "akyuu";
 }
 
 QString tagMessage(const ServiceId serviceId, const QString& message) {

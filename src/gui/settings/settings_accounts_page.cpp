@@ -109,11 +109,11 @@ AccountsPage::AccountsPage(QWidget* parent)
     }
     form->addRow(tr("Active service and metadata provider:"), m_comboService);
 
-    m_checkSyncOnStartup = new QCheckBox(tr("Synchronize the list when Taiga starts"), group);
+    m_checkSyncOnStartup = new QCheckBox(tr("Synchronize the list when Akyuu starts"), group);
     form->addRow(m_checkSyncOnStartup);
 
     const auto note = new QLabel(
-        tr("Note: Taiga is unable to synchronize multiple services at the same time."), group);
+        tr("Note: Akyuu is unable to synchronize multiple services at the same time."), group);
     note->setWordWrap(true);
     form->addRow(note);
 

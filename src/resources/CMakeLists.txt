@@ -15,12 +15,12 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
 	)
 elseif (CMAKE_SYSTEM_NAME STREQUAL "Linux")
 	include(GNUInstallDirs)
-	install(FILES moe.taiga.Taiga.desktop
+	install(FILES io.github.ligneo.Akyuu.desktop
 		DESTINATION ${CMAKE_INSTALL_DATADIR}/applications
 	)
-	install(FILES icons/taiga.png
+	install(FILES icons/akyuu.png
 		DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/256x256/apps
-		RENAME moe.taiga.Taiga.png
+		RENAME io.github.ligneo.Akyuu.png
 	)
 endif()
 

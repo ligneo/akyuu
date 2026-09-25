@@ -36,7 +36,7 @@ ApplicationPage::ApplicationPage(QWidget* parent)
     : SettingsPage(parent),
       m_comboStyle(new QComboBox(this)),
       m_comboColorScheme(new QComboBox(this)),
-      m_checkAutoStart(new QCheckBox(tr("Start Taiga when the session begins"), this)),
+      m_checkAutoStart(new QCheckBox(tr("Start Akyuu when the session begins"), this)),
       m_checkStartMinimized(new QCheckBox(tr("Start minimized to the tray"), this)),
       m_checkCloseToTray(new QCheckBox(tr("Minimize to tray when closed"), this)),
       m_checkMinimizeToTray(new QCheckBox(tr("Minimize to tray when minimized"), this)) {

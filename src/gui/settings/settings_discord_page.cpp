@@ -46,7 +46,7 @@ DiscordPage::DiscordPage(QWidget* parent)
 
   const auto note =
       new QLabel(tr("Discord has to be running on the same machine. v1 links against Discord's "
-                    "library; here Taiga speaks to it over its local socket directly."),
+                    "library; here Akyuu speaks to it over its local socket directly."),
                  group);
   note->setWordWrap(true);
   groupLayout->addWidget(note);

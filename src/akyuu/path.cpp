@@ -20,6 +20,7 @@
 
 #include <QCoreApplication>
 #include <QStandardPaths>
+#include <filesystem>
 #include <format>
 
 #include "akyuu/config.h"
@@ -33,6 +34,26 @@ std::string get_data_path() {
 #else
   const auto location = QStandardPaths::standardLocations(QStandardPaths::AppDataLocation);
   return std::format("{}/data", location.first().toStdString());
+#endif
+}
+
+// Akyuu started out as a fork of Taiga, which kept its data in `erengy/taiga` under the same
+// location. The first run starts from a copy of that folder, so the list, history and accounts
+// carry over. The original is left in place: Taiga can still be run side by side with it.
+void migrate_taiga_data() {
+#ifndef AKYUU_PORTABLE
+  namespace fs = std::filesystem;
+
+  const fs::path target = get_data_path();
+  if (fs::exists(target)) return;
+
+  const auto location = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
+  const fs::path source = std::format("{}/erengy/taiga/data", location.toStdString());
+  if (!fs::is_directory(source)) return;
+
+  std::error_code error;
+  fs::create_directories(target.parent_path(), error);
+  fs::copy(source, target, fs::copy_options::recursive, error);
 #endif
 }
 

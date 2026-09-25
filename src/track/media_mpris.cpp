@@ -44,7 +44,7 @@ QString getExecutablePath(const uint processId) {
 }
 
 // Tor Browser is Firefox, down to the process name and the MPRIS service, so the bundled Firefox
-// entry matches it and Taiga would read the title of whatever page is open. Only the path tells
+// entry matches it and Akyuu would read the title of whatever page is open. Only the path tells
 // the two apart: the bundle is extracted into a `tor-browser` directory with the browser under
 // `Browser/`, and torbrowser-launcher keeps that layout under `~/.local/share/torbrowser`.
 // Reporting what someone is doing in Tor Browser is the last thing this feature should do, so it

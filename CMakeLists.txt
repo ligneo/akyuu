@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.21)
 
-project(Taiga
-	VERSION 2.0.0
-	DESCRIPTION "The desktop tiger"
-	HOMEPAGE_URL "https://taiga.moe/"
+project(Akyuu
+	VERSION 0.1.0
+	DESCRIPTION "Keeps the chronicle of the anime you watch"
+	HOMEPAGE_URL "https://github.com/ligneo/akyuu"
 	LANGUAGES CXX
 )
 

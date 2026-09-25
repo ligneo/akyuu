@@ -142,10 +142,10 @@ std::string animePageUrl(const int id) {
 }
 
 std::string requestTokenUrl() {
-  constexpr auto kTaigaClientId = 161;
+  constexpr auto kClientId = 161;
   QUrl url{"https://anilist.co/api/v2/oauth/authorize"};
   url.setQuery({
-      {"client_id", QString::number(kTaigaClientId)},
+      {"client_id", QString::number(kClientId)},
       {"response_type", "token"},
   });
   return url.toString().toStdString();

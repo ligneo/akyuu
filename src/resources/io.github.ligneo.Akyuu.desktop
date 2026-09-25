@@ -1,11 +1,11 @@
 [Desktop Entry]
 Type=Application
-Name=Taiga
+Name=Akyuu
 GenericName=Anime Tracker
 Comment=Track the anime you watch and synchronize your progress
-Exec=taiga
-Icon=moe.taiga.Taiga
+Exec=akyuu
+Icon=io.github.ligneo.Akyuu
 Terminal=false
 Categories=AudioVideo;Video;Qt;
 Keywords=anime;anilist;kitsu;myanimelist;
-StartupWMClass=moe.taiga.Taiga
+StartupWMClass=io.github.ligneo.Akyuu

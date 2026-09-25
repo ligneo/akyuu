@@ -84,7 +84,7 @@ LibraryPage::LibraryPage(QWidget* parent)
     groupLayout->addWidget(m_checkWatch);
 
     const auto note = new QLabel(
-        tr("Taiga is told which folder changed, not which file, so it scans the library again "
+        tr("Akyuu is told which folder changed, not which file, so it scans the library again "
            "after a change."),
         group);
     note->setWordWrap(true);

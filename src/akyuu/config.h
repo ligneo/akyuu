@@ -21,17 +21,17 @@
 // @NOTE: Make sure to update the following files after changing the names of
 // macros defined here:
 //
-// - /setup/Taiga.nsi
+// - /setup/Akyuu.nsi
 // - /src/resources/akyuu.rc
 
 // Relative path to avoid RC1015 error with version.rc
 #include "../base/preprocessor.h"
 
-#define AKYUU_APP_NAME  "Taiga"
-#define AKYUU_APP_MUTEX "Taiga-33d5a63c-de90-432f-9a8b-f6f733dab258"
+#define AKYUU_APP_NAME  "Akyuu"
+#define AKYUU_APP_MUTEX "Akyuu-c7648072-cea2-4447-8df7-27b282acdd7e"
 
-#define AKYUU_VERSION_MAJOR 2
-#define AKYUU_VERSION_MINOR 0
+#define AKYUU_VERSION_MAJOR 0
+#define AKYUU_VERSION_MINOR 1
 #define AKYUU_VERSION_PATCH 0
 #define AKYUU_VERSION_PRE   "alpha"
 #define AKYUU_VERSION_BUILD 0

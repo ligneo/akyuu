@@ -48,7 +48,7 @@ IrcPage::IrcPage(QWidget* parent)
   const auto group = new QGroupBox(tr("IRC"), this);
   const auto groupLayout = new QVBoxLayout(group);
 
-  m_editChannels->setPlaceholderText(tr("#kitsu, #myanimelist, #taiga"));
+  m_editChannels->setPlaceholderText(tr("#kitsu, #myanimelist"));
   m_editFormat->setMaximumHeight(80);
   m_labelStatus->setWordWrap(true);
 

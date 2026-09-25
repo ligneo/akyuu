@@ -20,7 +20,7 @@
 
 namespace akyuu {
 
-// Writes or removes the desktop entry that starts Taiga with the session, to match the setting.
+// Writes or removes the desktop entry that starts Akyuu with the session, to match the setting.
 // v1 uses a registry key for this; the freedesktop equivalent is a file in the autostart folder.
 void applyAutoStart();
 
