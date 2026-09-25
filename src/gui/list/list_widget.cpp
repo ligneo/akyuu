@@ -34,7 +34,7 @@
 #include "gui/models/anime_list_model.hpp"
 #include "gui/models/anime_list_proxy_model.hpp"
 #include "gui/utils/theme.hpp"
-#include "taiga/session.hpp"
+#include "akyuu/session.hpp"
 #include "ui_main_window.h"
 
 namespace gui {

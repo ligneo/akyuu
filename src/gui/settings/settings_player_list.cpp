@@ -21,7 +21,7 @@
 #include <algorithm>
 #include <set>
 
-#include "taiga/settings.hpp"
+#include "akyuu/settings.hpp"
 #include "track/media_player.hpp"
 
 namespace gui {

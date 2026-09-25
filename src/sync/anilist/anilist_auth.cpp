@@ -23,7 +23,7 @@
 #include "anilist.hpp"
 #include "sync/anilist/anilist_error.hpp"
 #include "sync/anilist/anilist_utils.hpp"
-#include "taiga/accounts.hpp"
+#include "akyuu/accounts.hpp"
 
 namespace sync::anilist {
 

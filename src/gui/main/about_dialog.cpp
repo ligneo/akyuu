@@ -26,9 +26,9 @@
 #include <QMouseEvent>
 
 #include "base/string.hpp"
-#include "taiga/orange.hpp"
-#include "taiga/session.hpp"
-#include "taiga/version.hpp"
+#include "akyuu/orange.hpp"
+#include "akyuu/session.hpp"
+#include "akyuu/version.hpp"
 
 namespace gui {
 

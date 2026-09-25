@@ -26,7 +26,7 @@
 #include "base/file.hpp"
 #include "base/string.hpp"
 #include "gui/utils/svg_icon_engine.hpp"
-#include "taiga/settings.hpp"
+#include "akyuu/settings.hpp"
 
 namespace gui {
 

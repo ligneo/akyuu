@@ -23,7 +23,7 @@
 #include <QXmlStreamWriter>
 #include <map>
 
-#include "taiga/version.hpp"
+#include "akyuu/version.hpp"
 
 namespace track::util {
 

@@ -28,8 +28,8 @@
 #include "base/xml.hpp"
 #include "compat/common.hpp"
 #include "media/anime.hpp"
-#include "taiga/accounts.hpp"
-#include "taiga/settings.hpp"
+#include "akyuu/accounts.hpp"
+#include "akyuu/settings.hpp"
 
 #define XML_ATTR(name) xml.attributes().value(name)
 #define XML_ATTR_BOOL(name) (XML_ATTR(name) == u"true")

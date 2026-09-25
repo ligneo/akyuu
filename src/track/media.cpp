@@ -25,7 +25,7 @@
 
 #include "media/anime.hpp"
 #include "media/anime_db.hpp"
-#include "taiga/settings.hpp"
+#include "akyuu/settings.hpp"
 #include "track/episode.hpp"
 #include "track/media_player.hpp"
 #include "track/media_stream.hpp"

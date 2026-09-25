@@ -27,8 +27,8 @@
 #include <algorithm>
 
 #include "gui/utils/theme.hpp"
-#include "taiga/autostart.hpp"
-#include "taiga/settings.hpp"
+#include "akyuu/autostart.hpp"
+#include "akyuu/settings.hpp"
 
 namespace gui {
 

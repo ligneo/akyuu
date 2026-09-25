@@ -38,7 +38,7 @@
 #include "sync/myanimelist/myanimelist.hpp"
 #include "sync/search_params.hpp"
 #include "sync/service.hpp"
-#include "taiga/session.hpp"
+#include "akyuu/session.hpp"
 
 namespace gui {
 

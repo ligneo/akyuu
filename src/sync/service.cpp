@@ -30,9 +30,9 @@
 #include "sync/myanimelist/myanimelist.hpp"
 #include "sync/myanimelist/myanimelist_utils.hpp"
 #include "sync/queue.hpp"
-#include "taiga/accounts.hpp"
-#include "taiga/network.hpp"
-#include "taiga/settings.hpp"
+#include "akyuu/accounts.hpp"
+#include "akyuu/network.hpp"
+#include "akyuu/settings.hpp"
 
 namespace sync {
 

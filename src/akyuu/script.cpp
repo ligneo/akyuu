@@ -27,7 +27,7 @@
 #include "media/anime_season.hpp"
 #include "media/anime_utils.hpp"
 #include "sync/service.hpp"
-#include "taiga/accounts.hpp"
+#include "akyuu/accounts.hpp"
 #include "track/media.hpp"
 #include "track/update_session.hpp"
 

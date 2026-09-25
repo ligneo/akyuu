@@ -23,9 +23,9 @@
 #include <QUrl>
 
 #include "base/log.hpp"
-#include "taiga/network.hpp"
-#include "taiga/script.hpp"
-#include "taiga/settings.hpp"
+#include "akyuu/network.hpp"
+#include "akyuu/script.hpp"
+#include "akyuu/settings.hpp"
 
 namespace link::http {
 

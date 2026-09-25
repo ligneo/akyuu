@@ -30,8 +30,8 @@
 #include <QVBoxLayout>
 
 #include "base/string.hpp"
-#include "taiga/network.hpp"
-#include "taiga/settings.hpp"
+#include "akyuu/network.hpp"
+#include "akyuu/settings.hpp"
 
 namespace gui {
 

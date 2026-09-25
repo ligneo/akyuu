@@ -28,7 +28,7 @@
 #include <initializer_list>
 
 #include "link/irc.hpp"
-#include "taiga/settings.hpp"
+#include "akyuu/settings.hpp"
 
 namespace gui {
 

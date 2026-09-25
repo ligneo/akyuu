@@ -20,7 +20,7 @@
 
 #include <algorithm>
 
-#include "taiga/settings.hpp"
+#include "akyuu/settings.hpp"
 #include "track/media_stream.hpp"
 
 namespace gui {

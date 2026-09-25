@@ -19,7 +19,7 @@
 #include "update_decision.hpp"
 
 #include "media/anime_list_utils.hpp"
-#include "taiga/settings.hpp"
+#include "akyuu/settings.hpp"
 
 namespace track {
 

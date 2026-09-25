@@ -23,7 +23,7 @@
 #include <optional>
 #include <ranges>
 
-#include "taiga/settings.hpp"
+#include "akyuu/settings.hpp"
 #include "track/episode.hpp"
 #include "track/recognition.hpp"
 

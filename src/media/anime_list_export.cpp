@@ -33,8 +33,8 @@
 #include "media/anime_list.hpp"
 #include "sync/myanimelist/myanimelist_utils.hpp"
 #include "sync/queue.hpp"
-#include "taiga/accounts.hpp"
-#include "taiga/version.hpp"
+#include "akyuu/accounts.hpp"
+#include "akyuu/version.hpp"
 
 namespace anime::list {
 

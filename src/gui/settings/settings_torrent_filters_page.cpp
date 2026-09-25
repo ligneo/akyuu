@@ -33,7 +33,7 @@
 #include "gui/torrents/filter_dialog.hpp"
 #include "gui/utils/format.hpp"
 #include "gui/utils/widgets.hpp"
-#include "taiga/settings.hpp"
+#include "akyuu/settings.hpp"
 #include "track/feed_filter_manager.hpp"
 #include "track/feed_filter_util.hpp"
 

@@ -25,7 +25,7 @@
 #include <QVBoxLayout>
 
 #include "media/anime.hpp"
-#include "taiga/settings.hpp"
+#include "akyuu/settings.hpp"
 
 namespace gui {
 

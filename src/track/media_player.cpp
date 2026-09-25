@@ -22,8 +22,8 @@
 
 #include "base/file.hpp"
 #include "base/string.hpp"
-#include "taiga/path.hpp"
-#include "taiga/settings.hpp"
+#include "akyuu/path.hpp"
+#include "akyuu/settings.hpp"
 
 namespace track::media {
 

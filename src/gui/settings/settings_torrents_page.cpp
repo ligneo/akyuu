@@ -28,7 +28,7 @@
 #include <QVBoxLayout>
 
 #include "base/string.hpp"
-#include "taiga/settings.hpp"
+#include "akyuu/settings.hpp"
 #include "track/feed_aggregator.hpp"
 
 namespace gui {

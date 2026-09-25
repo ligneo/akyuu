@@ -16,22 +16,24 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "version.hpp"
+#include "path.hpp"
 
-#include "base/preprocessor.h"
-#include "taiga/config.h"
+#include <QCoreApplication>
+#include <QStandardPaths>
+#include <format>
+
+#include "akyuu/config.h"
 
 namespace taiga {
 
-const semaver::Version& version() {
-  static const semaver::Version version(
-      TAIGA_VERSION_MAJOR,
-      TAIGA_VERSION_MINOR,
-      TAIGA_VERSION_PATCH,
-      TAIGA_VERSION_PRE,
-      TAIGA_VERSION_BUILD > 0 ? STRINGIZE(TAIGA_VERSION_BUILD) : ""
-    );
-  return version;
+// Returns current path in portable mode, AppData location otherwise
+std::string get_data_path() {
+#ifdef TAIGA_PORTABLE
+  return std::format("{}/data", QCoreApplication::applicationDirPath().toStdString());
+#else
+  const auto location = QStandardPaths::standardLocations(QStandardPaths::AppDataLocation);
+  return std::format("{}/data", location.first().toStdString());
+#endif
 }
 
 }  // namespace taiga

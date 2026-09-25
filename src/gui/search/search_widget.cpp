@@ -37,7 +37,7 @@
 #include "sync/kitsu/kitsu.hpp"
 #include "sync/myanimelist/myanimelist.hpp"
 #include "sync/service.hpp"
-#include "taiga/session.hpp"
+#include "akyuu/session.hpp"
 
 namespace {
 

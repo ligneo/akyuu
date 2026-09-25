@@ -40,7 +40,7 @@
 #include "media/anime_season.hpp"
 #include "media/anime_utils.hpp"
 #include "sync/service.hpp"
-#include "taiga/session.hpp"
+#include "akyuu/session.hpp"
 #include "track/feed_filter_manager.hpp"
 #include "ui_media_dialog.h"
 

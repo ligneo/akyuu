@@ -25,7 +25,7 @@
 #include <QTimer>
 #include <chrono>
 
-#include "taiga/network.hpp"
+#include "akyuu/network.hpp"
 #include "track/feed.hpp"
 
 namespace track {

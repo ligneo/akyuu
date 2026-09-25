@@ -25,8 +25,8 @@
 #include <QStandardPaths>
 
 #include "base/log.hpp"
-#include "taiga/config.h"
-#include "taiga/settings.hpp"
+#include "akyuu/config.h"
+#include "akyuu/settings.hpp"
 
 namespace taiga {
 

@@ -22,7 +22,7 @@
 #include "media/anime.hpp"
 #include "media/anime_db.hpp"
 #include "media/anime_list_utils.hpp"
-#include "taiga/settings.hpp"
+#include "akyuu/settings.hpp"
 #include "track/media.hpp"
 #include "track/scanner.hpp"
 #include "track/update_decision.hpp"

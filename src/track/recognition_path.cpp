@@ -26,7 +26,7 @@
 #include <vector>
 
 #include "base/string.hpp"
-#include "taiga/settings.hpp"
+#include "akyuu/settings.hpp"
 
 namespace track::recognition {
 

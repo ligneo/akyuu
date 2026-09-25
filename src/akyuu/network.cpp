@@ -24,9 +24,9 @@
 
 #include "base/log.hpp"
 #include "base/string.hpp"
-#include "taiga/application.hpp"
-#include "taiga/config.h"
-#include "taiga/settings.hpp"
+#include "akyuu/application.hpp"
+#include "akyuu/config.h"
+#include "akyuu/settings.hpp"
 
 namespace taiga {
 
