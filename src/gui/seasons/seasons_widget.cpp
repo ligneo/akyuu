@@ -83,7 +83,7 @@ SeasonsWidget::SeasonsWidget(QWidget* parent)
 
     // v1 puts refreshing between two separators (`dlg_season.cpp:84-92`), but here it ends up
     // wedged between the season button and the three menus, with no separator to lean on: not
-    // every style draws `QToolBar::separator`, and Taiga's own stylesheet only applies under
+    // every style draws `QToolBar::separator`, and Akyuu's own stylesheet only applies under
     // Fusion. It leads the toolbar instead, where nothing else has to make room for it.
     m_toolbar->addAction(actionRefresh);
 
@@ -155,7 +155,7 @@ void SeasonsWidget::setSeason(const anime::Season season) {
   m_season = season;
   m_actionSeason->setText(formatSeason(m_season));
 
-  // The model holds every anime Taiga knows about; the proxy is what narrows it to one season.
+  // The model holds every anime Akyuu knows about; the proxy is what narrows it to one season.
   m_proxyModel->setYearFilter(static_cast<int>(m_season.year));
   m_proxyModel->setSeasonFilter(static_cast<int>(m_season.name));
 

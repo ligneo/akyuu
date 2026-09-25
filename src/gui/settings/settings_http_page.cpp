@@ -41,7 +41,7 @@ HttpPage::HttpPage(QWidget* parent)
   const auto group = new QGroupBox(tr("Options"), this);
   const auto groupLayout = new QVBoxLayout(group);
 
-  m_editUrl->setPlaceholderText(tr("https://example.com/taiga"));
+  m_editUrl->setPlaceholderText(tr("https://example.com/akyuu"));
 
   layout->addWidget(m_checkEnabled);
   groupLayout->addWidget(new QLabel(tr("URL:"), group));

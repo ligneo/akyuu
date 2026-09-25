@@ -91,11 +91,11 @@ ProfileWidget::ProfileWidget(QWidget* parent) : PageWidget(parent) {
     containerLayout->addWidget(group);
   }
 
-  // Taiga
+  // Akyuu
   // v1's own statistics block also counts connections (`stats.connections_*`), which nothing in
   // v2 keeps track of yet.
   {
-    const auto group = new QGroupBox(tr("Taiga"), container);
+    const auto group = new QGroupBox(tr("Akyuu"), container);
     const auto form = new QFormLayout(group);
 
     m_uptime = new QLabel("-", group);

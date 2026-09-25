@@ -69,7 +69,7 @@ std::vector<FilterPreset> buildPresets() {
 
   add(FilterAction::Prefer, FilterMatch::All, false, FilterOption::Default, "[Fansub] Anime",
       "Lets you choose a fansub group for one or more anime");
-  addCondition(FilterElement::EpisodeGroup, FilterOperator::Equals, "TaigaSubs (change this)");
+  addCondition(FilterElement::EpisodeGroup, FilterOperator::Equals, "AkyuuSubs (change this)");
 
   add(FilterAction::Discard, FilterMatch::Any, false, FilterOption::Default,
       "Discard bad video keywords",
@@ -217,7 +217,7 @@ std::vector<Filter> FilterManager::fromJson(const QJsonArray& array) {
       const auto element = util::filterElement(conditionObject[u"element"_s].toString());
       const auto op = util::filterOperator(conditionObject[u"operator"_s].toString());
 
-      // A condition Taiga cannot read would silently change what the filter does, so the whole
+      // A condition Akyuu cannot read would silently change what the filter does, so the whole
       // condition is skipped rather than guessed.
       if (!element || !op) continue;
 

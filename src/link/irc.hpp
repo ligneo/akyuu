@@ -26,7 +26,7 @@
 namespace link::irc {
 
 // v1 tells a running mIRC what to write, over DDE. Konversation is the client this speaks to
-// instead: it is driven over D-Bus, which Taiga already uses for media detection.
+// instead: it is driven over D-Bus, which Akyuu already uses for media detection.
 bool isRunning();
 
 // The connections the client has open, and the channels joined on one of them. Both are empty

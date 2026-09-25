@@ -36,7 +36,7 @@ TrayIcon::TrayIcon(QObject* parent, const QIcon& icon, QMenu* menu) : m_baseIcon
   m_icon = new QSystemTrayIcon(parent);
   m_icon->setContextMenu(m_contextMenu);
   m_icon->setIcon(m_baseIcon);
-  m_icon->setToolTip("Taiga");
+  m_icon->setToolTip("Akyuu");
   m_icon->show();
 
   connect(m_icon, &QSystemTrayIcon::activated, this,

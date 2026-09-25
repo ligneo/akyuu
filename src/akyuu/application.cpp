@@ -53,12 +53,10 @@ Application::Application(int argc, char* argv[])
       lock_file_(
           u"%1/%2.lock"_s.arg(QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation))
               .arg(AKYUU_APP_NAME)) {
-  setApplicationName("taiga");
-  setApplicationDisplayName("Taiga");
-  setDesktopFileName("moe.taiga.Taiga");
+  setApplicationName("akyuu");
+  setApplicationDisplayName("Akyuu");
+  setDesktopFileName("io.github.ligneo.Akyuu");
   setApplicationVersion(QString::fromStdString(akyuu::version().to_string()));
-  setOrganizationDomain("taiga.moe");
-  setOrganizationName("erengy");
 
   uptime_.start();
 }
@@ -72,6 +70,7 @@ Application::~Application() {
 int Application::run() {
   parseCommandLine();
 
+  migrate_taiga_data();
   initLogger();
 
   const auto version = akyuu::version().to_string();
@@ -84,7 +83,7 @@ int Application::run() {
 
   if (hasPreviousInstance()) {
     activatePreviousInstance();
-    qDebug() << "Another instance of Taiga is running.";
+    qDebug() << "Another instance of Akyuu is running.";
     return 0;
   }
 
@@ -106,7 +105,7 @@ int Application::run() {
   gui::imageProvider.init();
 
   gui::theme.initStyle();
-  setWindowIcon(gui::theme.getIcon("taiga", "png"));
+  setWindowIcon(gui::theme.getIcon("akyuu", "png"));
 
   QTranslator translator;
   if (translator.load(QLocale::system(), "akyuu", "_", ":/i18n")) {
@@ -116,7 +115,7 @@ int Application::run() {
   window_ = new gui::MainWindow();
   window_->init();
 
-  // v1's `program/startup/minimize`: Taiga starts in the tray and detects from there.
+  // v1's `program/startup/minimize`: Akyuu starts in the tray and detects from there.
   // `--minimized` does the same for one launch, e.g. from a compositor's startup list.
   if (options_.minimized || akyuu::settings.appStartMinimized()) {
     return QApplication::exec();

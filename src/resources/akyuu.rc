@@ -1,7 +1,7 @@
 #include <windows.h>
 #include "akyuu/config.h"
 
-IDI_MAIN ICON "icons\\taiga.ico"
+IDI_MAIN ICON "icons\\akyuu.ico"
 
 1 VERSIONINFO
     FILEVERSION     AKYUU_VERSION_DIGITAL
@@ -16,12 +16,12 @@ IDI_MAIN ICON "icons\\taiga.ico"
     {
         BLOCK "0409FDE9"
         {
-            VALUE "CompanyName", "erengy"
-            VALUE "FileDescription", "Taiga"
+            VALUE "CompanyName", "ligneo"
+            VALUE "FileDescription", "Akyuu"
             VALUE "FileVersion", AKYUU_VERSION_STRING
-            VALUE "InternalName", "Taiga"
-            VALUE "OriginalFilename", "Taiga.exe"
-            VALUE "ProductName", "Taiga"
+            VALUE "InternalName", "Akyuu"
+            VALUE "OriginalFilename", "Akyuu.exe"
+            VALUE "ProductName", "Akyuu"
             VALUE "ProductVersion", AKYUU_VERSION_STRING
         }
     }

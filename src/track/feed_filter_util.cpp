@@ -215,7 +215,7 @@ std::optional<std::vector<Filter>> filtersFromXml(const QString& xml) {
       } else if (reader.name() == u"condition"_s) {
         const auto element = filterElement(child.value(u"element"_s).toString());
         const auto op = filterOperator(child.value(u"operator"_s).toString());
-        // A condition Taiga cannot read would change what the filter does, so it is left out
+        // A condition Akyuu cannot read would change what the filter does, so it is left out
         // rather than guessed.
         if (!element || !op) continue;
         filter.conditions.push_back(

@@ -125,7 +125,7 @@ AccountsPage::AccountsPage(QWidget* parent)
     groupLayout->addWidget(m_comboService);
 
     const auto note = new QLabel(
-        tr("Note: Taiga is unable to synchronize multiple services at the same time."), group);
+        tr("Note: Akyuu is unable to synchronize multiple services at the same time."), group);
     note->setWordWrap(true);
     note->setForegroundRole(QPalette::PlaceholderText);
     groupLayout->addWidget(note);

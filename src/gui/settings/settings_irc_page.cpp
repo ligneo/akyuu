@@ -72,7 +72,7 @@ IrcPage::IrcPage(QWidget* parent)
   {
     const auto group = new QGroupBox(tr("Channels to send message"), this);
     const auto groupLayout = new QVBoxLayout(group);
-    m_editChannels->setPlaceholderText(tr("#kitsu, #myanimelist, #taiga"));
+    m_editChannels->setPlaceholderText(tr("#kitsu, #myanimelist"));
     groupLayout->addWidget(m_radioAllChannels);
     groupLayout->addWidget(m_radioCustomChannels);
     const auto nested = new QVBoxLayout();

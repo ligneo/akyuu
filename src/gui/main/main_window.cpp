@@ -651,7 +651,7 @@ void MainWindow::exportList(const ExportFormat format) {
 }
 
 // v1 downloads its NSIS installer and runs it silently (`/S /D=<folder>`) to replace itself. That
-// is a Windows mechanism; on Linux Taiga is installed by the user or a package manager, so the
+// is a Windows mechanism; on Linux Akyuu is installed by the user or a package manager, so the
 // honest thing to do is say whether there is something newer and where to get it.
 void MainWindow::checkForUpdates() {
   static const QUrl url{u"https://api.github.com/repos/erengy/taiga/releases/latest"_s};
@@ -695,7 +695,7 @@ void MainWindow::checkForUpdates() {
     const auto page = json[u"html_url"_s].toString();
     const auto answer =
         QMessageBox::question(this, tr("Check for Updates"),
-                              tr("Taiga %1 is available (you have %2). Open the release page?")
+                              tr("Akyuu %1 is available (you have %2). Open the release page?")
                                   .arg(tag)
                                   .arg(QString::fromStdString(current.to_string())));
     if (answer == QMessageBox::Yes) QDesktopServices::openUrl(QUrl{page});
@@ -907,7 +907,7 @@ void MainWindow::initTrayIcon() {
 }
 
 void MainWindow::closeEvent(QCloseEvent* event) {
-  // v1's `program/general/close`: the window goes away but Taiga keeps detecting.
+  // v1's `program/general/close`: the window goes away but Akyuu keeps detecting.
   if (akyuu::settings.appCloseToTray() && m_trayIcon && m_trayIcon->isVisible()) {
     hide();
     event->ignore();
@@ -941,7 +941,7 @@ void MainWindow::navigateToListStatus(anime::list::Status status) {
 }
 
 void MainWindow::updateTitle() {
-  auto title = u"Taiga"_s;
+  auto title = u"Akyuu"_s;
 
   if (akyuu::app()->isDebug()) {
     title += u" [debug]"_s;

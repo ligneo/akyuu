@@ -237,7 +237,7 @@ std::string Settings::ircShareFormat() const {
 }
 
 std::string Settings::ircShareChannels() const {
-  return value("sharing.irc.channels", u"#kitsu, #myanimelist, #taiga"_s).toString().toStdString();
+  return value("sharing.irc.channels", u"#kitsu, #myanimelist"_s).toString().toStdString();
 }
 
 bool Settings::ircShareAllChannels() const {

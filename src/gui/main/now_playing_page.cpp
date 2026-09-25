@@ -134,12 +134,12 @@ QString NowPlayingPage::playingHtml() const {
   if (!anime) {
     const auto title = QString::fromStdString(episode->element(anitomy::ElementKind::Title));
     return u"<h2>%1</h2><p>%2</p><p>%3</p>"_s.arg(
-        title.toHtmlEscaped(), tr("Taiga was unable to identify this title, and needs your help."),
-        link(u"taiga:search"_s, tr("Search for this title")));
+        title.toHtmlEscaped(), tr("Akyuu was unable to identify this title, and needs your help."),
+        link(u"akyuu:search"_s, tr("Search for this title")));
   }
 
   QString html =
-      u"<h2>%1</h2>"_s.arg(link(u"taiga:info"_s, escaped(anime::preferredTitle(*anime))));
+      u"<h2>%1</h2>"_s.arg(link(u"akyuu:info"_s, escaped(anime::preferredTitle(*anime))));
 
   auto playing = tr("Now playing: Episode %1")
                      .arg(formatEpisodeNumbers(episode->elements(anitomy::ElementKind::Episode)));
@@ -149,12 +149,12 @@ QString NowPlayingPage::playingHtml() const {
   }
 
   const auto entry = anime::db.entry(anime->id);
-  QStringList links{anime::list::isInList(entry) ? link(u"taiga:edit"_s, tr("Edit"))
-                                                 : link(u"taiga:edit"_s, tr("Add to list")),
-                    link(u"taiga:share"_s, tr("Share"))};
+  QStringList links{anime::list::isInList(entry) ? link(u"akyuu:edit"_s, tr("Edit"))
+                                                 : link(u"akyuu:edit"_s, tr("Add to list")),
+                    link(u"akyuu:share"_s, tr("Share"))};
   if (const auto next = track::nextEpisodeNumber(anime->id);
       next && (anime->episode_count <= 0 || *next <= anime->episode_count)) {
-    links.append(link(u"taiga:next"_s, tr("Watch next episode")));
+    links.append(link(u"akyuu:next"_s, tr("Watch next episode")));
   }
   html += u"<p>%1<br>%2</p>"_s.arg(playing, links.join(u" • "_s));
 
@@ -227,14 +227,14 @@ QString NowPlayingPage::idleHtml() const {
   html += u"<h3>%1</h3>"_s.arg(tr("Continue Watching"));
   if (ids.isEmpty()) {
     html += u"<p>%1</p>"_s.arg(tr("%1 to see recently watched anime. Or how about you %2?")
-                                   .arg(link(u"taiga:scan"_s, tr("Scan available episodes")),
-                                        link(u"taiga:random"_s, tr("try a random one"))));
+                                   .arg(link(u"akyuu:scan"_s, tr("Scan available episodes")),
+                                        link(u"akyuu:random"_s, tr("try a random one"))));
   } else {
     html += u"<ul>"_s;
     for (const auto id : ids.first(std::min<qsizetype>(ids.size(), kContinueWatchingLimit))) {
       const auto anime = anime::db.item(id);
       const auto entry = anime::db.entry(id);
-      html += u"<li>%1</li>"_s.arg(link(u"taiga:play?id=%1"_s.arg(id),
+      html += u"<li>%1</li>"_s.arg(link(u"akyuu:play?id=%1"_s.arg(id),
                                         u"%1 #%2"_s.arg(escaped(anime::preferredTitle(*anime)))
                                             .arg(entry->watched_episodes + 1)));
     }
@@ -270,7 +270,7 @@ QString NowPlayingPage::idleHtml() const {
     const auto anime = anime::db.item(entry.anime_id);
     if (!anime) continue;
     const auto title =
-        link(u"taiga:info?id=%1"_s.arg(anime->id), escaped(anime::preferredTitle(*anime)));
+        link(u"akyuu:info?id=%1"_s.arg(anime->id), escaped(anime::preferredTitle(*anime)));
     if (const auto start = toDate(anime->date_started); start.isValid()) {
       const auto days = start.daysTo(today);
       if (days > 0 && days <= kDayLimit) {
