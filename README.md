@@ -23,6 +23,9 @@ project:
 The full history of Taiga is kept in this repository, so the work of Eren Okka and the other
 Taiga contributors stays visible commit by commit.
 
+More on building, moving from Taiga, debug logs and contributing is in the
+[wiki](https://github.com/ligneo/akyuu/wiki).
+
 ## Building
 
 Requirements: CMake 3.21+, a C++23 compiler, and Qt 6 with the Concurrent, DBus, Network, Sql,
