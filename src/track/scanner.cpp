@@ -88,7 +88,7 @@ bool isInsideLibraryFolders(const QString& path) {
   constexpr auto sensitivity = Qt::CaseSensitive;
 #endif
 
-  return std::ranges::any_of(taiga::settings.libraryFolders(), [&](const std::string& folder) {
+  return std::ranges::any_of(akyuu::settings.libraryFolders(), [&](const std::string& folder) {
     auto root = QDir::cleanPath(QString::fromStdString(folder));
     if (!root.endsWith(u'/')) root += u'/';
     return normalizedPath.startsWith(root, sensitivity);

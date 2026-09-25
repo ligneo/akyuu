@@ -23,17 +23,17 @@
 #include <algorithm>
 #include <ranges>
 
-#include "base/string.hpp"
-#include "compat/settings.hpp"
-#include "sync/service.hpp"
 #include "akyuu/accounts.hpp"
 #include "akyuu/path.hpp"
 #include "akyuu/version.hpp"
+#include "base/string.hpp"
+#include "compat/settings.hpp"
+#include "sync/service.hpp"
 
-namespace taiga {
+namespace akyuu {
 
 void Settings::init() const {
-  const auto appVersion = taiga::version().to_string();
+  const auto appVersion = akyuu::version().to_string();
 
   // v1 to v2
   if (!QFile::exists(fileName())) {
@@ -832,4 +832,4 @@ void Settings::setUpdateTrigger(const track::UpdateTrigger trigger) const {
   setValue("track.update.trigger", slug);
 }
 
-}  // namespace taiga
+}  // namespace akyuu

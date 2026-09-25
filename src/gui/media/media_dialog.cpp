@@ -27,6 +27,7 @@
 #include <QUrl>
 #include <algorithm>
 
+#include "akyuu/session.hpp"
 #include "base/string.hpp"
 #include "gui/common/poster_widget.hpp"
 #include "gui/settings/settings_dialog.hpp"
@@ -40,7 +41,6 @@
 #include "media/anime_season.hpp"
 #include "media/anime_utils.hpp"
 #include "sync/service.hpp"
-#include "akyuu/session.hpp"
 #include "track/feed_filter_manager.hpp"
 #include "ui_media_dialog.h"
 
@@ -60,14 +60,14 @@ MediaDialog::MediaDialog(QWidget* parent) : QDialog(parent), ui_(new Ui::MediaDi
   enableMicaBackground(this);
 #endif
 
-  if (const auto geometry = taiga::session.mediaDialogGeometry(); !geometry.isEmpty()) {
+  if (const auto geometry = akyuu::session.mediaDialogGeometry(); !geometry.isEmpty()) {
     restoreGeometry(geometry);
     centerWidgetToScreen(this);
   }
 
   ui_->splitter->setSizes(
       {ui_->posterWidget->minimumWidth(), ui_->posterWidget->minimumWidth() * 4});
-  if (const auto state = taiga::session.mediaDialogSplitterState(); !state.isEmpty()) {
+  if (const auto state = akyuu::session.mediaDialogSplitterState(); !state.isEmpty()) {
     ui_->splitter->restoreState(state);
   }
 
@@ -170,8 +170,8 @@ MediaDialog::MediaDialog(QWidget* parent) : QDialog(parent), ui_(new Ui::MediaDi
 }
 
 void MediaDialog::closeEvent(QCloseEvent* event) {
-  taiga::session.setMediaDialogGeometry(saveGeometry());
-  taiga::session.setMediaDialogSplitterState(ui_->splitter->saveState());
+  akyuu::session.setMediaDialogGeometry(saveGeometry());
+  akyuu::session.setMediaDialogSplitterState(ui_->splitter->saveState());
   event->accept();
 }
 

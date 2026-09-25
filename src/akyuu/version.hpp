@@ -20,8 +20,8 @@
 
 #include <semaver.hpp>
 
-namespace taiga {
+namespace akyuu {
 
 const semaver::Version& version();
 
-}  // namespace taiga
+}  // namespace akyuu

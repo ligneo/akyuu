@@ -22,27 +22,27 @@
 // macros defined here:
 //
 // - /setup/Taiga.nsi
-// - /src/resources/taiga.rc
+// - /src/resources/akyuu.rc
 
 // Relative path to avoid RC1015 error with version.rc
 #include "../base/preprocessor.h"
 
-#define TAIGA_APP_NAME  "Taiga"
-#define TAIGA_APP_MUTEX "Taiga-33d5a63c-de90-432f-9a8b-f6f733dab258"
+#define AKYUU_APP_NAME  "Taiga"
+#define AKYUU_APP_MUTEX "Taiga-33d5a63c-de90-432f-9a8b-f6f733dab258"
 
-#define TAIGA_VERSION_MAJOR 2
-#define TAIGA_VERSION_MINOR 0
-#define TAIGA_VERSION_PATCH 0
-#define TAIGA_VERSION_PRE   "alpha"
-#define TAIGA_VERSION_BUILD 0
+#define AKYUU_VERSION_MAJOR 2
+#define AKYUU_VERSION_MINOR 0
+#define AKYUU_VERSION_PATCH 0
+#define AKYUU_VERSION_PRE   "alpha"
+#define AKYUU_VERSION_BUILD 0
 
-// Used in taiga.rc
-#define TAIGA_VERSION_DIGITAL \
-    TAIGA_VERSION_MAJOR, \
-    TAIGA_VERSION_MINOR, \
-    TAIGA_VERSION_PATCH, \
-    TAIGA_VERSION_BUILD
-#define TAIGA_VERSION_STRING \
-    STRINGIZE(TAIGA_VERSION_MAJOR) "." \
-    STRINGIZE(TAIGA_VERSION_MINOR) "." \
-    STRINGIZE(TAIGA_VERSION_PATCH) "\0"
+// Used in akyuu.rc
+#define AKYUU_VERSION_DIGITAL \
+    AKYUU_VERSION_MAJOR, \
+    AKYUU_VERSION_MINOR, \
+    AKYUU_VERSION_PATCH, \
+    AKYUU_VERSION_BUILD
+#define AKYUU_VERSION_STRING \
+    STRINGIZE(AKYUU_VERSION_MAJOR) "." \
+    STRINGIZE(AKYUU_VERSION_MINOR) "." \
+    STRINGIZE(AKYUU_VERSION_PATCH) "\0"

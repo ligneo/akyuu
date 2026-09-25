@@ -21,7 +21,7 @@
 #include <QCoreApplication>
 #include <QThread>
 
-namespace taiga {
+namespace akyuu {
 
 class Orange final : public QThread {
   Q_OBJECT
@@ -36,10 +36,10 @@ protected:
 };
 
 // The melody outlives the About dialog it is started from. v1 keeps it in a global
-// (`taiga::orange`) for the same reason: closing the window should not cut the song off.
+// (`akyuu::orange`) for the same reason: closing the window should not cut the song off.
 inline Orange* orange() {
   static auto orange = new Orange(qApp);
   return orange;
 }
 
-}  // namespace taiga
+}  // namespace akyuu

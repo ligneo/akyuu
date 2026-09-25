@@ -26,6 +26,7 @@
 #include <QUrl>
 #include <memory>
 
+#include "akyuu/settings.hpp"
 #include "gui/main/main_window.hpp"
 #include "gui/main/navigation_item_delegate.hpp"
 #include "gui/main/navigation_widget.hpp"
@@ -41,7 +42,6 @@
 #include "media/anime_list_utils.hpp"
 #include "media/anime_utils.hpp"
 #include "sync/service.hpp"
-#include "akyuu/settings.hpp"
 #include "track/play.hpp"
 
 namespace gui {
@@ -58,7 +58,7 @@ ListViewBase::ListViewBase(QWidget* parent, QAbstractItemView* view, AnimeListMo
   connect(mainWindow()->searchBox(), &QLineEdit::textChanged, this, &ListViewBase::filterByText);
 
   connect(m_view, &QAbstractItemView::doubleClicked, this, [this](const QModelIndex& index) {
-    triggerClickAction(index, taiga::settings.listDoubleClickAction());
+    triggerClickAction(index, akyuu::settings.listDoubleClickAction());
   });
 
   connect(m_view, &QWidget::customContextMenuRequested, this, &ListViewBase::showMediaMenu);
@@ -144,7 +144,7 @@ bool ListViewBase::handleKeyPress(const QKeyEvent* event) {
 
   // Enter acts like a double click
   if ((key == Qt::Key_Return || key == Qt::Key_Enter) && !control) {
-    if (current.isValid()) triggerClickAction(current, taiga::settings.listDoubleClickAction());
+    if (current.isValid()) triggerClickAction(current, akyuu::settings.listDoubleClickAction());
     return true;
   }
 

@@ -23,8 +23,8 @@
 #include <QLabel>
 #include <QVBoxLayout>
 
-#include "link/discord.hpp"
 #include "akyuu/settings.hpp"
+#include "link/discord.hpp"
 
 namespace gui {
 
@@ -57,20 +57,20 @@ DiscordPage::DiscordPage(QWidget* parent)
 }
 
 void DiscordPage::load() {
-  m_checkEnabled->setChecked(taiga::settings.discordEnabled());
-  m_checkTime->setChecked(taiga::settings.discordTimeEnabled());
-  m_checkUsername->setChecked(taiga::settings.discordUsernameEnabled());
-  m_checkGroup->setChecked(taiga::settings.discordGroupEnabled());
+  m_checkEnabled->setChecked(akyuu::settings.discordEnabled());
+  m_checkTime->setChecked(akyuu::settings.discordTimeEnabled());
+  m_checkUsername->setChecked(akyuu::settings.discordUsernameEnabled());
+  m_checkGroup->setChecked(akyuu::settings.discordGroupEnabled());
   m_checkTime->setEnabled(m_checkEnabled->isChecked());
   m_checkUsername->setEnabled(m_checkEnabled->isChecked());
   m_checkGroup->setEnabled(m_checkEnabled->isChecked());
 }
 
 void DiscordPage::save() {
-  taiga::settings.setDiscordEnabled(m_checkEnabled->isChecked());
-  taiga::settings.setDiscordTimeEnabled(m_checkTime->isChecked());
-  taiga::settings.setDiscordUsernameEnabled(m_checkUsername->isChecked());
-  taiga::settings.setDiscordGroupEnabled(m_checkGroup->isChecked());
+  akyuu::settings.setDiscordEnabled(m_checkEnabled->isChecked());
+  akyuu::settings.setDiscordTimeEnabled(m_checkTime->isChecked());
+  akyuu::settings.setDiscordUsernameEnabled(m_checkUsername->isChecked());
+  akyuu::settings.setDiscordGroupEnabled(m_checkGroup->isChecked());
 
   link::discord()->applySettings();
 }

@@ -23,9 +23,9 @@
 #include <optional>
 #include <string>
 
+#include "akyuu/settings.hpp"
 #include "media/anime.hpp"
 #include "media/anime_db.hpp"
-#include "akyuu/settings.hpp"
 #include "track/episode.hpp"
 #include "track/media_player.hpp"
 #include "track/media_stream.hpp"
@@ -151,7 +151,7 @@ bool Detection::init() {
     return false;
   }
 
-  setEnabled(taiga::settings.mediaDetectionEnabled());
+  setEnabled(akyuu::settings.mediaDetectionEnabled());
 
   return true;
 }
@@ -160,7 +160,7 @@ bool Detection::init() {
 void Detection::setEnabled(const bool enabled) {
 #if defined(Q_OS_WINDOWS) || defined(Q_OS_LINUX)
   if (enabled) {
-    pollTimer_->start(taiga::settings.mediaDetectionInterval());
+    pollTimer_->start(akyuu::settings.mediaDetectionInterval());
   } else {
     pollTimer_->stop();
     reset();

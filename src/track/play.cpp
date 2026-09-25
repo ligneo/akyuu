@@ -24,11 +24,11 @@
 #include <algorithm>
 #include <vector>
 
+#include "akyuu/settings.hpp"
 #include "base/log.hpp"
 #include "media/anime_db.hpp"
 #include "media/anime_history.hpp"
 #include "media/anime_list.hpp"
-#include "akyuu/settings.hpp"
 #include "track/library.hpp"
 #include "track/scanner.hpp"
 
@@ -42,7 +42,7 @@ bool playEpisode(int animeId, int number) {
     return QDesktopServices::openUrl(QUrl::fromLocalFile(path));
   }
 
-  for (const auto& folder : taiga::settings.libraryFolders()) {
+  for (const auto& folder : akyuu::settings.libraryFolders()) {
     const auto episodePath = findEpisode(QString::fromStdString(folder), animeId, number);
     if (episodePath) {
       qDebug() << "Found file:" << *episodePath;

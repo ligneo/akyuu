@@ -56,13 +56,13 @@ int Archive::size() const {
 }
 
 QString Archive::fileName() const {
-  return u"%1/torrents.json"_s.arg(QString::fromStdString(taiga::get_data_path()));
+  return u"%1/torrents.json"_s.arg(QString::fromStdString(akyuu::get_data_path()));
 }
 
 void Archive::save() const {
   // Only the most recent titles are kept, as in v1: an archive that grows forever would be read
   // and written in full on every download.
-  const auto maxCount = taiga::settings.torrentArchiveMaxCount();
+  const auto maxCount = akyuu::settings.torrentArchiveMaxCount();
   const auto titles =
       maxCount > 0 && titles_.size() > maxCount ? titles_.mid(titles_.size() - maxCount) : titles_;
 

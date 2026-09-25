@@ -18,12 +18,12 @@
 
 #include "accounts.hpp"
 
+#include "akyuu/path.hpp"
 #include "base/string.hpp"
 #include "sync/anilist/anilist_ratings.hpp"
 #include "sync/kitsu/kitsu_ratings.hpp"
-#include "akyuu/path.hpp"
 
-namespace taiga {
+namespace akyuu {
 
 Accounts::Accounts() : QObject{} {}
 
@@ -185,4 +185,4 @@ std::string Accounts::serviceUsername(const std::string& service) const {
   return {};
 }
 
-}  // namespace taiga
+}  // namespace akyuu

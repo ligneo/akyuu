@@ -25,6 +25,7 @@
 #include <QToolButton>
 #include <tuple>
 
+#include "akyuu/session.hpp"
 #include "gui/common/anime_list_context.hpp"
 #include "gui/common/anime_list_view.hpp"
 #include "gui/common/anime_list_view_cards.hpp"
@@ -38,7 +39,6 @@
 #include "sync/myanimelist/myanimelist.hpp"
 #include "sync/search_params.hpp"
 #include "sync/service.hpp"
-#include "akyuu/session.hpp"
 
 namespace gui {
 
@@ -61,7 +61,7 @@ sync::SearchParams seasonParams(const anime::Season season) {
 
 SeasonsWidget::SeasonsWidget(QWidget* parent)
     : PageWidget(parent),
-      m_season(taiga::session.season()),
+      m_season(akyuu::session.season()),
       m_model(new AnimeListModel(this)),
       m_proxyModel(new AnimeListProxyModel(this)),
       m_labelStatus(new QLabel(this)),
@@ -70,8 +70,8 @@ SeasonsWidget::SeasonsWidget(QWidget* parent)
       m_sortMenu(new QMenu(this)),
       m_viewMenu(new QMenu(this)) {
   m_proxyModel->setSourceModel(m_model);
-  m_proxyModel->setGroupBy(taiga::session.seasonsGroupBy());
-  m_proxyModel->sort(taiga::session.seasonsSortColumn(), taiga::session.seasonsSortOrder());
+  m_proxyModel->setGroupBy(akyuu::session.seasonsGroupBy());
+  m_proxyModel->sort(akyuu::session.seasonsSortColumn(), akyuu::session.seasonsSortOrder());
 
   // Toolbar
   {
@@ -122,8 +122,8 @@ SeasonsWidget::SeasonsWidget(QWidget* parent)
   connect(m_sortMenu, &QMenu::aboutToShow, this, &SeasonsWidget::initSortMenu);
   connect(m_viewMenu, &QMenu::aboutToShow, this, &SeasonsWidget::initViewMenu);
 
-  setGroupBy(taiga::session.seasonsGroupBy());
-  setViewMode(taiga::session.seasonsViewMode());
+  setGroupBy(akyuu::session.seasonsGroupBy());
+  setViewMode(akyuu::session.seasonsViewMode());
 
   const QList<sync::Service*> services{
       sync::anilist::Service::instance(),
@@ -144,11 +144,11 @@ SeasonsWidget::SeasonsWidget(QWidget* parent)
 }
 
 void SeasonsWidget::saveState() {
-  taiga::session.setSeason(m_season);
-  taiga::session.setSeasonsGroupBy(m_proxyModel->groupBy());
-  taiga::session.setSeasonsSortColumn(m_proxyModel->sortColumn());
-  taiga::session.setSeasonsSortOrder(m_proxyModel->sortOrder());
-  taiga::session.setSeasonsViewMode(m_viewMode);
+  akyuu::session.setSeason(m_season);
+  akyuu::session.setSeasonsGroupBy(m_proxyModel->groupBy());
+  akyuu::session.setSeasonsSortColumn(m_proxyModel->sortColumn());
+  akyuu::session.setSeasonsSortOrder(m_proxyModel->sortOrder());
+  akyuu::session.setSeasonsViewMode(m_viewMode);
 }
 
 void SeasonsWidget::setSeason(const anime::Season season) {

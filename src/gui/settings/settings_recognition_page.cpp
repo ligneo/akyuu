@@ -87,8 +87,8 @@ RecognitionPage::RecognitionPage(QWidget* parent)
     const auto group = new QGroupBox(tr("Anime list update"), this);
     const auto groupLayout = new QVBoxLayout(group);
     const auto form = new QFormLayout();
-    m_spinDelay->setRange(taiga::Settings::kUpdateDelayMin.count(),
-                          taiga::Settings::kUpdateDelayMax.count());
+    m_spinDelay->setRange(akyuu::Settings::kUpdateDelayMin.count(),
+                          akyuu::Settings::kUpdateDelayMax.count());
     m_spinDelay->setSingleStep(10);
     m_spinDelay->setSuffix(tr(" seconds"));
     form->addRow(tr("Delay:"), m_spinDelay);
@@ -104,42 +104,42 @@ RecognitionPage::RecognitionPage(QWidget* parent)
 }
 
 void RecognitionPage::load() {
-  m_checkDetectionEnabled->setChecked(taiga::settings.mediaDetectionEnabled());
+  m_checkDetectionEnabled->setChecked(akyuu::settings.mediaDetectionEnabled());
   const auto interval =
-      std::chrono::duration_cast<std::chrono::seconds>(taiga::settings.mediaDetectionInterval());
+      std::chrono::duration_cast<std::chrono::seconds>(akyuu::settings.mediaDetectionInterval());
   m_spinDetectionInterval->setValue(static_cast<int>(interval.count()));
-  m_checkOutOfRoot->setChecked(taiga::settings.updateLibraryOnly());
-  m_checkOutOfRange->setChecked(taiga::settings.updateOutOfRange());
-  m_spinDelay->setValue(static_cast<int>(taiga::settings.updateDelay().count()));
-  m_checkPauseWhenUnfocused->setChecked(taiga::settings.updatePauseWhenUnfocused());
-  (taiga::settings.updateTrigger() == track::UpdateTrigger::OnPlayerClose ? m_radioOnPlayerClose
+  m_checkOutOfRoot->setChecked(akyuu::settings.updateLibraryOnly());
+  m_checkOutOfRange->setChecked(akyuu::settings.updateOutOfRange());
+  m_spinDelay->setValue(static_cast<int>(akyuu::settings.updateDelay().count()));
+  m_checkPauseWhenUnfocused->setChecked(akyuu::settings.updatePauseWhenUnfocused());
+  (akyuu::settings.updateTrigger() == track::UpdateTrigger::OnPlayerClose ? m_radioOnPlayerClose
                                                                           : m_radioAfterDelay)
       ->setChecked(true);
-  m_checkAskToConfirm->setChecked(taiga::settings.updateAskToConfirm());
-  m_checkNotifyRecognized->setChecked(taiga::settings.syncNotifyRecognized());
-  m_checkNotifyNotRecognized->setChecked(taiga::settings.syncNotifyNotRecognized());
-  m_checkGoToRecognized->setChecked(taiga::settings.syncGoToNowPlayingRecognized());
-  m_checkGoToNotRecognized->setChecked(taiga::settings.syncGoToNowPlayingNotRecognized());
+  m_checkAskToConfirm->setChecked(akyuu::settings.updateAskToConfirm());
+  m_checkNotifyRecognized->setChecked(akyuu::settings.syncNotifyRecognized());
+  m_checkNotifyNotRecognized->setChecked(akyuu::settings.syncNotifyNotRecognized());
+  m_checkGoToRecognized->setChecked(akyuu::settings.syncGoToNowPlayingRecognized());
+  m_checkGoToNotRecognized->setChecked(akyuu::settings.syncGoToNowPlayingNotRecognized());
 }
 
 void RecognitionPage::save() {
-  taiga::settings.setMediaDetectionInterval(std::chrono::seconds{m_spinDetectionInterval->value()});
-  taiga::settings.setUpdateLibraryOnly(m_checkOutOfRoot->isChecked());
-  taiga::settings.setUpdateOutOfRange(m_checkOutOfRange->isChecked());
-  taiga::settings.setUpdateDelay(std::chrono::seconds{m_spinDelay->value()});
-  taiga::settings.setUpdatePauseWhenUnfocused(m_checkPauseWhenUnfocused->isChecked());
-  taiga::settings.setUpdateTrigger(m_radioOnPlayerClose->isChecked()
+  akyuu::settings.setMediaDetectionInterval(std::chrono::seconds{m_spinDetectionInterval->value()});
+  akyuu::settings.setUpdateLibraryOnly(m_checkOutOfRoot->isChecked());
+  akyuu::settings.setUpdateOutOfRange(m_checkOutOfRange->isChecked());
+  akyuu::settings.setUpdateDelay(std::chrono::seconds{m_spinDelay->value()});
+  akyuu::settings.setUpdatePauseWhenUnfocused(m_checkPauseWhenUnfocused->isChecked());
+  akyuu::settings.setUpdateTrigger(m_radioOnPlayerClose->isChecked()
                                        ? track::UpdateTrigger::OnPlayerClose
                                        : track::UpdateTrigger::AfterDelay);
-  taiga::settings.setUpdateAskToConfirm(m_checkAskToConfirm->isChecked());
-  taiga::settings.setSyncNotifyRecognized(m_checkNotifyRecognized->isChecked());
-  taiga::settings.setSyncNotifyNotRecognized(m_checkNotifyNotRecognized->isChecked());
-  taiga::settings.setSyncGoToNowPlayingRecognized(m_checkGoToRecognized->isChecked());
-  taiga::settings.setSyncGoToNowPlayingNotRecognized(m_checkGoToNotRecognized->isChecked());
+  akyuu::settings.setUpdateAskToConfirm(m_checkAskToConfirm->isChecked());
+  akyuu::settings.setSyncNotifyRecognized(m_checkNotifyRecognized->isChecked());
+  akyuu::settings.setSyncNotifyNotRecognized(m_checkNotifyNotRecognized->isChecked());
+  akyuu::settings.setSyncGoToNowPlayingRecognized(m_checkGoToRecognized->isChecked());
+  akyuu::settings.setSyncGoToNowPlayingNotRecognized(m_checkGoToNotRecognized->isChecked());
 
   // Must come after the interval is saved, since it restarts polling with the new interval.
   const auto enabled = m_checkDetectionEnabled->isChecked();
-  taiga::settings.setMediaDetectionEnabled(enabled);
+  akyuu::settings.setMediaDetectionEnabled(enabled);
   track::media::detection()->setEnabled(enabled);
 }
 

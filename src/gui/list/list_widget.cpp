@@ -27,6 +27,7 @@
 #include <algorithm>
 #include <format>
 
+#include "akyuu/session.hpp"
 #include "base/string.hpp"
 #include "gui/common/anime_list_context.hpp"
 #include "gui/common/anime_list_view.hpp"
@@ -38,7 +39,6 @@
 #include "gui/models/anime_list_proxy_model.hpp"
 #include "gui/utils/format.hpp"
 #include "gui/utils/theme.hpp"
-#include "akyuu/session.hpp"
 #include "ui_main_window.h"
 
 namespace gui {
@@ -52,11 +52,11 @@ ListWidget::ListWidget(QWidget* parent)
       m_sortMenu(new QMenu(this)),
       m_viewMenu(new QMenu(this)),
       m_moreMenu(new QMenu(this)) {
-  m_proxyModel->sort(taiga::session.animeListSortColumn(), taiga::session.animeListSortOrder());
+  m_proxyModel->sort(akyuu::session.animeListSortColumn(), akyuu::session.animeListSortOrder());
 
   initToolbar();
   initTabs();
-  setViewMode(taiga::session.animeListViewMode());
+  setViewMode(akyuu::session.animeListViewMode());
 
   connect(m_sortMenu, &QMenu::aboutToShow, this, &ListWidget::initSortMenu);
   connect(m_viewMenu, &QMenu::aboutToShow, this, &ListWidget::initViewMenu);
@@ -161,9 +161,9 @@ void ListWidget::setViewMode(ListViewMode mode) {
 }
 
 void ListWidget::saveState() {
-  taiga::session.setAnimeListSortColumn(m_proxyModel->sortColumn());
-  taiga::session.setAnimeListSortOrder(m_proxyModel->sortOrder());
-  taiga::session.setAnimeListViewMode(m_viewMode);
+  akyuu::session.setAnimeListSortColumn(m_proxyModel->sortColumn());
+  akyuu::session.setAnimeListSortOrder(m_proxyModel->sortOrder());
+  akyuu::session.setAnimeListViewMode(m_viewMode);
 }
 
 void ListWidget::initToolbar() {

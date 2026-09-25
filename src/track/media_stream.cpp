@@ -20,8 +20,8 @@
 
 #include <algorithm>
 
-#include "base/string.hpp"
 #include "akyuu/settings.hpp"
+#include "base/string.hpp"
 
 namespace track::recognition {
 
@@ -204,7 +204,7 @@ const std::vector<StreamData>& streamData() {
 }
 
 bool isStreamEnabled(const StreamData& stream) {
-  const auto disabled = taiga::settings.disabledStreamingProviders();
+  const auto disabled = akyuu::settings.disabledStreamingProviders();
   return !std::ranges::contains(disabled, stream.name.toStdString());
 }
 

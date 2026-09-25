@@ -18,11 +18,11 @@
 
 #include "update_session.hpp"
 
+#include "akyuu/settings.hpp"
 #include "base/log.hpp"
 #include "media/anime.hpp"
 #include "media/anime_db.hpp"
 #include "media/anime_list_utils.hpp"
-#include "akyuu/settings.hpp"
 #include "track/media.hpp"
 #include "track/scanner.hpp"
 #include "track/update_decision.hpp"
@@ -42,8 +42,8 @@ bool isSameMedia(const Episode& previous, const Episode& current) {
 }
 
 bool isOutsideLibrary() {
-  if (!taiga::settings.updateLibraryOnly()) return false;
-  if (taiga::settings.libraryFolders().empty()) return false;
+  if (!akyuu::settings.updateLibraryOnly()) return false;
+  if (akyuu::settings.libraryFolders().empty()) return false;
 
   const auto file = media::detection()->getCurrentFile();
   if (!file) return false;
@@ -97,10 +97,10 @@ void UpdateSession::onEpisodeChanged(std::optional<Episode> episode) {
 
   if (!episode_ || !isSameMedia(*episode_, *episode)) {
     elapsed_ = std::chrono::seconds{0};
-    delay_ = taiga::settings.updateDelay();
-    trigger_ = taiga::settings.updateTrigger();
-    askToConfirm_ = taiga::settings.updateAskToConfirm();
-    pauseWhenUnfocused_ = taiga::settings.updatePauseWhenUnfocused();
+    delay_ = akyuu::settings.updateDelay();
+    trigger_ = akyuu::settings.updateTrigger();
+    askToConfirm_ = akyuu::settings.updateAskToConfirm();
+    pauseWhenUnfocused_ = akyuu::settings.updatePauseWhenUnfocused();
     paused_ = false;
     dismissed_ = false;
     committed_ = false;

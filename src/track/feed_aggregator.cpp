@@ -31,12 +31,12 @@
 #include <map>
 #include <set>
 
+#include "akyuu/path.hpp"
+#include "akyuu/settings.hpp"
 #include "base/log.hpp"
 #include "base/string.hpp"
 #include "media/anime_db.hpp"
 #include "media/anime_utils.hpp"
-#include "akyuu/path.hpp"
-#include "akyuu/settings.hpp"
 #include "track/feed_archive.hpp"
 #include "track/feed_filter_manager.hpp"
 
@@ -49,9 +49,9 @@ Aggregator::Aggregator(QObject* parent) : QObject(parent) {
 }
 
 void Aggregator::applyAutoCheckSettings() {
-  const auto interval = taiga::settings.torrentAutoCheckInterval();
+  const auto interval = akyuu::settings.torrentAutoCheckInterval();
 
-  if (!taiga::settings.torrentAutoCheckEnabled() || interval.count() < 1) {
+  if (!akyuu::settings.torrentAutoCheckEnabled() || interval.count() < 1) {
     timer_.stop();
     return;
   }
@@ -65,7 +65,7 @@ std::chrono::milliseconds Aggregator::timeUntilNextCheck() const {
 }
 
 void Aggregator::search(const QString& title) {
-  auto url = QString::fromStdString(taiga::settings.torrentSearchUrl());
+  auto url = QString::fromStdString(akyuu::settings.torrentSearchUrl());
 
   // v1 substitutes the encoded title, so that a title with spaces or symbols stays a valid URL.
   url.replace(u"%title%"_s, QString::fromUtf8(QUrl::toPercentEncoding(title)));
@@ -78,7 +78,7 @@ void Aggregator::fetch(const QString& requestedUrl, const bool automatic) {
 
   const auto url = !requestedUrl.isEmpty()
                        ? requestedUrl
-                       : QString::fromStdString(taiga::settings.torrentDiscoveryUrl());
+                       : QString::fromStdString(akyuu::settings.torrentDiscoveryUrl());
 
   if (url.isEmpty()) {
     emit errorOccurred(tr("No feed address is set."));
@@ -89,7 +89,7 @@ void Aggregator::fetch(const QString& requestedUrl, const bool automatic) {
   emit fetchingChanged(true);
 
   QNetworkRequest request{QUrl{url}};
-  request.setHeaders(taiga::NetworkAccessManager::commonHeaders());
+  request.setHeaders(akyuu::NetworkAccessManager::commonHeaders());
 
   manager_.get(request, this, [this, automatic](QRestReply& reply) {
     fetching_ = false;
@@ -123,13 +123,13 @@ void Aggregator::fetch(const QString& requestedUrl, const bool automatic) {
 
     // Only an automatic check acts on its own, so that refreshing by hand stays quiet. As in v1.
     if (automatic) {
-      if (taiga::settings.torrentNotifyNewEpisodes()) {
+      if (akyuu::settings.torrentNotifyNewEpisodes()) {
         if (const auto lines = newEpisodeLines(); !lines.isEmpty()) {
           emit newEpisodesFound(lines);
         }
-      } else if (taiga::settings.torrentDownloadNewEpisodes()) {
+      } else if (akyuu::settings.torrentDownloadNewEpisodes()) {
         // The filters decide what is selected. With them off, this would download everything.
-        if (taiga::settings.torrentFilterEnabled()) downloadSelected();
+        if (akyuu::settings.torrentFilterEnabled()) downloadSelected();
       }
     }
   });
@@ -176,7 +176,7 @@ QString sanitizedFileName(QString title) {
 // v1's download folder: the anime's own folder, or else the fallback location, optionally with a
 // subfolder named after the anime that then becomes the anime's folder.
 QString downloadFolder(const track::Episode& episode) {
-  if (!taiga::settings.torrentDownloadUseAnimeFolder()) return {};
+  if (!akyuu::settings.torrentDownloadUseAnimeFolder()) return {};
 
   const auto animeId = episode.animeId();
 
@@ -185,10 +185,10 @@ QString downloadFolder(const track::Episode& episode) {
     if (!folder.isEmpty() && QFileInfo(folder).isDir()) return folder;
   }
 
-  if (!taiga::settings.torrentDownloadFallbackOnFolder()) return {};
+  if (!akyuu::settings.torrentDownloadFallbackOnFolder()) return {};
 
-  auto folder = QString::fromStdString(taiga::settings.torrentDownloadLocation());
-  if (folder.isEmpty() || !taiga::settings.torrentDownloadCreateSubfolder()) return folder;
+  auto folder = QString::fromStdString(akyuu::settings.torrentDownloadLocation());
+  if (folder.isEmpty() || !akyuu::settings.torrentDownloadCreateSubfolder()) return folder;
 
   const auto anime = anime::db.item(animeId);
   const auto title = anime ? QString::fromStdString(anime::preferredTitle(*anime))
@@ -223,9 +223,9 @@ void Aggregator::downloadSelected() {
     return;
   }
 
-  const auto sortBy = QString::fromStdString(taiga::settings.torrentDownloadSortBy());
+  const auto sortBy = QString::fromStdString(akyuu::settings.torrentDownloadSortBy());
   const auto descending =
-      taiga::settings.torrentDownloadSortOrder() == Qt::SortOrder::DescendingOrder;
+      akyuu::settings.torrentDownloadSortOrder() == Qt::SortOrder::DescendingOrder;
 
   std::ranges::stable_sort(items, [&sortBy, descending](const FeedItem* a, const FeedItem* b) {
     // Items of the same anime stay together, as in v1.
@@ -284,13 +284,13 @@ void Aggregator::download(const FeedItem& item) {
 
     emit feedChanged();
 
-    if (!taiga::settings.torrentDownloadOpen()) {
+    if (!akyuu::settings.torrentDownloadOpen()) {
       emit downloadFinished(title);
       return;
     }
 
-    const auto mode = QString::fromStdString(taiga::settings.torrentDownloadAppMode());
-    const auto command = QString::fromStdString(taiga::settings.torrentDownloadAppPath());
+    const auto mode = QString::fromStdString(akyuu::settings.torrentDownloadAppMode());
+    const auto command = QString::fromStdString(akyuu::settings.torrentDownloadAppPath());
 
     bool started = false;
 
@@ -312,7 +312,7 @@ void Aggregator::download(const FeedItem& item) {
 
   const auto magnet = QString::fromStdString(item.magnet_link);
 
-  if (!magnet.isEmpty() && taiga::settings.torrentDownloadUseMagnet()) {
+  if (!magnet.isEmpty() && akyuu::settings.torrentDownloadUseMagnet()) {
     handOff(magnet);
     return;
   }
@@ -333,9 +333,9 @@ void Aggregator::download(const FeedItem& item) {
     return;
   }
 
-  auto directory = QString::fromStdString(taiga::settings.torrentDownloadFileLocation());
+  auto directory = QString::fromStdString(akyuu::settings.torrentDownloadFileLocation());
   if (directory.isEmpty()) {
-    directory = u"%1/torrents"_s.arg(QString::fromStdString(taiga::get_data_path()));
+    directory = u"%1/torrents"_s.arg(QString::fromStdString(akyuu::get_data_path()));
   }
 
   if (!QDir().mkpath(directory)) {
@@ -346,7 +346,7 @@ void Aggregator::download(const FeedItem& item) {
   const auto path = u"%1/%2.torrent"_s.arg(directory).arg(sanitizedFileName(title));
 
   QNetworkRequest request{QUrl{link}};
-  request.setHeaders(taiga::NetworkAccessManager::commonHeaders());
+  request.setHeaders(akyuu::NetworkAccessManager::commonHeaders());
   request.setAttribute(QNetworkRequest::RedirectPolicyAttribute,
                        QNetworkRequest::NoLessSafeRedirectPolicy);
 

@@ -23,15 +23,15 @@
 #include <chrono>
 #include <format>
 
+#include "akyuu/accounts.hpp"
+#include "akyuu/path.hpp"
+#include "akyuu/settings.hpp"
 #include "base/file.hpp"
 #include "base/string.hpp"
 #include "compat/history.hpp"
 #include "media/anime_db.hpp"
 #include "media/anime_list_utils.hpp"
 #include "sync/service.hpp"
-#include "akyuu/accounts.hpp"
-#include "akyuu/path.hpp"
-#include "akyuu/settings.hpp"
 
 namespace sync {
 
@@ -210,7 +210,7 @@ void Queue::reconcile(const int animeId, const ListEntry* remote) {
 }
 
 void Queue::processAutomatically() {
-  if (!taiga::settings.syncEnabled()) return;
+  if (!akyuu::settings.syncEnabled()) return;
   if (!isUserAuthenticated() && !willAuthenticate()) return;
 
   process();
@@ -334,9 +334,9 @@ QueueItem Queue::itemFromQuery(const QSqlQuery& q) const {
 
 void Queue::migrateFromV1() {
   const auto path = []() {
-    const auto service = taiga::settings.service();
-    return std::format("{}/v1/user/{}@{}/history.xml", taiga::get_data_path(),
-                       taiga::accounts.serviceUsername(service), service);
+    const auto service = akyuu::settings.service();
+    return std::format("{}/v1/user/{}@{}/history.xml", akyuu::get_data_path(),
+                       akyuu::accounts.serviceUsername(service), service);
   }();
 
   for (const auto& item : compat::v1::readQueue(path)) {

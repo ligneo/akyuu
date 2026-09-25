@@ -23,11 +23,11 @@
 #include <QRestReply>
 #include <QUrlQuery>
 
+#include "akyuu/accounts.hpp"
 #include "base/string.hpp"
 #include "kitsu.hpp"
 #include "sync/kitsu/kitsu_error.hpp"
 #include "sync/kitsu/kitsu_utils.hpp"
-#include "akyuu/accounts.hpp"
 
 namespace sync::kitsu {
 
@@ -41,15 +41,15 @@ void Service::authenticateUser() {
   QNetworkRequest request{QUrl{kTokenUrl}};
   request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
 
-  auto username = taiga::accounts.kitsuEmail();
-  if (username.empty()) username = taiga::accounts.kitsuUsername();
+  auto username = akyuu::accounts.kitsuEmail();
+  if (username.empty()) username = akyuu::accounts.kitsuUsername();
 
   // Resource Owner Password Credentials Grant
   // https://tools.ietf.org/html/rfc6749#section-4.3
   const QUrlQuery body{{
       {"grant_type", "password"},
       {"username", QString::fromStdString(username)},
-      {"password", QString::fromStdString(taiga::accounts.kitsuPassword())},
+      {"password", QString::fromStdString(akyuu::accounts.kitsuPassword())},
       {"client_id", kClientId},
       {"client_secret", kClientSecret},
   }};
@@ -70,8 +70,8 @@ void Service::authenticateUser() {
 
     const auto root = json->object();
     const auto accessToken = root["access_token"].toString();
-    taiga::accounts.setKitsuAccessToken(accessToken.toStdString());
-    taiga::accounts.setKitsuRefreshToken(root["refresh_token"].toString().toStdString());
+    akyuu::accounts.setKitsuAccessToken(accessToken.toStdString());
+    akyuu::accounts.setKitsuRefreshToken(root["refresh_token"].toString().toStdString());
     api_.setBearerToken(accessToken.toUtf8());
 
     // Kitsu's token response doesn't include user information, so we need to make an additional
@@ -83,7 +83,7 @@ void Service::authenticateUser() {
 }
 
 void Service::refreshAccessToken(std::function<void()> onSuccess) {
-  const auto refreshToken = taiga::accounts.kitsuRefreshToken();
+  const auto refreshToken = akyuu::accounts.kitsuRefreshToken();
 
   if (refreshToken.empty()) {
     emit errorOccurred("Refresh token is unavailable.");
@@ -117,8 +117,8 @@ void Service::refreshAccessToken(std::function<void()> onSuccess) {
 
     const auto root = json->object();
     const auto accessToken = root["access_token"].toString();
-    taiga::accounts.setKitsuAccessToken(accessToken.toStdString());
-    taiga::accounts.setKitsuRefreshToken(root["refresh_token"].toString().toStdString());
+    akyuu::accounts.setKitsuAccessToken(accessToken.toStdString());
+    akyuu::accounts.setKitsuRefreshToken(root["refresh_token"].toString().toStdString());
     api_.setBearerToken(accessToken.toUtf8());
 
     if (onSuccess) onSuccess();
@@ -130,12 +130,12 @@ void Service::refreshAccessToken(std::function<void()> onSuccess) {
 ////////////////////////////////////////////////////////////////////////////////
 
 void Service::resolveUser(std::function<void()> onSuccess) {
-  const bool authenticated = !taiga::accounts.kitsuAccessToken().empty();
+  const bool authenticated = !akyuu::accounts.kitsuAccessToken().empty();
 
   QUrlQuery query =
       authenticated
           ? QUrlQuery{{u"filter[self]"_s, u"true"_s}}
-          : QUrlQuery{{u"filter[slug]"_s, QString::fromStdString(taiga::accounts.kitsuUsername())}};
+          : QUrlQuery{{u"filter[slug]"_s, QString::fromStdString(akyuu::accounts.kitsuUsername())}};
   query.addQueryItem(u"fields[users]"_s, userFields());
 
   const auto callback = [this, authenticated, onSuccess](QRestReply& reply) {
@@ -158,13 +158,13 @@ void Service::resolveUser(std::function<void()> onSuccess) {
     const auto user = data.first().toObject();
     const auto attributes = user["attributes"].toObject();
 
-    taiga::accounts.setKitsuUserId(user["id"].toString().toStdString());
-    taiga::accounts.setKitsuDisplayName(attributes["name"].toString().toStdString());
-    taiga::accounts.setKitsuUsername(attributes["slug"].toString().toStdString());
+    akyuu::accounts.setKitsuUserId(user["id"].toString().toStdString());
+    akyuu::accounts.setKitsuDisplayName(attributes["name"].toString().toStdString());
+    akyuu::accounts.setKitsuUsername(attributes["slug"].toString().toStdString());
 
     if (authenticated) {
-      taiga::accounts.setKitsuEmail(attributes["email"].toString().toStdString());
-      taiga::accounts.setKitsuRatingSystem(attributes["ratingSystem"].toString().toStdString());
+      akyuu::accounts.setKitsuEmail(attributes["email"].toString().toStdString());
+      akyuu::accounts.setKitsuRatingSystem(attributes["ratingSystem"].toString().toStdString());
       emit authenticationCompleted(true);
     }
 

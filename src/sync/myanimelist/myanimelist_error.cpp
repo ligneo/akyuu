@@ -25,9 +25,9 @@
 #include <QRestReply>
 #include <optional>
 
+#include "akyuu/network.hpp"
 #include "base/string.hpp"
 #include "sync/service.hpp"
-#include "akyuu/network.hpp"
 
 namespace sync::myanimelist {
 
@@ -74,7 +74,7 @@ bool isTokenExpired(const QRestReply& reply) {
 }
 
 void handleError(sync::Service& service, QRestReply& reply, const QString& message) {
-  if (taiga::isDdosProtectionActive(reply)) {
+  if (akyuu::isDdosProtectionActive(reply)) {
     const auto server = QString::fromUtf8(reply.networkReply()->rawHeader("Server"));
     const auto description =
         u"Cannot connect to server because of DDoS protection (Server: %1)"_s.arg(server);

@@ -28,7 +28,7 @@
 #include <windows.h>
 #endif
 
-#ifdef TAIGA_HAS_MULTIMEDIA
+#ifdef AKYUU_HAS_MULTIMEDIA
 #include <QAudioFormat>
 #include <QAudioSink>
 #include <QBuffer>
@@ -61,7 +61,7 @@ constexpr float get_duration(const float duration) {
   return 1600 * duration;
 };
 
-#ifdef TAIGA_HAS_MULTIMEDIA
+#ifdef AKYUU_HAS_MULTIMEDIA
 constexpr int kSampleRate = 44100;
 
 // `Beep` takes a frequency and a length in milliseconds and plays a square wave; there is no Qt
@@ -100,7 +100,7 @@ QByteArray renderNotes() {
 
 }  // namespace
 
-namespace taiga {
+namespace akyuu {
 
 Orange::Orange(QObject* parent) : QThread(parent) {}
 
@@ -116,7 +116,7 @@ void Orange::run() {
     ::Beep(static_cast<DWORD>(get_frequency(note)), static_cast<DWORD>(get_duration(duration)));
   }
 
-#elif defined(TAIGA_HAS_MULTIMEDIA)
+#elif defined(AKYUU_HAS_MULTIMEDIA)
   QAudioFormat format;
   format.setSampleRate(kSampleRate);
   format.setChannelCount(1);
@@ -151,4 +151,4 @@ void Orange::run() {
 #endif
 }
 
-}  // namespace taiga
+}  // namespace akyuu

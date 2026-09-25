@@ -23,6 +23,7 @@
 #include <QToolBar>
 #include <QToolButton>
 
+#include "akyuu/session.hpp"
 #include "gui/common/anime_list_context.hpp"
 #include "gui/common/anime_list_view.hpp"
 #include "gui/common/anime_list_view_cards.hpp"
@@ -37,7 +38,6 @@
 #include "sync/kitsu/kitsu.hpp"
 #include "sync/myanimelist/myanimelist.hpp"
 #include "sync/service.hpp"
-#include "akyuu/session.hpp"
 
 namespace {
 
@@ -69,7 +69,7 @@ SearchWidget::SearchWidget(QWidget* parent)
       m_comboListStatus(new ComboBox(this)),
       m_sortMenu(new QMenu(this)),
       m_viewMenu(new QMenu(this)) {
-  m_proxyModel->sort(taiga::session.searchListSortColumn(), taiga::session.searchListSortOrder());
+  m_proxyModel->sort(akyuu::session.searchListSortColumn(), akyuu::session.searchListSortOrder());
 
   // Search starts unfiltered. Filters left over from a previous run would quietly turn a general
   // search into a narrow one, with nothing on screen to say why nothing was found.
@@ -187,7 +187,7 @@ SearchWidget::SearchWidget(QWidget* parent)
   connect(m_viewMenu, &QMenu::aboutToShow, this, &SearchWidget::initViewMenu);
 
   // List
-  setViewMode(taiga::session.searchListViewMode());
+  setViewMode(akyuu::session.searchListViewMode());
 
   // Search
   connect(mainWindow()->searchBox(), &QLineEdit::returnPressed, this, [this]() {
@@ -209,9 +209,9 @@ SearchWidget::SearchWidget(QWidget* parent)
 }
 
 void SearchWidget::saveState() {
-  taiga::session.setSearchListSortColumn(m_proxyModel->sortColumn());
-  taiga::session.setSearchListSortOrder(m_proxyModel->sortOrder());
-  taiga::session.setSearchListViewMode(m_viewMode);
+  akyuu::session.setSearchListSortColumn(m_proxyModel->sortColumn());
+  akyuu::session.setSearchListSortOrder(m_proxyModel->sortOrder());
+  akyuu::session.setSearchListViewMode(m_viewMode);
 }
 
 void SearchWidget::initSortMenu() {

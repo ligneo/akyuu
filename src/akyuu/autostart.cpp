@@ -24,11 +24,11 @@
 #include <QFileInfo>
 #include <QStandardPaths>
 
-#include "base/log.hpp"
 #include "akyuu/config.h"
 #include "akyuu/settings.hpp"
+#include "base/log.hpp"
 
-namespace taiga {
+namespace akyuu {
 
 using namespace Qt::StringLiterals;
 
@@ -36,7 +36,7 @@ namespace {
 
 QString autoStartFileName() {
   const auto config = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
-  return u"%1/autostart/%2.desktop"_s.arg(config).arg(TAIGA_APP_NAME);
+  return u"%1/autostart/%2.desktop"_s.arg(config).arg(AKYUU_APP_NAME);
 }
 
 }  // namespace
@@ -59,10 +59,10 @@ void applyAutoStart() {
   }
 
   const auto entry =
-      u"[Desktop Entry]\nType=Application\nName=%1\nExec=%2\nTerminal=false\n"_s.arg(TAIGA_APP_NAME)
+      u"[Desktop Entry]\nType=Application\nName=%1\nExec=%2\nTerminal=false\n"_s.arg(AKYUU_APP_NAME)
           .arg(QCoreApplication::applicationFilePath());
 
   file.write(entry.toUtf8());
 }
 
-}  // namespace taiga
+}  // namespace akyuu

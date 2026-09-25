@@ -25,8 +25,8 @@
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 
-#include "media/anime.hpp"
 #include "akyuu/settings.hpp"
+#include "media/anime.hpp"
 
 namespace gui {
 
@@ -102,36 +102,36 @@ AnimeListPage::AnimeListPage(QWidget* parent)
 }
 
 void AnimeListPage::load() {
-  const auto language = static_cast<int>(taiga::settings.titleLanguage());
+  const auto language = static_cast<int>(akyuu::settings.titleLanguage());
   m_comboTitleLanguage->setCurrentIndex(m_comboTitleLanguage->findData(language));
 
   m_comboDoubleClick->setCurrentIndex(std::max(
-      m_comboDoubleClick->findData(QString::fromStdString(taiga::settings.listDoubleClickAction())),
+      m_comboDoubleClick->findData(QString::fromStdString(akyuu::settings.listDoubleClickAction())),
       0));
   m_comboMiddleClick->setCurrentIndex(std::max(
-      m_comboMiddleClick->findData(QString::fromStdString(taiga::settings.listMiddleClickAction())),
+      m_comboMiddleClick->findData(QString::fromStdString(akyuu::settings.listMiddleClickAction())),
       0));
 
-  m_checkHighlight->setChecked(taiga::settings.listHighlightNewEpisodes());
-  m_checkHighlightedOnTop->setChecked(taiga::settings.listHighlightedOnTop());
+  m_checkHighlight->setChecked(akyuu::settings.listHighlightNewEpisodes());
+  m_checkHighlightedOnTop->setChecked(akyuu::settings.listHighlightedOnTop());
   m_checkHighlightedOnTop->setEnabled(m_checkHighlight->isChecked());
-  m_checkShowAired->setChecked(taiga::settings.listShowAiredEpisodes());
-  m_checkShowAvailable->setChecked(taiga::settings.listShowAvailableEpisodes());
+  m_checkShowAired->setChecked(akyuu::settings.listShowAiredEpisodes());
+  m_checkShowAvailable->setChecked(akyuu::settings.listShowAvailableEpisodes());
 }
 
 void AnimeListPage::save() {
   const auto language =
       static_cast<anime::TitleLanguage>(m_comboTitleLanguage->currentData().toInt());
-  taiga::settings.setTitleLanguage(language);
+  akyuu::settings.setTitleLanguage(language);
 
-  taiga::settings.setListDoubleClickAction(
+  akyuu::settings.setListDoubleClickAction(
       m_comboDoubleClick->currentData().toString().toStdString());
-  taiga::settings.setListMiddleClickAction(
+  akyuu::settings.setListMiddleClickAction(
       m_comboMiddleClick->currentData().toString().toStdString());
-  taiga::settings.setListHighlightNewEpisodes(m_checkHighlight->isChecked());
-  taiga::settings.setListHighlightedOnTop(m_checkHighlightedOnTop->isChecked());
-  taiga::settings.setListShowAiredEpisodes(m_checkShowAired->isChecked());
-  taiga::settings.setListShowAvailableEpisodes(m_checkShowAvailable->isChecked());
+  akyuu::settings.setListHighlightNewEpisodes(m_checkHighlight->isChecked());
+  akyuu::settings.setListHighlightedOnTop(m_checkHighlightedOnTop->isChecked());
+  akyuu::settings.setListShowAiredEpisodes(m_checkShowAired->isChecked());
+  akyuu::settings.setListShowAvailableEpisodes(m_checkShowAvailable->isChecked());
 }
 
 }  // namespace gui

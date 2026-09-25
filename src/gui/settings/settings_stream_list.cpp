@@ -35,7 +35,7 @@ StreamListWidget::StreamListWidget(QWidget* parent) : QListWidget(parent) {
 }
 
 void StreamListWidget::load() {
-  const auto disabledProviders = taiga::settings.disabledStreamingProviders();
+  const auto disabledProviders = akyuu::settings.disabledStreamingProviders();
 
   for (int i = 0; i < count(); ++i) {
     const auto name = item(i)->text().toStdString();
@@ -54,7 +54,7 @@ void StreamListWidget::save() const {
   }
 
   std::ranges::sort(disabledProviders);
-  taiga::settings.setDisabledStreamingProviders(disabledProviders);
+  akyuu::settings.setDisabledStreamingProviders(disabledProviders);
 }
 
 }  // namespace gui

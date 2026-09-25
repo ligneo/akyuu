@@ -28,6 +28,11 @@
 #include <chrono>
 #include <format>
 
+#include "akyuu/autostart.hpp"
+#include "akyuu/config.h"
+#include "akyuu/path.hpp"
+#include "akyuu/settings.hpp"
+#include "akyuu/version.hpp"
 #include "base/log.hpp"
 #include "base/string.hpp"
 #include "gui/main/main_window.hpp"
@@ -36,27 +41,22 @@
 #include "media/anime_db.hpp"
 #include "media/anime_history.hpp"
 #include "sync/queue.hpp"
-#include "akyuu/autostart.hpp"
-#include "akyuu/config.h"
-#include "akyuu/path.hpp"
-#include "akyuu/settings.hpp"
-#include "akyuu/version.hpp"
 #include "track/feed_archive.hpp"
 #include "track/library.hpp"
 #include "track/media.hpp"
 #include "track/update_session.hpp"
 
-namespace taiga {
+namespace akyuu {
 
 Application::Application(int argc, char* argv[])
     : QApplication(argc, argv),
       lock_file_(
           u"%1/%2.lock"_s.arg(QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation))
-              .arg(TAIGA_APP_NAME)) {
+              .arg(AKYUU_APP_NAME)) {
   setApplicationName("taiga");
   setApplicationDisplayName("Taiga");
   setDesktopFileName("moe.taiga.Taiga");
-  setApplicationVersion(QString::fromStdString(taiga::version().to_string()));
+  setApplicationVersion(QString::fromStdString(akyuu::version().to_string()));
   setOrganizationDomain("taiga.moe");
   setOrganizationName("erengy");
 
@@ -74,7 +74,7 @@ int Application::run() {
 
   initLogger();
 
-  const auto version = taiga::version().to_string();
+  const auto version = akyuu::version().to_string();
   const auto fileInfo = QFileInfo{QCoreApplication::applicationFilePath()};
   const auto lastModified = fileInfo.lastModified().toString(Qt::DateFormat::ISODate);
   qDebug() << u"Version %1 (%2)"_s.arg(version).arg(lastModified);
@@ -89,18 +89,18 @@ int Application::run() {
   }
 
   // Remove the socket file left behind by an instance that did not exit cleanly
-  QLocalServer::removeServer(TAIGA_APP_NAME);
+  QLocalServer::removeServer(AKYUU_APP_NAME);
   connect(&local_server_, &QLocalServer::newConnection, this, &Application::onNewConnection);
-  local_server_.listen(TAIGA_APP_NAME);
+  local_server_.listen(AKYUU_APP_NAME);
 
-  taiga::settings.init();
-  taiga::applyAutoStart();
+  akyuu::settings.init();
+  akyuu::applyAutoStart();
   anime::db.init();
   anime::history.init();
   sync::queue.init();
   track::archive.init();
   track::library()->applyWatchSettings();
-  if (taiga::settings.libraryScanOnStartup()) track::library()->scan();
+  if (akyuu::settings.libraryScanOnStartup()) track::library()->scan();
   track::media::detection()->init();
   track::updateSession()->init();
   gui::imageProvider.init();
@@ -109,7 +109,7 @@ int Application::run() {
   setWindowIcon(gui::theme.getIcon("taiga", "png"));
 
   QTranslator translator;
-  if (translator.load(QLocale::system(), "taiga", "_", ":/i18n")) {
+  if (translator.load(QLocale::system(), "akyuu", "_", ":/i18n")) {
     installTranslator(&translator);
   }
 
@@ -118,7 +118,7 @@ int Application::run() {
 
   // v1's `program/startup/minimize`: Taiga starts in the tray and detects from there.
   // `--minimized` does the same for one launch, e.g. from a compositor's startup list.
-  if (options_.minimized || taiga::settings.appStartMinimized()) {
+  if (options_.minimized || akyuu::settings.appStartMinimized()) {
     return QApplication::exec();
   }
 
@@ -175,7 +175,7 @@ bool Application::hasPreviousInstance() {
 
 void Application::activatePreviousInstance() {
   QLocalSocket socket;
-  socket.connectToServer(TAIGA_APP_NAME);
+  socket.connectToServer(AKYUU_APP_NAME);
   socket.waitForConnected(std::chrono::milliseconds(1000).count());
 }
 
@@ -184,7 +184,7 @@ void Application::initLogger() const {
   QDir().mkpath(directory);
 
   const auto date = QDate::currentDate().toString(Qt::DateFormat::ISODate);
-  const auto path = u"%1/%2_%3.log"_s.arg(directory).arg(TAIGA_APP_NAME).arg(date);
+  const auto path = u"%1/%2_%3.log"_s.arg(directory).arg(AKYUU_APP_NAME).arg(date);
 
   base::initLogging(path, options_.debug ? QtDebugMsg : QtWarningMsg);
 }
@@ -217,4 +217,4 @@ void Application::parseCommandLine() {
   options_.verbose = parser_.isSet("verbose");
 }
 
-}  // namespace taiga
+}  // namespace akyuu

@@ -4,8 +4,8 @@
 IDI_MAIN ICON "icons\\taiga.ico"
 
 1 VERSIONINFO
-    FILEVERSION     TAIGA_VERSION_DIGITAL
-    PRODUCTVERSION  TAIGA_VERSION_DIGITAL
+    FILEVERSION     AKYUU_VERSION_DIGITAL
+    PRODUCTVERSION  AKYUU_VERSION_DIGITAL
     FILEOS          VOS_NT_WINDOWS32
     FILETYPE        VFT_APP
     FILESUBTYPE     VFT2_UNKNOWN
@@ -18,11 +18,11 @@ IDI_MAIN ICON "icons\\taiga.ico"
         {
             VALUE "CompanyName", "erengy"
             VALUE "FileDescription", "Taiga"
-            VALUE "FileVersion", TAIGA_VERSION_STRING
+            VALUE "FileVersion", AKYUU_VERSION_STRING
             VALUE "InternalName", "Taiga"
             VALUE "OriginalFilename", "Taiga.exe"
             VALUE "ProductName", "Taiga"
-            VALUE "ProductVersion", TAIGA_VERSION_STRING
+            VALUE "ProductVersion", AKYUU_VERSION_STRING
         }
     }
     BLOCK "VarFileInfo"

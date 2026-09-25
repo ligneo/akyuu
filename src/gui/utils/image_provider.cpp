@@ -31,12 +31,12 @@
 #include <QUrl>
 #include <QtConcurrentRun>
 
+#include "akyuu/network.hpp"
+#include "akyuu/path.hpp"
 #include "base/string.hpp"
 #include "media/anime_db.hpp"
 #include "media/anime_utils.hpp"
 #include "sync/service.hpp"
-#include "akyuu/network.hpp"
-#include "akyuu/path.hpp"
 
 namespace gui {
 
@@ -55,7 +55,7 @@ ImageProvider::ImageProvider() : QObject() {
 }
 
 void ImageProvider::init() {
-  m_manager = new QRestAccessManager(taiga::network(), this);
+  m_manager = new QRestAccessManager(akyuu::network(), this);
 }
 
 void ImageProvider::fetchPoster(const int id, const bool revalidate) {
@@ -136,7 +136,7 @@ void ImageProvider::reloadPoster(const int id) {
 }
 
 QString ImageProvider::cachePath() const {
-  const auto path = QString::fromStdString(taiga::get_data_path());
+  const auto path = QString::fromStdString(akyuu::get_data_path());
   const auto service = sync::serviceSlug(sync::currentServiceId());
   return u"%1/cache/%2/media"_s.arg(path).arg(service);
 }

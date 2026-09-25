@@ -22,13 +22,13 @@
 #include <QNetworkReply>
 #include <QRestReply>
 
-#include "base/log.hpp"
-#include "base/string.hpp"
 #include "akyuu/application.hpp"
 #include "akyuu/config.h"
 #include "akyuu/settings.hpp"
+#include "base/log.hpp"
+#include "base/string.hpp"
 
-namespace taiga {
+namespace akyuu {
 
 namespace {
 
@@ -80,7 +80,7 @@ QHttpHeaders NetworkAccessManager::commonHeaders() {
   QHttpHeaders headers;
 
   static const auto userAgentString = []() {
-    return u"%1/%2.%3"_s.arg(TAIGA_APP_NAME).arg(TAIGA_VERSION_MAJOR).arg(TAIGA_VERSION_MINOR);
+    return u"%1/%2.%3"_s.arg(AKYUU_APP_NAME).arg(AKYUU_VERSION_MAJOR).arg(AKYUU_VERSION_MINOR);
   };
   headers.append(QHttpHeaders::WellKnownHeader::UserAgent, userAgentString());
 
@@ -101,4 +101,4 @@ bool isDdosProtectionActive(const QRestReply& reply) {
   }
 }
 
-}  // namespace taiga
+}  // namespace akyuu

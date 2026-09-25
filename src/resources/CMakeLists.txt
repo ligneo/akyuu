@@ -1,6 +1,6 @@
-add_library(taiga-resources STATIC)
+add_library(akyuu-resources STATIC)
 
-target_sources(taiga-resources PUBLIC
+target_sources(akyuu-resources PUBLIC
 	deps.qrc
 	gql.qrc
 	icons.qrc
@@ -9,9 +9,9 @@ target_sources(taiga-resources PUBLIC
 )
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
-	target_sources(taiga PRIVATE
-		taiga.manifest
-		taiga.rc
+	target_sources(akyuu PRIVATE
+		akyuu.manifest
+		akyuu.rc
 	)
 elseif (CMAKE_SYSTEM_NAME STREQUAL "Linux")
 	include(GNUInstallDirs)
@@ -24,6 +24,6 @@ elseif (CMAKE_SYSTEM_NAME STREQUAL "Linux")
 	)
 endif()
 
-target_link_libraries(taiga-resources
-	taiga-config
+target_link_libraries(akyuu-resources
+	akyuu-config
 )

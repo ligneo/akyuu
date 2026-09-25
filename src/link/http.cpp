@@ -22,30 +22,30 @@
 #include <QNetworkRequest>
 #include <QUrl>
 
-#include "base/log.hpp"
 #include "akyuu/network.hpp"
 #include "akyuu/script.hpp"
 #include "akyuu/settings.hpp"
+#include "base/log.hpp"
 
 namespace link::http {
 
 using namespace Qt::StringLiterals;
 
 void announce(const track::Episode& episode, const bool force) {
-  if (!force && !taiga::settings.httpShareEnabled()) return;
+  if (!force && !akyuu::settings.httpShareEnabled()) return;
 
-  const auto url = QString::fromStdString(taiga::settings.httpShareUrl());
+  const auto url = QString::fromStdString(akyuu::settings.httpShareUrl());
 
   if (url.isEmpty()) return;
 
   // The body goes into a request, so the values are percent-encoded.
-  const auto body = taiga::replaceVariables(
-      QString::fromStdString(taiga::settings.httpShareFormat()), episode, true);
+  const auto body = akyuu::replaceVariables(
+      QString::fromStdString(akyuu::settings.httpShareFormat()), episode, true);
 
   QNetworkRequest request{QUrl{url}};
   request.setHeader(QNetworkRequest::ContentTypeHeader, u"application/x-www-form-urlencoded"_s);
 
-  const auto reply = taiga::network()->post(request, body.toUtf8());
+  const auto reply = akyuu::network()->post(request, body.toUtf8());
 
   QObject::connect(reply, &QNetworkReply::finished, reply, [reply]() {
     if (reply->error() != QNetworkReply::NoError) {

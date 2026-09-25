@@ -23,13 +23,13 @@
 #include <QXmlStreamReader>
 #include <chrono>
 
+#include "akyuu/accounts.hpp"
+#include "akyuu/settings.hpp"
 #include "base/log.hpp"
 #include "base/string.hpp"
 #include "base/xml.hpp"
 #include "compat/common.hpp"
 #include "media/anime.hpp"
-#include "akyuu/accounts.hpp"
-#include "akyuu/settings.hpp"
 
 #define XML_ATTR(name) xml.attributes().value(name)
 #define XML_ATTR_BOOL(name) (XML_ATTR(name) == u"true")
@@ -38,14 +38,14 @@
 
 namespace compat::v1 {
 
-void parseAccountElement(QXmlStreamReader&, const taiga::Settings&, const taiga::Accounts&);
-void parseAnimeElement(QXmlStreamReader&, const taiga::Settings&);
+void parseAccountElement(QXmlStreamReader&, const akyuu::Settings&, const akyuu::Accounts&);
+void parseAnimeElement(QXmlStreamReader&, const akyuu::Settings&);
 void parseAnimeItemsElement(QXmlStreamReader&, QList<anime::Settings>&);
-void parseProgramElement(QXmlStreamReader&, const taiga::Settings&);
-void parseRecognitionElement(QXmlStreamReader&, const taiga::Settings&);
+void parseProgramElement(QXmlStreamReader&, const akyuu::Settings&);
+void parseRecognitionElement(QXmlStreamReader&, const akyuu::Settings&);
 
-void readSettings(const std::string& path, const taiga::Settings& settings,
-                  const taiga::Accounts& accounts) {
+void readSettings(const std::string& path, const akyuu::Settings& settings,
+                  const akyuu::Accounts& accounts) {
   base::XmlFileReader xml;
 
   if (!xml.open(QString::fromStdString(path), removeInvalidCharacterReferences)) {
@@ -106,8 +106,8 @@ QList<anime::Settings> readAnimeSettings(const std::string& path) {
   return items;
 }
 
-void parseAccountElement(QXmlStreamReader& xml, const taiga::Settings& settings,
-                         const taiga::Accounts& accounts) {
+void parseAccountElement(QXmlStreamReader& xml, const akyuu::Settings& settings,
+                         const akyuu::Accounts& accounts) {
   while (xml.readNextStartElement()) {
     if (xml.name() == u"update") {
       settings.setService(XML_ATTR_STR(u"activeservice"));
@@ -143,7 +143,7 @@ void parseAccountElement(QXmlStreamReader& xml, const taiga::Settings& settings,
   }
 }
 
-void parseAnimeElement(QXmlStreamReader& xml, const taiga::Settings& settings) {
+void parseAnimeElement(QXmlStreamReader& xml, const akyuu::Settings& settings) {
   std::vector<std::string> libraryFolders;
 
   while (xml.readNextStartElement()) {
@@ -191,7 +191,7 @@ void parseAnimeItemsElement(QXmlStreamReader& xml, QList<anime::Settings>& items
   }
 }
 
-void parseRecognitionElement(QXmlStreamReader& xml, const taiga::Settings& settings) {
+void parseRecognitionElement(QXmlStreamReader& xml, const akyuu::Settings& settings) {
   while (xml.readNextStartElement()) {
     if (xml.name() == u"mediaplayers") {
       std::vector<std::string> disabledPlayers;
@@ -222,7 +222,7 @@ void parseRecognitionElement(QXmlStreamReader& xml, const taiga::Settings& setti
   }
 }
 
-void parseProgramElement(QXmlStreamReader& xml, const taiga::Settings& settings) {
+void parseProgramElement(QXmlStreamReader& xml, const akyuu::Settings& settings) {
   while (xml.readNextStartElement()) {
     if (xml.name() == u"list") {
       while (xml.readNextStartElement()) {

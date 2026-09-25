@@ -32,6 +32,8 @@
 #include <QUrlQuery>
 #include <QVBoxLayout>
 
+#include "akyuu/accounts.hpp"
+#include "akyuu/settings.hpp"
 #include "base/string.hpp"
 #include "gui/main/main_window.hpp"
 #include "sync/anilist/anilist.hpp"
@@ -39,8 +41,6 @@
 #include "sync/myanimelist/myanimelist.hpp"
 #include "sync/myanimelist/myanimelist_utils.hpp"
 #include "sync/service.hpp"
-#include "akyuu/accounts.hpp"
-#include "akyuu/settings.hpp"
 #include "ui_main_window.h"
 
 namespace gui {
@@ -180,37 +180,37 @@ AccountsPage::AccountsPage(QWidget* parent)
     add_tab(u"AniList"_s, group);
   }
 
-  connect(&taiga::accounts, &taiga::Accounts::authenticationChanged, this,
+  connect(&akyuu::accounts, &akyuu::Accounts::authenticationChanged, this,
           &AccountsPage::updateStatus);
 }
 
 void AccountsPage::load() {
-  const auto service = QString::fromStdString(taiga::settings.service());
+  const auto service = QString::fromStdString(akyuu::settings.service());
   m_comboService->setCurrentIndex(m_comboService->findData(service));
-  m_checkSyncOnStartup->setChecked(taiga::settings.syncOnStartup());
+  m_checkSyncOnStartup->setChecked(akyuu::settings.syncOnStartup());
 
-  m_kitsuEmail->setText(QString::fromStdString(taiga::accounts.kitsuEmail()));
-  m_kitsuPassword->setText(QString::fromStdString(taiga::accounts.kitsuPassword()));
+  m_kitsuEmail->setText(QString::fromStdString(akyuu::accounts.kitsuEmail()));
+  m_kitsuPassword->setText(QString::fromStdString(akyuu::accounts.kitsuPassword()));
 
   updateStatus();
 }
 
 void AccountsPage::save() {
-  const auto previousService = taiga::settings.service();
+  const auto previousService = akyuu::settings.service();
   const auto service = m_comboService->currentData().toString().toStdString();
-  taiga::settings.setService(service);
-  taiga::settings.setSyncOnStartup(m_checkSyncOnStartup->isChecked());
+  akyuu::settings.setService(service);
+  akyuu::settings.setSyncOnStartup(m_checkSyncOnStartup->isChecked());
 
   const auto email = m_kitsuEmail->text().trimmed().toStdString();
   const auto password = m_kitsuPassword->text().toStdString();
   const bool kitsuChanged =
-      email != taiga::accounts.kitsuEmail() || password != taiga::accounts.kitsuPassword();
-  taiga::accounts.setKitsuEmail(email);
-  taiga::accounts.setKitsuPassword(password);
+      email != akyuu::accounts.kitsuEmail() || password != akyuu::accounts.kitsuPassword();
+  akyuu::accounts.setKitsuEmail(email);
+  akyuu::accounts.setKitsuPassword(password);
 
   if (sync::currentServiceId() == sync::ServiceId::Kitsu && kitsuChanged && !email.empty() &&
       !password.empty()) {
-    taiga::accounts.setKitsuAuthenticated(false);
+    akyuu::accounts.setKitsuAuthenticated(false);
     sync::authenticateUser();
   } else if (service != previousService) {
     mainWindow()->ui()->actionSynchronize->trigger();
@@ -227,7 +227,7 @@ void AccountsPage::authorizeAnilist() {
   if (token.isEmpty()) return;
 
   sync::anilist::Service::instance()->setAccessToken(token);
-  taiga::accounts.setAnilistAuthenticated(false);
+  akyuu::accounts.setAnilistAuthenticated(false);
 
   if (sync::currentServiceId() == sync::ServiceId::AniList) {
     mainWindow()->ui()->actionSynchronize->trigger();
@@ -256,13 +256,13 @@ void AccountsPage::updateStatus() {
   };
 
   m_anilistStatus->setText(
-      status(taiga::accounts.anilistAuthenticated(), taiga::accounts.anilistUsername()));
-  m_anilistButton->setText(taiga::accounts.anilistToken().empty() ? tr("Authorize...")
+      status(akyuu::accounts.anilistAuthenticated(), akyuu::accounts.anilistUsername()));
+  m_anilistButton->setText(akyuu::accounts.anilistToken().empty() ? tr("Authorize...")
                                                                   : tr("Re-authorize..."));
 
   m_myanimelistStatus->setText(
-      status(taiga::accounts.myanimelistAuthenticated(), taiga::accounts.myanimelistUsername()));
-  m_myanimelistButton->setText(taiga::accounts.myanimelistAccessToken().empty()
+      status(akyuu::accounts.myanimelistAuthenticated(), akyuu::accounts.myanimelistUsername()));
+  m_myanimelistButton->setText(akyuu::accounts.myanimelistAccessToken().empty()
                                    ? tr("Authorize...")
                                    : tr("Re-authorize..."));
 }

@@ -23,9 +23,9 @@
 #include <QDBusReply>
 #include <QRegularExpression>
 
-#include "base/log.hpp"
 #include "akyuu/script.hpp"
 #include "akyuu/settings.hpp"
+#include "base/log.hpp"
 
 namespace link::irc {
 
@@ -103,19 +103,19 @@ QStringList joinedChannels(const QString& connection) {
 }
 
 void announce(const track::Episode& episode, const bool force) {
-  if (!force && !taiga::settings.ircShareEnabled()) return;
+  if (!force && !akyuu::settings.ircShareEnabled()) return;
   if (!isRunning()) return;
 
   const auto message =
-      taiga::replaceVariables(QString::fromStdString(taiga::settings.ircShareFormat()), episode);
+      akyuu::replaceVariables(QString::fromStdString(akyuu::settings.ircShareFormat()), episode);
 
   if (message.isEmpty()) return;
 
-  const auto command = toCommand(message, taiga::settings.ircShareUseAction());
+  const auto command = toCommand(message, akyuu::settings.ircShareUseAction());
   const auto wanted =
-      taiga::settings.ircShareAllChannels()
+      akyuu::settings.ircShareAllChannels()
           ? QStringList{}
-          : parseChannels(QString::fromStdString(taiga::settings.ircShareChannels()));
+          : parseChannels(QString::fromStdString(akyuu::settings.ircShareChannels()));
 
   for (const auto& connection : connections()) {
     for (const auto& channel : joinedChannels(connection)) {

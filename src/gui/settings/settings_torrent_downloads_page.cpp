@@ -167,37 +167,37 @@ TorrentDownloadsPage::TorrentDownloadsPage(QWidget* parent)
 }
 
 void TorrentDownloadsPage::load() {
-  const auto sortBy = QString::fromStdString(taiga::settings.torrentDownloadSortBy());
+  const auto sortBy = QString::fromStdString(akyuu::settings.torrentDownloadSortBy());
   m_comboSortBy->setCurrentIndex(std::max(m_comboSortBy->findData(sortBy), 0));
   m_comboSortOrder->setCurrentIndex(std::max(
-      m_comboSortOrder->findData(static_cast<int>(taiga::settings.torrentDownloadSortOrder())), 0));
+      m_comboSortOrder->findData(static_cast<int>(akyuu::settings.torrentDownloadSortOrder())), 0));
 
-  m_checkUseAnimeFolder->setChecked(taiga::settings.torrentDownloadUseAnimeFolder());
-  m_checkFallback->setChecked(taiga::settings.torrentDownloadFallbackOnFolder());
-  m_editLocation->setText(QString::fromStdString(taiga::settings.torrentDownloadLocation()));
-  m_checkCreateSubfolder->setChecked(taiga::settings.torrentDownloadCreateSubfolder());
+  m_checkUseAnimeFolder->setChecked(akyuu::settings.torrentDownloadUseAnimeFolder());
+  m_checkFallback->setChecked(akyuu::settings.torrentDownloadFallbackOnFolder());
+  m_editLocation->setText(QString::fromStdString(akyuu::settings.torrentDownloadLocation()));
+  m_checkCreateSubfolder->setChecked(akyuu::settings.torrentDownloadCreateSubfolder());
 
-  m_checkOpen->setChecked(taiga::settings.torrentDownloadOpen());
+  m_checkOpen->setChecked(akyuu::settings.torrentDownloadOpen());
 
-  const bool custom = taiga::settings.torrentDownloadAppMode() != "default";
+  const bool custom = akyuu::settings.torrentDownloadAppMode() != "default";
   m_radioCustomApp->setChecked(custom);
   m_radioDefaultApp->setChecked(!custom);
-  m_editAppPath->setText(QString::fromStdString(taiga::settings.torrentDownloadAppPath()));
+  m_editAppPath->setText(QString::fromStdString(akyuu::settings.torrentDownloadAppPath()));
 
   refreshState();
 }
 
 void TorrentDownloadsPage::save() {
-  taiga::settings.setTorrentDownloadSortBy(m_comboSortBy->currentData().toString().toStdString());
-  taiga::settings.setTorrentDownloadSortOrder(
+  akyuu::settings.setTorrentDownloadSortBy(m_comboSortBy->currentData().toString().toStdString());
+  akyuu::settings.setTorrentDownloadSortOrder(
       static_cast<Qt::SortOrder>(m_comboSortOrder->currentData().toInt()));
-  taiga::settings.setTorrentDownloadUseAnimeFolder(m_checkUseAnimeFolder->isChecked());
-  taiga::settings.setTorrentDownloadFallbackOnFolder(m_checkFallback->isChecked());
-  taiga::settings.setTorrentDownloadLocation(m_editLocation->text().trimmed().toStdString());
-  taiga::settings.setTorrentDownloadCreateSubfolder(m_checkCreateSubfolder->isChecked());
-  taiga::settings.setTorrentDownloadOpen(m_checkOpen->isChecked());
-  taiga::settings.setTorrentDownloadAppMode(m_radioCustomApp->isChecked() ? "custom" : "default");
-  taiga::settings.setTorrentDownloadAppPath(m_editAppPath->text().trimmed().toStdString());
+  akyuu::settings.setTorrentDownloadUseAnimeFolder(m_checkUseAnimeFolder->isChecked());
+  akyuu::settings.setTorrentDownloadFallbackOnFolder(m_checkFallback->isChecked());
+  akyuu::settings.setTorrentDownloadLocation(m_editLocation->text().trimmed().toStdString());
+  akyuu::settings.setTorrentDownloadCreateSubfolder(m_checkCreateSubfolder->isChecked());
+  akyuu::settings.setTorrentDownloadOpen(m_checkOpen->isChecked());
+  akyuu::settings.setTorrentDownloadAppMode(m_radioCustomApp->isChecked() ? "custom" : "default");
+  akyuu::settings.setTorrentDownloadAppPath(m_editAppPath->text().trimmed().toStdString());
 }
 
 void TorrentDownloadsPage::refreshState() {

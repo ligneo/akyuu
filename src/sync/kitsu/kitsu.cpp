@@ -27,13 +27,13 @@
 #include <QUrlQuery>
 #include <ranges>
 
+#include "akyuu/accounts.hpp"
 #include "base/string.hpp"
 #include "media/anime_db.hpp"
 #include "sync/kitsu/kitsu_error.hpp"
 #include "sync/kitsu/kitsu_parsers.hpp"
 #include "sync/kitsu/kitsu_utils.hpp"
 #include "sync/queue.hpp"
-#include "akyuu/accounts.hpp"
 
 // Kitsu API documentation:
 // https://kitsu.docs.apiary.io
@@ -57,7 +57,7 @@ Service::Service() : sync::Service{ServiceId::Kitsu} {
   headers.append(QHttpHeaders::WellKnownHeader::Accept, kJsonApiMediaType);
   api_.setCommonHeaders(headers);
 
-  if (const auto token = taiga::accounts.kitsuAccessToken(); !token.empty()) {
+  if (const auto token = akyuu::accounts.kitsuAccessToken(); !token.empty()) {
     api_.setBearerToken(QByteArray::fromStdString(token));
   }
 }
@@ -112,13 +112,13 @@ void Service::fetchAnime(const int id) {
 void Service::fetchListEntries(const int offset, QSet<int> fetchedIds) {
   // Library entries are filtered by numeric user ID rather than username, so it must be
   // resolved first.
-  if (taiga::accounts.kitsuUserId().empty()) {
+  if (akyuu::accounts.kitsuUserId().empty()) {
     resolveUser([this, offset, fetchedIds] { fetchListEntries(offset, fetchedIds); });
     return;
   }
 
   const QUrlQuery query{{
-      {"filter[user_id]", QString::fromStdString(taiga::accounts.kitsuUserId())},
+      {"filter[user_id]", QString::fromStdString(akyuu::accounts.kitsuUserId())},
       {"filter[kind]", "anime"},
       {"include", "anime"},
       {"page[offset]", QString::number(offset)},
@@ -248,7 +248,7 @@ void Service::addListEntry(const int id, const anime::list::Fields dirty) {
   request.setHeader(QNetworkRequest::ContentTypeHeader, kJsonApiMediaType);
 
   const auto body = buildLibraryEntryObject(*listEntry, dirty,
-                                            QString::fromStdString(taiga::accounts.kitsuUserId()));
+                                            QString::fromStdString(akyuu::accounts.kitsuUserId()));
 
   const auto callback = [this, id, dirty](QRestReply& reply) {
     const auto json = reply.readJson();
@@ -293,7 +293,7 @@ void Service::updateListEntry(const int id, const anime::list::Fields dirty) {
   request.setHeader(QNetworkRequest::ContentTypeHeader, kJsonApiMediaType);
 
   const auto body = buildLibraryEntryObject(*listEntry, dirty,
-                                            QString::fromStdString(taiga::accounts.kitsuUserId()));
+                                            QString::fromStdString(akyuu::accounts.kitsuUserId()));
 
   const auto callback = [this, id, dirty](QRestReply& reply) {
     if (isError(reply)) {

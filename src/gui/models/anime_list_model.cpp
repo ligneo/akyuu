@@ -30,6 +30,7 @@
 #include <QSize>
 #include <algorithm>
 
+#include "akyuu/settings.hpp"
 #include "gui/utils/format.hpp"
 #include "gui/utils/image_provider.hpp"
 #include "gui/utils/rating.hpp"
@@ -37,7 +38,6 @@
 #include "media/anime_list_utils.hpp"
 #include "media/anime_season.hpp"
 #include "media/anime_utils.hpp"
-#include "akyuu/settings.hpp"
 #include "track/library.hpp"
 
 namespace gui {
@@ -293,7 +293,7 @@ QVariant AnimeListModel::data(const QModelIndex& index, int role) const {
       break;
 
     case Qt::FontRole:
-      if (taiga::settings.listHighlightNewEpisodes() && hasNewEpisode(*anime, entry)) {
+      if (akyuu::settings.listHighlightNewEpisodes() && hasNewEpisode(*anime, entry)) {
         auto font = QApplication::font();
         font.setWeight(QFont::Weight::DemiBold);
         return font;

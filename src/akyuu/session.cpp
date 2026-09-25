@@ -22,14 +22,14 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 
+#include "akyuu/path.hpp"
 #include "base/string.hpp"
 #include "gui/common/anime_list_view_base.hpp"
 #include "gui/models/anime_list_model.hpp"
 #include "gui/models/anime_list_proxy_model.hpp"
 #include "media/anime_season.hpp"
-#include "akyuu/path.hpp"
 
-namespace taiga {
+namespace akyuu {
 
 QString Session::fileName() const {
   return u"%1/session.json"_s.arg(get_data_path());
@@ -251,4 +251,4 @@ void Session::setSearchListViewMode(const gui::ListViewMode mode) const {
   setValue("searchList.viewMode", static_cast<int>(mode));
 }
 
-}  // namespace taiga
+}  // namespace akyuu

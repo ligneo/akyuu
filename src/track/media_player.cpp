@@ -20,10 +20,10 @@
 
 #include <algorithm>
 
-#include "base/file.hpp"
-#include "base/string.hpp"
 #include "akyuu/path.hpp"
 #include "akyuu/settings.hpp"
+#include "base/file.hpp"
+#include "base/string.hpp"
 
 namespace track::media {
 
@@ -31,11 +31,11 @@ namespace {
 
 bool isDisabled(const Player& player) {
   if (player.type == anisthesia::PlayerType::WebBrowser &&
-      !taiga::settings.streamingMediaEnabled()) {
+      !akyuu::settings.streamingMediaEnabled()) {
     return true;
   }
 
-  const auto disabledPlayers = taiga::settings.disabledMediaPlayers();
+  const auto disabledPlayers = akyuu::settings.disabledMediaPlayers();
 
   return std::ranges::any_of(disabledPlayers, [&player](const std::string& name) {
     return compareStrings(player.name, name, Qt::CaseInsensitive) == 0;
@@ -45,7 +45,7 @@ bool isDisabled(const Player& player) {
 // The bundled data can be extended or corrected by a file in the data directory, as in v1. A player
 // with the same name replaces the bundled one, the rest are added.
 void mergeUserPlayersData(std::vector<Player>& players) {
-  const auto path = u"%1/players.anisthesia"_s.arg(QString::fromStdString(taiga::get_data_path()));
+  const auto path = u"%1/players.anisthesia"_s.arg(QString::fromStdString(akyuu::get_data_path()));
   const auto file = base::readFile(path);
 
   if (file.isEmpty()) {

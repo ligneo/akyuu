@@ -27,8 +27,8 @@
 #include <QSpinBox>
 #include <QVBoxLayout>
 
-#include "base/string.hpp"
 #include "akyuu/settings.hpp"
+#include "base/string.hpp"
 #include "track/feed_aggregator.hpp"
 
 namespace gui {
@@ -121,11 +121,11 @@ TorrentsPage::TorrentsPage(QWidget* parent)
 }
 
 void TorrentsPage::load() {
-  m_comboSource->setCurrentText(QString::fromStdString(taiga::settings.torrentDiscoveryUrl()));
-  m_comboSearch->setCurrentText(QString::fromStdString(taiga::settings.torrentSearchUrl()));
-  m_checkAutoCheck->setChecked(taiga::settings.torrentAutoCheckEnabled());
-  m_spinInterval->setValue(static_cast<int>(taiga::settings.torrentAutoCheckInterval().count()));
-  m_radioDownload->setChecked(taiga::settings.torrentDownloadNewEpisodes());
+  m_comboSource->setCurrentText(QString::fromStdString(akyuu::settings.torrentDiscoveryUrl()));
+  m_comboSearch->setCurrentText(QString::fromStdString(akyuu::settings.torrentSearchUrl()));
+  m_checkAutoCheck->setChecked(akyuu::settings.torrentAutoCheckEnabled());
+  m_spinInterval->setValue(static_cast<int>(akyuu::settings.torrentAutoCheckInterval().count()));
+  m_radioDownload->setChecked(akyuu::settings.torrentDownloadNewEpisodes());
   m_radioNotify->setChecked(!m_radioDownload->isChecked());
   m_spinInterval->setEnabled(m_checkAutoCheck->isChecked());
   m_radioNotify->setEnabled(m_checkAutoCheck->isChecked());
@@ -133,14 +133,14 @@ void TorrentsPage::load() {
 }
 
 void TorrentsPage::save() {
-  taiga::settings.setTorrentDiscoveryUrl(m_comboSource->currentText().trimmed().toStdString());
-  taiga::settings.setTorrentSearchUrl(m_comboSearch->currentText().trimmed().toStdString());
-  taiga::settings.setTorrentAutoCheckEnabled(m_checkAutoCheck->isChecked());
-  taiga::settings.setTorrentAutoCheckInterval(std::chrono::minutes{m_spinInterval->value()});
+  akyuu::settings.setTorrentDiscoveryUrl(m_comboSource->currentText().trimmed().toStdString());
+  akyuu::settings.setTorrentSearchUrl(m_comboSearch->currentText().trimmed().toStdString());
+  akyuu::settings.setTorrentAutoCheckEnabled(m_checkAutoCheck->isChecked());
+  akyuu::settings.setTorrentAutoCheckInterval(std::chrono::minutes{m_spinInterval->value()});
   if (m_radioDownload->isChecked()) {
-    taiga::settings.setTorrentDownloadNewEpisodes(true);
+    akyuu::settings.setTorrentDownloadNewEpisodes(true);
   } else {
-    taiga::settings.setTorrentNotifyNewEpisodes(true);
+    akyuu::settings.setTorrentNotifyNewEpisodes(true);
   }
 
   track::aggregator()->applyAutoCheckSettings();

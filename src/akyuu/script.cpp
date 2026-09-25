@@ -21,17 +21,17 @@
 #include <QFileInfo>
 #include <QUrl>
 
+#include "akyuu/accounts.hpp"
 #include "base/atf.hpp"
 #include "gui/utils/format.hpp"
 #include "media/anime_db.hpp"
 #include "media/anime_season.hpp"
 #include "media/anime_utils.hpp"
 #include "sync/service.hpp"
-#include "akyuu/accounts.hpp"
 #include "track/media.hpp"
 #include "track/update_session.hpp"
 
-namespace taiga {
+namespace akyuu {
 
 using namespace Qt::StringLiterals;
 
@@ -123,7 +123,7 @@ QString replaceVariables(const QString& format, const track::Episode& episode,
 
   fields[u"playstatus"_s] = playStatus();
 
-  if (const auto user = taiga::accounts.serviceUsername(
+  if (const auto user = akyuu::accounts.serviceUsername(
           sync::serviceSlug(sync::currentServiceId()).toStdString());
       !user.empty()) {
     fields[u"user"_s] = QString::fromStdString(user);
@@ -138,4 +138,4 @@ QString replaceVariables(const QString& format, const track::Episode& episode,
   return atf::replace(format, fields);
 }
 
-}  // namespace taiga
+}  // namespace akyuu

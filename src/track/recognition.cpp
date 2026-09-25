@@ -25,10 +25,10 @@
 #include <ranges>
 #include <vector>
 
+#include "akyuu/settings.hpp"
 #include "base/string.hpp"
 #include "media/anime.hpp"
 #include "media/anime_db.hpp"
-#include "akyuu/settings.hpp"
 #include "track/episode.hpp"
 #include "track/recognition_cache.hpp"
 #include "track/recognition_normalize.hpp"
@@ -118,7 +118,7 @@ Episode parse(std::string_view input, const anitomy::Options options) {
 
   // Strings the user wants ignored are removed first, because Anitomy has no option for them.
   std::string cleaned{input};
-  for (const auto& ignored : taiga::settings.recognitionIgnoredStrings()) {
+  for (const auto& ignored : akyuu::settings.recognitionIgnoredStrings()) {
     if (ignored.empty()) continue;
     for (auto pos = cleaned.find(ignored); pos != std::string::npos;
          pos = cleaned.find(ignored, pos)) {
@@ -138,7 +138,7 @@ Episode parseFileInfo(const QFileInfo& info, const anitomy::Options options) {
   Episode episode = track::recognition::parse(fileName, options);
 
   if (!episode.contains(anitomy::ElementKind::Title) &&
-      taiga::settings.recognitionLookupParentDirectories()) {
+      akyuu::settings.recognitionLookupParentDirectories()) {
     const auto parsed = parseParentDirectories(info);
     if (!parsed.title.empty()) {
       episode.addElement(anitomy::ElementKind::Title, parsed.title);

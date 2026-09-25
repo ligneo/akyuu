@@ -22,7 +22,7 @@
 #include <QString>
 #include <QWidget>
 
-namespace taiga {
+namespace akyuu {
 class Orange;
 }
 
@@ -43,7 +43,7 @@ private slots:
 private:
   QMessageBox* messageBox() const;
 
-  taiga::Orange* orange_;
+  akyuu::Orange* orange_;
   QString previousWindowTitle_;
 };
 

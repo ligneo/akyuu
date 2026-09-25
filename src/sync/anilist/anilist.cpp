@@ -26,13 +26,13 @@
 #include <QSet>
 #include <ranges>
 
+#include "akyuu/accounts.hpp"
 #include "base/string.hpp"
 #include "media/anime_db.hpp"
 #include "sync/anilist/anilist_error.hpp"
 #include "sync/anilist/anilist_parsers.hpp"
 #include "sync/anilist/anilist_utils.hpp"
 #include "sync/queue.hpp"
-#include "akyuu/accounts.hpp"
 
 // AniList API documentation:
 // https://docs.anilist.co/
@@ -42,7 +42,7 @@ namespace sync::anilist {
 Service::Service() : sync::Service{ServiceId::AniList} {
   api_.setBaseUrl(QUrl{"https://graphql.anilist.co"});
 
-  if (const auto token = taiga::accounts.anilistToken(); !token.empty()) {
+  if (const auto token = akyuu::accounts.anilistToken(); !token.empty()) {
     api_.setBearerToken(QByteArray::fromStdString(token));
   }
 }
@@ -190,7 +190,7 @@ void Service::search(const SearchParams& params, const int page) {
 
 void Service::fetchListEntries() {
   const QJsonObject variables{
-      {"userName", QString::fromStdString(taiga::accounts.anilistUsername())},
+      {"userName", QString::fromStdString(akyuu::accounts.anilistUsername())},
   };
 
   const QJsonDocument data{{
