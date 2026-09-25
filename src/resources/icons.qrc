@@ -42,6 +42,9 @@
     <file>icons/sort.svg</file>
     <file>icons/sync.svg</file>
     <file>icons/akyuu.png</file>
+    <file>icons/tray/akyuu.svg</file>
+    <file>icons/tray/akyuu_happy.svg</file>
+    <file>icons/tray/akyuu_sleepy.svg</file>
     <file>icons/warning.svg</file>
     <file>icons/web_asset.svg</file>
   </qresource>

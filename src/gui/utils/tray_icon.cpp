@@ -27,7 +27,9 @@
 
 namespace gui {
 
-TrayIcon::TrayIcon(QObject* parent, const QIcon& icon, QMenu* menu) : m_baseIcon(icon) {
+using namespace Qt::StringLiterals;
+
+TrayIcon::TrayIcon(QObject* parent, QMenu* menu) {
   if (!QSystemTrayIcon::isSystemTrayAvailable()) {
     return;
   }
@@ -36,7 +38,7 @@ TrayIcon::TrayIcon(QObject* parent, const QIcon& icon, QMenu* menu) : m_baseIcon
 
   m_icon = new QSystemTrayIcon(parent);
   m_icon->setContextMenu(m_contextMenu);
-  m_icon->setIcon(m_baseIcon);
+  m_icon->setIcon(moodIcon());
   m_icon->setToolTip("Akyuu");
   m_icon->show();
 
@@ -71,20 +73,40 @@ void TrayIcon::setBadge(Badge badge) {
   updateIcon();
 }
 
+void TrayIcon::setSleeping(bool sleeping) {
+  if (m_sleeping == sleeping) return;
+
+  m_sleeping = sleeping;
+  updateIcon();
+}
+
+// The owl sleeps while detection is off, and smiles at an episode it recognized. The tray gets a
+// simpler drawing than the window icon: the quill and the feet are lost at 16-22 px anyway.
+QIcon TrayIcon::moodIcon() const {
+  if (m_sleeping) return QIcon(u":/icons/tray/akyuu_sleepy.svg"_s);
+  if (m_badge == Badge::Success) return QIcon(u":/icons/tray/akyuu_happy.svg"_s);
+  return QIcon(u":/icons/tray/akyuu.svg"_s);
+}
+
 void TrayIcon::updateIcon() {
   if (!m_icon) return;
 
-  if (m_badge == Badge::None) {
-    m_icon->setIcon(m_baseIcon);
+  const auto icon = moodIcon();
+
+  if (m_badge == Badge::None || m_sleeping) {
+    m_icon->setIcon(icon);
     return;
   }
 
-  const auto sizes = m_baseIcon.availableSizes();
-  const QSize size = sizes.isEmpty() ? QSize(64, 64) : sizes.front();
-
-  QPixmap pixmap = m_baseIcon.pixmap(size);
-  paintBadge(pixmap);
-  m_icon->setIcon(QIcon(pixmap));
+  // An SVG icon has no sizes of its own, so the badge is drawn on each size a tray may ask for.
+  QIcon badged;
+  for (const int size : {16, 22, 24, 32, 48, 64}) {
+    // At a device pixel ratio of 1, so the badge is drawn in the same pixels as the owl.
+    QPixmap pixmap = icon.pixmap(QSize(size, size), 1.0);
+    paintBadge(pixmap);
+    badged.addPixmap(pixmap);
+  }
+  m_icon->setIcon(badged);
 }
 
 void TrayIcon::paintBadge(QPixmap& pixmap) const {
