@@ -85,6 +85,7 @@ public:
   bool appCloseToTray() const;
   bool appMinimizeToTray() const;
   bool appStartMinimized() const;
+  bool appCheckForUpdates() const;
   std::string listDoubleClickAction() const;
   std::string listMiddleClickAction() const;
   bool listHighlightNewEpisodes() const;
@@ -165,6 +166,7 @@ public:
   void setAppCloseToTray(const bool enabled) const;
   void setAppMinimizeToTray(const bool enabled) const;
   void setAppStartMinimized(const bool enabled) const;
+  void setAppCheckForUpdates(const bool enabled) const;
   void setListDoubleClickAction(const std::string& action) const;
   void setListMiddleClickAction(const std::string& action) const;
   void setListHighlightNewEpisodes(const bool highlight) const;

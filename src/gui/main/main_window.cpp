@@ -144,6 +144,7 @@ void MainWindow::init() {
 
   // v1 can synchronize the list as soon as it starts
   if (akyuu::settings.syncOnStartup()) synchronize();
+  if (akyuu::settings.appCheckForUpdates()) checkForUpdates(true);
 }
 
 void MainWindow::initShortcuts() {
@@ -257,7 +258,7 @@ void MainWindow::initActions() {
     if (!checked) link::discord()->clearPresence();
   });
 
-  connect(ui_->actionCheckForUpdates, &QAction::triggered, this, &MainWindow::checkForUpdates);
+  connect(ui_->actionCheckForUpdates, &QAction::triggered, this, [this]() { checkForUpdates(); });
 
   ui_->actionToggleSynchronization->setChecked(akyuu::settings.syncEnabled());
   connect(ui_->actionToggleSynchronization, &QAction::toggled, this,
@@ -652,7 +653,9 @@ void MainWindow::exportList(const ExportFormat format) {
 // v1 downloads its NSIS installer and runs it silently (`/S /D=<folder>`) to replace itself. That
 // is a Windows mechanism; on Linux Akyuu is installed by the user or a package manager, so the
 // honest thing to do is say whether there is something newer and where to get it.
-void MainWindow::checkForUpdates() {
+// `silent` is the check at startup, as v1's `program/startup/checkversion`: it only speaks up when
+// there is something newer, and says nothing about errors or being up to date.
+void MainWindow::checkForUpdates(bool silent) {
   static const QUrl url{u"https://api.github.com/repos/ligneo/akyuu/releases/latest"_s};
 
   QNetworkRequest request{url};
@@ -660,16 +663,25 @@ void MainWindow::checkForUpdates() {
 
   const auto reply = akyuu::network()->get(request);
 
-  m_statusBarController->showMessage({
-      .source = StatusBarController::Source::Sync,
-      .text = tr("Checking for updates..."),
-  });
+  if (!silent) {
+    m_statusBarController->showMessage({
+        .source = StatusBarController::Source::Sync,
+        .text = tr("Checking for updates..."),
+    });
+  }
 
-  connect(reply, &QNetworkReply::finished, this, [this, reply]() {
+  connect(reply, &QNetworkReply::finished, this, [this, reply, silent]() {
     reply->deleteLater();
-    m_statusBarController->clearMessage(StatusBarController::Source::Sync);
+    if (!silent) m_statusBarController->clearMessage(StatusBarController::Source::Sync);
 
     if (reply->error() != QNetworkReply::NoError) {
+      if (silent) return;
+      // GitHub answers 404 while there is no release yet (or the repository is not public).
+      if (reply->error() == QNetworkReply::ContentNotFoundError) {
+        QMessageBox::information(this, tr("Check for Updates"),
+                                 tr("No release has been published yet."));
+        return;
+      }
       QMessageBox::warning(this, tr("Check for Updates"),
                            tr("Could not check for updates: %1").arg(reply->errorString()));
       return;
@@ -683,6 +695,7 @@ void MainWindow::checkForUpdates() {
     const auto& current = akyuu::version();
 
     if (!latest || !(latest > current)) {
+      if (silent) return;
       QMessageBox::information(
           this, tr("Check for Updates"),
           tr("You are using the latest version (%1). The newest release is %2.")

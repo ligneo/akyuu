@@ -40,6 +40,7 @@ ApplicationPage::ApplicationPage(QWidget* parent)
       m_checkAutoStart(new QCheckBox(tr("Start automatically at login"), this)),
       m_checkStartMinimized(new QCheckBox(tr("Start minimized"), this)),
       m_checkScanOnStartup(new QCheckBox(tr("Scan library folders for available episodes"), this)),
+      m_checkCheckForUpdates(new QCheckBox(tr("Check for updates"), this)),
       m_checkCloseToTray(new QCheckBox(tr("Close to tray"), this)),
       m_checkMinimizeToTray(new QCheckBox(tr("Minimize to tray"), this)) {
   const auto layout = new QVBoxLayout(this);
@@ -78,6 +79,7 @@ ApplicationPage::ApplicationPage(QWidget* parent)
     groupLayout->addWidget(m_checkAutoStart);
     groupLayout->addWidget(m_checkStartMinimized);
     groupLayout->addWidget(m_checkScanOnStartup);
+    groupLayout->addWidget(m_checkCheckForUpdates);
     layout->addWidget(group);
   }
 
@@ -114,6 +116,7 @@ void ApplicationPage::load() {
   m_checkAutoStart->setChecked(akyuu::settings.appAutoStart());
   m_checkStartMinimized->setChecked(akyuu::settings.appStartMinimized());
   m_checkScanOnStartup->setChecked(akyuu::settings.libraryScanOnStartup());
+  m_checkCheckForUpdates->setChecked(akyuu::settings.appCheckForUpdates());
 
   QStringList links;
   for (const auto& link : akyuu::settings.externalLinks())
@@ -127,6 +130,7 @@ void ApplicationPage::save() {
   akyuu::settings.setAppAutoStart(m_checkAutoStart->isChecked());
   akyuu::settings.setAppStartMinimized(m_checkStartMinimized->isChecked());
   akyuu::settings.setLibraryScanOnStartup(m_checkScanOnStartup->isChecked());
+  akyuu::settings.setAppCheckForUpdates(m_checkCheckForUpdates->isChecked());
 
   std::vector<std::string> links;
   for (const auto& line : m_editExternalLinks->toPlainText().split(u'\n')) {

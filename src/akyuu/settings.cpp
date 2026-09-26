@@ -155,6 +155,11 @@ bool Settings::appStartMinimized() const {
   return value("app.startMinimized", false).toBool();
 }
 
+// v1's `program/startup/checkversion`
+bool Settings::appCheckForUpdates() const {
+  return value("app.checkForUpdates", true).toBool();
+}
+
 bool Settings::libraryWatchFolders() const {
   return value("library.folders.watch", true).toBool();
 }
@@ -665,6 +670,10 @@ void Settings::setAppMinimizeToTray(const bool enabled) const {
 
 void Settings::setAppStartMinimized(const bool enabled) const {
   setValue("app.startMinimized", enabled);
+}
+
+void Settings::setAppCheckForUpdates(const bool enabled) const {
+  setValue("app.checkForUpdates", enabled);
 }
 
 void Settings::setLibraryWatchFolders(const bool watch) const {

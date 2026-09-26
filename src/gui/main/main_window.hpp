@@ -110,7 +110,7 @@ private:
   void switchSearchText(MainWindowPage from, MainWindowPage to);
   void initStatusbar();
   void exportList(const ExportFormat format);
-  void checkForUpdates();
+  void checkForUpdates(bool silent = false);
   void initExternalLinksMenu();
   void initServicesMenu();
   void initViewMenu();
