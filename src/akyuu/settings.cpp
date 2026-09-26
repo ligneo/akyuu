@@ -174,6 +174,11 @@ qint64 Settings::libraryMinimumFileSize() const {
   return value("library.minimumFileSize", 0).toLongLong();
 }
 
+// v1's `recognition/mediaplayers/launchpath`
+std::string Settings::libraryMediaPlayerPath() const {
+  return value("library.mediaPlayerPath", u""_s).toString().toStdString();
+}
+
 // v1 lets both clicks be chosen from the same list of actions.
 std::string Settings::listDoubleClickAction() const {
   return value("animeList.action.doubleClick", u"details"_s).toString().toStdString();
@@ -686,6 +691,10 @@ void Settings::setLibraryScanOnStartup(const bool scan) const {
 
 void Settings::setLibraryMinimumFileSize(const qint64 bytes) const {
   setValue("library.minimumFileSize", bytes);
+}
+
+void Settings::setLibraryMediaPlayerPath(const std::string& command) const {
+  setValue("library.mediaPlayerPath", QString::fromStdString(command));
 }
 
 void Settings::setListDoubleClickAction(const std::string& action) const {

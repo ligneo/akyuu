@@ -118,6 +118,8 @@ void AdvancedPage::initSettingsTable() {
   // These have no control in v1 either, and the same is true here.
   addRow(tr("Library / File size threshold"),
          QString::number(akyuu::settings.libraryMinimumFileSize()));
+  addRow(tr("Library / Media player path"),
+         QString::fromStdString(akyuu::settings.libraryMediaPlayerPath()));
   addRow(tr("Recognition / Ignored strings"),
          joinStrings(akyuu::settings.recognitionIgnoredStrings(), {}));
   addRow(tr("Recognition / Look up parent directories"),
@@ -137,7 +139,7 @@ void AdvancedPage::load() {
 }
 
 void AdvancedPage::save() {
-  if (m_treeSettings->topLevelItemCount() == 7) {
+  if (m_treeSettings->topLevelItemCount() == 8) {
     akyuu::settings.setSyncNotifyFormat(
         m_treeSettings->topLevelItem(0)->data(1, Qt::DisplayRole).toString().toStdString());
 
@@ -150,13 +152,18 @@ void AdvancedPage::save() {
 
     akyuu::settings.setLibraryMinimumFileSize(
         m_treeSettings->topLevelItem(4)->data(1, Qt::DisplayRole).toLongLong());
+    akyuu::settings.setLibraryMediaPlayerPath(m_treeSettings->topLevelItem(5)
+                                                  ->data(1, Qt::DisplayRole)
+                                                  .toString()
+                                                  .trimmed()
+                                                  .toStdString());
 
-    const auto ignored = m_treeSettings->topLevelItem(5)->data(1, Qt::DisplayRole).toString();
+    const auto ignored = m_treeSettings->topLevelItem(6)->data(1, Qt::DisplayRole).toString();
     akyuu::settings.setRecognitionIgnoredStrings(
         toVector(ignored.split(u", "_s, Qt::SkipEmptyParts)));
 
     akyuu::settings.setRecognitionLookupParentDirectories(
-        m_treeSettings->topLevelItem(6)->data(1, Qt::DisplayRole).toBool());
+        m_treeSettings->topLevelItem(7)->data(1, Qt::DisplayRole).toBool());
   }
 
   akyuu::settings.setProxyType(

@@ -71,6 +71,7 @@ public:
   bool libraryWatchFolders() const;
   bool libraryScanOnStartup() const;
   qint64 libraryMinimumFileSize() const;
+  std::string libraryMediaPlayerPath() const;
   bool mediaDetectionEnabled() const;
   std::chrono::milliseconds mediaDetectionInterval() const;
   std::vector<std::string> recognitionIgnoredStrings() const;
@@ -152,6 +153,7 @@ public:
   void setLibraryWatchFolders(const bool watch) const;
   void setLibraryScanOnStartup(const bool scan) const;
   void setLibraryMinimumFileSize(const qint64 bytes) const;
+  void setLibraryMediaPlayerPath(const std::string& command) const;
   void setMediaDetectionEnabled(const bool enabled) const;
   void setMediaDetectionInterval(const std::chrono::milliseconds interval) const;
   void setRecognitionIgnoredStrings(std::vector<std::string> strings) const;

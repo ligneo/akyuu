@@ -20,6 +20,7 @@
 #include "play.hpp"
 
 #include <QDesktopServices>
+#include <QProcess>
 #include <QRandomGenerator>
 #include <QUrl>
 #include <algorithm>
@@ -35,6 +36,26 @@
 
 namespace track {
 
+namespace {
+
+// v1's `recognition/mediaplayers/launchpath`: episodes open in a chosen player rather than the
+// default application for the file type. The command may carry arguments, e.g. `mpv --fs`.
+bool openEpisodeFile(const QString& path) {
+  const auto command = QString::fromStdString(akyuu::settings.libraryMediaPlayerPath()).trimmed();
+
+  if (command.isEmpty()) {
+    return openEpisodeFile(path);
+  }
+
+  auto arguments = QProcess::splitCommand(command);
+  const auto program = arguments.takeFirst();
+  arguments.append(path);
+
+  return QProcess::startDetached(program, arguments);
+}
+
+}  // namespace
+
 bool playEpisode(int animeId, int number) {
   // The library already knows where the episodes are, so the folders only have to be walked when
   // it has nothing for this one.
@@ -47,7 +68,7 @@ bool playEpisode(int animeId, int number) {
     const auto episodePath = findEpisode(QString::fromStdString(folder), animeId, number);
     if (episodePath) {
       qDebug() << "Found file:" << *episodePath;
-      return QDesktopServices::openUrl(QUrl::fromLocalFile(*episodePath));
+      return openEpisodeFile(*episodePath);
     }
   }
 
