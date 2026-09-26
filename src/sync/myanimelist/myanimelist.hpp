@@ -1,6 +1,7 @@
 /**
  * Akyuu
  * Copyright (C) 2010-2026, Eren Okka
+ * Copyright (C) 2026, cenky <cenkkgl@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,8 +28,11 @@ class QRestReply;
 
 namespace sync::myanimelist {
 
-constexpr auto kClientId = "f6e398095cf7525360276786ec4407bc";
-constexpr auto kRedirectUrl = "https://taiga.moe/api/myanimelist/auth";
+// Akyuu's own client (myanimelist.net/apiconfig), of the "other" type: it has no secret, and the
+// code is exchanged with PKCE instead. The redirect URL is a static page that only shows the code
+// for the user to paste; the code never leaves the browser.
+constexpr auto kClientId = "531c14b640e8523a0cafdb3f00ae2368";
+constexpr auto kRedirectUrl = "https://cenky.dev/akyuu/mal/";
 constexpr auto kApiUrl = "https://api.myanimelist.net/v2";
 constexpr auto kTokenUrl = "https://myanimelist.net/v1/oauth2/token";
 
