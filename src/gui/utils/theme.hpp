@@ -23,6 +23,7 @@
 #include <QHash>
 #include <QIcon>
 #include <QObject>
+#include <QPalette>
 
 namespace gui {
 
@@ -44,10 +45,13 @@ public:
   static QColor warningColor();
 
 private:
+  bool isAkyuuStyle() const;
   QString readStylesheet(const QString& name) const;
 
   QHash<QString, QIcon> m_icons;
   QString m_systemStyle;
+  QPalette m_systemPalette;
+  bool m_hasSystemPalette = false;
 };
 
 inline Theme theme;

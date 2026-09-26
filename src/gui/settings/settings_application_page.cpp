@@ -58,6 +58,7 @@ ApplicationPage::ApplicationPage(QWidget* parent)
         keys.append(style);  // keep unavailable style
       }
       keys.sort(Qt::CaseInsensitive);
+      m_comboStyle->addItem(QStringLiteral("Akyuu"), QString{akyuu::Settings::kAppStyleAkyuu});
       m_comboStyle->addItem(tr("System"), system);
       for (const auto& key : keys) {
         m_comboStyle->addItem(key, key.toLower());
@@ -68,6 +69,13 @@ ApplicationPage::ApplicationPage(QWidget* parent)
     m_comboColorScheme->addItem(tr("Light"), static_cast<int>(Qt::ColorScheme::Light));
     m_comboColorScheme->addItem(tr("Dark"), static_cast<int>(Qt::ColorScheme::Dark));
     form->addRow(tr("Color scheme:"), m_comboColorScheme);
+
+    // Akyuu's style is always dark, so the color scheme only applies to the others
+    const auto updateColorScheme = [this]() {
+      m_comboColorScheme->setEnabled(m_comboStyle->currentData().toString() !=
+                                     akyuu::Settings::kAppStyleAkyuu);
+    };
+    connect(m_comboStyle, &QComboBox::currentIndexChanged, this, updateColorScheme);
 
     layout->addWidget(group);
   }
@@ -112,6 +120,7 @@ void ApplicationPage::load() {
 
   const auto scheme = static_cast<int>(akyuu::settings.appColorScheme());
   m_comboColorScheme->setCurrentIndex(m_comboColorScheme->findData(scheme));
+  m_comboColorScheme->setEnabled(style != akyuu::Settings::kAppStyleAkyuu);
 
   m_checkAutoStart->setChecked(akyuu::settings.appAutoStart());
   m_checkStartMinimized->setChecked(akyuu::settings.appStartMinimized());

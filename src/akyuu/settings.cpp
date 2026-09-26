@@ -66,7 +66,8 @@ std::string Settings::appStyle() const {
   // Fusion is more consistent than the Windows 11 style.
   const auto defaultStyle = u"fusion"_s;
 #else
-  const auto defaultStyle = QString{kAppStyleSystem};
+  // Akyuu's own look: Fusion with the owl's colors
+  const auto defaultStyle = QString{kAppStyleAkyuu};
 #endif
   return value("app.style", defaultStyle).toString().toStdString();
 }

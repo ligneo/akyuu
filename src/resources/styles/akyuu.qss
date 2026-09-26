@@ -1,0 +1,99 @@
+/*
+Akyuu: the colors of the owl on a night sky. Deep purple surfaces, the body's purple for
+selections, lavender for lines and links, and amber, the eyes, for what should catch attention.
+The palette itself is set in `Theme::applyStyle`; this sheet only covers what the palette cannot.
+*/
+
+/* Toolbar */
+
+QMainWindow > QToolBar {
+  border-bottom-color: rgba(201, 184, 240, 14%);
+}
+
+QMainWindow > #centralWidget > QSplitter {
+  background-color: #120f1b;
+}
+QMainWindow > #centralWidget > QSplitter::handle {
+  background-color: rgba(201, 184, 240, 14%);
+}
+
+/* Navigation */
+
+QTreeWidget#navigation::item:hover {
+  background-color: rgba(201, 184, 240, 7%);
+}
+QTreeWidget#navigation::item:selected:active {
+  background-color: rgba(122, 92, 196, 55%);
+}
+QTreeWidget#navigation::item:selected:!active {
+  background-color: rgba(122, 92, 196, 28%);
+}
+
+/* List */
+
+QMainWindow > QWidget > QSplitter > QStackedWidget QListView,
+QMainWindow > QWidget > QSplitter > QStackedWidget QTreeView {
+  border-top-color: rgba(201, 184, 240, 14%);
+}
+
+QMainWindow > QWidget > QSplitter > QStackedWidget QAbstractScrollArea {
+  background-color: #15121f;
+}
+
+QTreeView#animeList QHeaderView {
+  border-bottom-color: rgba(201, 184, 240, 14%);
+}
+
+QTreeView#animeList,
+QTreeView#historyView,
+QTreeView#libraryView {
+  background-color: #15121f;
+  alternate-background-color: rgba(201, 184, 240, 4%);
+}
+QTreeView#animeList::item:hover,
+QTreeView#historyView::item:hover,
+QTreeView#libraryView::item:hover {
+  background-color: rgba(201, 184, 240, 7%);
+}
+QTreeView#animeList::item:selected:active,
+QTreeView#historyView::item:selected:active,
+QTreeView#libraryView::item:selected:active {
+  background-color: rgba(122, 92, 196, 55%);
+}
+QTreeView#animeList::item:selected:!active,
+QTreeView#historyView::item:selected:!active,
+QTreeView#libraryView::item:selected:!active {
+  background-color: rgba(122, 92, 196, 28%);
+}
+
+/* Now Playing */
+
+#nowPlaying {
+  border-top-color: rgba(201, 184, 240, 14%);
+}
+
+/* Statusbar */
+
+QStatusBar {
+  border-top-color: rgba(201, 184, 240, 14%);
+}
+
+/* Accents */
+
+QTreeWidget#navigation::item:selected:active {
+  border-left: 3px solid #f4b73a;
+}
+
+QProgressBar::chunk {
+  background-color: #7a5cc4;
+}
+
+QToolTip {
+  background-color: #2a2240;
+  color: #ece8f5;
+  border: 1px solid #7a5cc4;
+}
+
+QMenu::item:selected {
+  background-color: rgba(122, 92, 196, 55%);
+}

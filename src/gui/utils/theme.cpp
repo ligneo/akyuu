@@ -45,24 +45,90 @@ const QIcon& Theme::getIcon(const QString& key, const QString& extension, bool u
   return m_icons[key];
 }
 
-void Theme::applyStyle() {
-  qApp->styleHints()->setColorScheme(akyuu::settings.appColorScheme());
+namespace {
 
-  // Remember the platform's style, so that it can be restored later on.
+// The owl on a night sky: deep purple surfaces, the owl's purple for selections, lavender for
+// links and amber, its eyes, for accents. See also `styles/akyuu.qss`.
+QPalette akyuuPalette() {
+  const QColor night{0x1b, 0x17, 0x26};
+  const QColor deep{0x15, 0x12, 0x1f};
+  const QColor raised{0x26, 0x20, 0x36};
+  const QColor text{0xec, 0xe8, 0xf5};
+  const QColor muted{0x8f, 0x86, 0xa8};
+  const QColor purple{0x7a, 0x5c, 0xc4};
+  const QColor lavender{0xc9, 0xb8, 0xf0};
+  const QColor amber{0xf4, 0xb7, 0x3a};
+
+  QPalette palette;
+  palette.setColor(QPalette::Window, night);
+  palette.setColor(QPalette::WindowText, text);
+  palette.setColor(QPalette::Base, deep);
+  palette.setColor(QPalette::AlternateBase, QColor{0x1e, 0x1a, 0x2b});
+  palette.setColor(QPalette::Text, text);
+  palette.setColor(QPalette::PlaceholderText, muted);
+  palette.setColor(QPalette::Button, raised);
+  palette.setColor(QPalette::ButtonText, text);
+  palette.setColor(QPalette::BrightText, amber);
+  palette.setColor(QPalette::ToolTipBase, QColor{0x2a, 0x22, 0x40});
+  palette.setColor(QPalette::ToolTipText, text);
+  palette.setColor(QPalette::Highlight, purple);
+  palette.setColor(QPalette::HighlightedText, Qt::white);
+  palette.setColor(QPalette::Link, lavender);
+  palette.setColor(QPalette::LinkVisited, amber);
+  palette.setColor(QPalette::Accent, purple);
+  palette.setColor(QPalette::Light, QColor{0x3a, 0x31, 0x50});
+  palette.setColor(QPalette::Midlight, QColor{0x30, 0x28, 0x44});
+  palette.setColor(QPalette::Mid, QColor{0x22, 0x1c, 0x30});
+  palette.setColor(QPalette::Dark, QColor{0x10, 0x0d, 0x17});
+  palette.setColor(QPalette::Shadow, Qt::black);
+
+  for (const auto role : {QPalette::WindowText, QPalette::Text, QPalette::ButtonText}) {
+    palette.setColor(QPalette::Disabled, role, QColor{0x6b, 0x63, 0x80});
+  }
+  palette.setColor(QPalette::Disabled, QPalette::Highlight, raised);
+
+  return palette;
+}
+
+}  // namespace
+
+bool Theme::isAkyuuStyle() const {
+  return QString::fromStdString(akyuu::settings.appStyle())
+             .compare(akyuu::Settings::kAppStyleAkyuu, Qt::CaseInsensitive) == 0;
+}
+
+void Theme::applyStyle() {
+  // Remember the platform's style and palette, so that they can be restored later on.
   if (m_systemStyle.isEmpty()) m_systemStyle = qApp->style()->name();
+  if (!m_hasSystemPalette) {
+    m_systemPalette = qApp->palette();
+    m_hasSystemPalette = true;
+  }
+
+  const bool akyuuStyle = isAkyuuStyle();
+
+  // Akyuu's style is always dark; the color scheme setting applies to the others.
+  qApp->styleHints()->setColorScheme(akyuuStyle ? Qt::ColorScheme::Dark
+                                                : akyuu::settings.appColorScheme());
 
   auto style = QString::fromStdString(akyuu::settings.appStyle());
   if (style.compare(akyuu::Settings::kAppStyleSystem, Qt::CaseInsensitive) == 0) {
     style = m_systemStyle;
+  } else if (akyuuStyle) {
+    style = u"fusion"_s;
   }
   if (qApp->style()->name().compare(style, Qt::CaseInsensitive) != 0) {
     qApp->setStyle(style);
   }
 
+  qApp->setPalette(akyuuStyle ? akyuuPalette() : m_systemPalette);
+
   // Our stylesheets are written for Fusion, other styles look better without them.
   if (style.compare("fusion", Qt::CaseInsensitive) == 0) {
     const QString mainStylesheet = readStylesheet("main");
-    const QString themeStylesheet = readStylesheet(isDark() ? "dark" : "light");
+    const QString themeStylesheet = readStylesheet(akyuuStyle ? "akyuu"
+                                                   : isDark() ? "dark"
+                                                              : "light");
     qApp->setStyleSheet(mainStylesheet + themeStylesheet);
   } else {
     qApp->setStyleSheet({});
@@ -77,6 +143,8 @@ void Theme::initStyle() {
 }
 
 bool Theme::isDark() const {
+  if (isAkyuuStyle()) return true;
+
   const auto colorScheme = qApp->styleHints()->colorScheme();
 
   // Some platform themes (e.g. qt6ct) provide a palette without reporting a color scheme

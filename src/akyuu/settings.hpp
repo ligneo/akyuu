@@ -38,6 +38,7 @@ public:
   static constexpr std::chrono::seconds kUpdateDelayMax{3600};
 
   static constexpr QLatin1StringView kAppStyleSystem{"system"};
+  static constexpr QLatin1StringView kAppStyleAkyuu{"akyuu"};
 
   void init() const;
 
