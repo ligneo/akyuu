@@ -19,6 +19,7 @@
 
 #include "hoot.hpp"
 
+#include <algorithm>
 #include <array>
 #include <chrono>
 #include <cmath>
@@ -42,15 +43,17 @@ namespace {
 
 // Akyuu's own tune, in D minor pentatonic (D F G A C) and at about 128 bpm, after the mood of
 // KOKIA's "Fukurou" (owl) without borrowing its notes. The owl calls twice, a falling minor third;
-// a phrase rises into the night and a lower one answers; one last call, and it comes home to D.
+// a phrase rises into the night and a lower one answers; after one last call it walks slowly
+// down and lets D ring.
 // clang-format off
-constexpr std::array<std::pair<int, float>, 27> notes{{
+constexpr std::array<std::pair<int, float>, 30> notes{{
   {84, 1/8.f}, {81, 3/8.f}, {84, 1/8.f}, {81, 3/8.f},
   {74, 1/8.f}, {77, 1/8.f}, {79, 1/8.f}, {81, 1/4.f}, {84, 1/8.f},
   {81, 1/8.f}, {79, 1/4.f}, {77, 1/8.f}, {74, 3/8.f},
   {72, 1/8.f}, {74, 1/8.f}, {77, 1/4.f}, {79, 1/8.f}, {77, 1/8.f},
   {74, 1/4.f}, {69, 1/8.f}, {72, 1/8.f}, {74, 1/4.f},
-  {84, 1/8.f}, {81, 3/8.f}, {79, 1/8.f}, {77, 1/8.f}, {74, 3/4.f},
+  {84, 1/8.f}, {81, 3/8.f}, {79, 3/16.f}, {81, 3/16.f}, {77, 1/4.f},
+  {74, 3/16.f}, {72, 3/16.f}, {74, 5/4.f},
 }};
 // clang-format on
 
@@ -72,24 +75,46 @@ constexpr int kChannelCount = 2;
 // wave is used instead of a square wave because it is the same pitch without the harshness, and a
 // few milliseconds of fade on both ends keep the notes from clicking.
 QByteArray renderNotes() {
-  constexpr int kFadeSamples = kSampleRate / 200;  // 5 ms
+  constexpr float kPi = std::numbers::pi_v<float>;
+  constexpr int kAttackSamples = kSampleRate * 12 / 1000;
+  constexpr int kReleaseSamples = kSampleRate * 35 / 1000;
+  constexpr int kLastReleaseSamples = kSampleRate * 900 / 1000;  // the last note rings out
 
   QByteArray data;
 
-  for (const auto& [note, duration] : notes) {
+  for (size_t n = 0; n < notes.size(); ++n) {
+    const auto& [note, duration] = notes[n];
     const float frequency = get_frequency(note);
     const int samples = static_cast<int>(kSampleRate * get_duration(duration) / 1000.0f);
+    const int release = n + 1 == notes.size() ? kLastReleaseSamples : kReleaseSamples;
+    const bool longNote = duration >= 3 / 8.f;
+
+    float phase = 0.0f;
 
     for (int i = 0; i < samples; ++i) {
-      float amplitude = frequency > 0.0f ? 0.2f : 0.0f;
-      if (i < kFadeSamples) {
-        amplitude *= static_cast<float>(i) / kFadeSamples;
-      } else if (i > samples - kFadeSamples) {
-        amplitude *= static_cast<float>(samples - i) / kFadeSamples;
+      const float time = static_cast<float>(i) / kSampleRate;
+
+      // A quick attack, a gentle decay to 70% and a soft release, so that the notes sound
+      // played rather than switched on and off.
+      float envelope = std::min(1.0f, static_cast<float>(i) / kAttackSamples);
+      envelope *= 0.7f + 0.3f * std::exp(-3.0f * time);
+      if (i > samples - release) {
+        envelope *= static_cast<float>(samples - i) / release;
       }
 
-      const float time = static_cast<float>(i) / kSampleRate;
-      const float value = amplitude * std::sin(2.0f * std::numbers::pi_v<float> * frequency * time);
+      // A slight vibrato on the long notes, once they have settled
+      float vibrato = 1.0f;
+      if (longNote) {
+        const float depth = std::clamp((time - 0.18f) / 0.2f, 0.0f, 1.0f);
+        vibrato += 0.004f * depth * std::sin(2.0f * kPi * 5.2f * time);
+      }
+
+      phase += 2.0f * kPi * frequency * vibrato / kSampleRate;
+
+      // Two quiet overtones make it warmer than a plain sine
+      const float wave =
+          std::sin(phase) + 0.22f * std::sin(2.0f * phase) + 0.07f * std::sin(3.0f * phase);
+      const float value = frequency > 0.0f ? 0.17f * envelope * wave : 0.0f;
       const auto sample = static_cast<qint16>(value * std::numeric_limits<qint16>::max());
 
       // The same sample for the left and the right channel: a mono stream with no channel map
