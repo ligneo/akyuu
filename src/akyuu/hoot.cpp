@@ -44,17 +44,16 @@ namespace {
 
 // Akyuu's own tune, in D minor pentatonic (D F G A C), after the mood of KOKIA's "Fukurou" (owl)
 // but a little slower, and without borrowing its notes. The owl calls twice, a falling minor
-// third; a phrase rises into the night and a lower one answers; after one last call it walks
-// slowly down and lets D ring.
+// third; a phrase rises into the night and a lower one answers; one last call, and it settles on
+// D. Every phrase starts on a half bar, six bars in all.
 // clang-format off
-constexpr std::array<std::pair<int, float>, 30> notes{{
+constexpr std::array<std::pair<int, float>, 28> notes{{
   {84, 1/8.f}, {81, 3/8.f}, {84, 1/8.f}, {81, 3/8.f},
   {74, 1/8.f}, {77, 1/8.f}, {79, 1/8.f}, {81, 1/4.f}, {84, 1/8.f},
-  {81, 1/8.f}, {79, 1/4.f}, {77, 1/8.f}, {74, 3/8.f},
+  {81, 1/8.f}, {79, 1/4.f}, {77, 1/8.f}, {74, 1/4.f},
   {72, 1/8.f}, {74, 1/8.f}, {77, 1/4.f}, {79, 1/8.f}, {77, 1/8.f},
   {74, 1/4.f}, {69, 1/8.f}, {72, 1/8.f}, {74, 1/4.f},
-  {84, 1/8.f}, {81, 3/8.f}, {79, 3/16.f}, {81, 3/16.f}, {77, 1/4.f},
-  {74, 3/16.f}, {72, 3/16.f}, {74, 5/4.f},
+  {84, 1/8.f}, {81, 3/8.f}, {79, 1/8.f}, {81, 1/8.f}, {77, 1/4.f}, {74, 1.f},
 }};
 // clang-format on
 
@@ -79,7 +78,7 @@ QByteArray renderNotes() {
   constexpr float kPi = std::numbers::pi_v<float>;
   constexpr int kAttackSamples = kSampleRate * 12 / 1000;
   constexpr int kReleaseSamples = kSampleRate * 35 / 1000;
-  constexpr int kLastReleaseSamples = kSampleRate * 900 / 1000;  // the last note rings out
+  constexpr int kLastReleaseSamples = kSampleRate * 600 / 1000;  // the last note rings out
 
   std::vector<float> wave;
 
