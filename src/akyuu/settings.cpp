@@ -268,7 +268,9 @@ bool Settings::discordEnabled() const {
 }
 
 std::string Settings::discordApplicationId() const {
-  return value("sharing.discord.applicationId", u"379871385176244224"_s).toString().toStdString();
+  // Akyuu's own application (discord.com/developers). Its name is what Discord shows as "Playing
+  // Akyuu", and its art assets are the images the presence names.
+  return value("sharing.discord.applicationId", u"1553542878616232026"_s).toString().toStdString();
 }
 
 bool Settings::discordTimeEnabled() const {
