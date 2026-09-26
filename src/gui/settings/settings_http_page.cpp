@@ -21,13 +21,13 @@
 #include <QCheckBox>
 #include <QGroupBox>
 #include <QHBoxLayout>
-#include <QInputDialog>
 #include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
 #include <QVBoxLayout>
 
 #include "akyuu/settings.hpp"
+#include "gui/settings/format_dialog.hpp"
 
 namespace gui {
 
@@ -62,13 +62,9 @@ HttpPage::HttpPage(QWidget* parent)
 
   // v1 runs the body through its script language; only the plain variables are read here.
   connect(m_buttonFormat, &QPushButton::clicked, this, [this]() {
-    bool ok = false;
-    const auto text = QInputDialog::getMultiLineText(
-        this, tr("Format string"),
-        tr("Variables: %title%, %episode%, %total%, %watched%, %score%, %image%, %group%. Each "
-           "value is percent-encoded."),
-        m_format, &ok);
-    if (ok) m_format = text.trimmed();
+    if (const auto text = FormatDialog::edit(this, FormatDialogMode::Http, m_format)) {
+      m_format = *text;
+    }
   });
 
   connect(m_checkEnabled, &QCheckBox::toggled, m_editUrl, &QWidget::setEnabled);

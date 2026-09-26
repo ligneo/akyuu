@@ -98,8 +98,10 @@ public:
   bool httpShareEnabled() const;
   std::string httpShareUrl() const;
   std::string httpShareFormat() const;
+  static QString defaultHttpShareFormat();
   bool ircShareEnabled() const;
   std::string ircShareFormat() const;
+  static QString defaultIrcShareFormat();
   std::string ircShareChannels() const;
   bool ircShareAllChannels() const;
   bool ircShareUseAction() const;
@@ -115,6 +117,7 @@ public:
   bool syncNotifyNotRecognized() const;
   bool syncNotifyRecognized() const;
   std::string syncNotifyFormat() const;
+  static QString defaultSyncNotifyFormat();
   anime::TitleLanguage titleLanguage() const;
   bool updateAskToConfirm() const;
   std::chrono::seconds updateDelay() const;

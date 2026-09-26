@@ -21,7 +21,6 @@
 #include <QCheckBox>
 #include <QGroupBox>
 #include <QHBoxLayout>
-#include <QInputDialog>
 #include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
@@ -30,6 +29,7 @@
 #include <initializer_list>
 
 #include "akyuu/settings.hpp"
+#include "gui/settings/format_dialog.hpp"
 #include "link/irc.hpp"
 
 namespace gui {
@@ -91,12 +91,9 @@ IrcPage::IrcPage(QWidget* parent)
   layout->addStretch();
 
   connect(m_buttonFormat, &QPushButton::clicked, this, [this]() {
-    bool ok = false;
-    const auto text = QInputDialog::getMultiLineText(
-        this, tr("Format string"),
-        tr("The message understands the same variables and functions as the notification."),
-        m_format, &ok);
-    if (ok) m_format = text.trimmed();
+    if (const auto text = FormatDialog::edit(this, FormatDialogMode::Irc, m_format)) {
+      m_format = *text;
+    }
   });
 
   const std::initializer_list<QWidget*> dependents{m_radioAllChannels, m_radioCustomChannels,

@@ -97,6 +97,8 @@ target_sources(akyuu-gui PRIVATE
 	settings/settings_application_page.cpp
 	settings/settings_application_page.hpp
 	settings/settings_discord_page.cpp
+	settings/format_dialog.cpp
+	settings/format_dialog.hpp
 	settings/settings_http_page.cpp
 	settings/settings_http_page.hpp
 	settings/settings_discord_page.hpp

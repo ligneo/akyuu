@@ -32,6 +32,7 @@
 #include "akyuu/network.hpp"
 #include "akyuu/settings.hpp"
 #include "base/string.hpp"
+#include "gui/settings/format_dialog.hpp"
 
 namespace gui {
 
@@ -85,6 +86,13 @@ AdvancedPage::AdvancedPage(QWidget* parent)
     m_treeSettings->setAlternatingRowColors(true);
     m_treeSettings->setColumnCount(2);
     m_treeSettings->setHeaderLabels({tr("Name"), tr("Value")});
+    connect(m_treeSettings, &QTreeWidget::itemActivated, this, [this](QTreeWidgetItem* item) {
+      if (m_treeSettings->indexOfTopLevelItem(item) != 0) return;
+      const auto current = item->data(1, Qt::DisplayRole).toString();
+      if (const auto text = FormatDialog::edit(this, FormatDialogMode::Notification, current)) {
+        item->setData(1, Qt::DisplayRole, *text);
+      }
+    });
     m_treeSettings->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
     layout->addWidget(m_treeSettings);
   }
@@ -107,8 +115,10 @@ void AdvancedPage::initSettingsTable() {
     return item;
   };
 
-  addRow(tr("Application / Episode notification format"),
-         QString::fromStdString(akyuu::settings.syncNotifyFormat()));
+  // Edited in the format dialog, as in v1, rather than in place
+  const auto notifyFormat = addRow(tr("Application / Episode notification format"),
+                                   QString::fromStdString(akyuu::settings.syncNotifyFormat()));
+  notifyFormat->setFlags(notifyFormat->flags() & ~Qt::ItemIsEditable);
   addRow(tr("Torrents / Archive limit"), akyuu::settings.torrentArchiveMaxCount());
   addRow(tr("Torrents / Download path for .torrent files"),
          QString::fromStdString(akyuu::settings.torrentDownloadFileLocation()));

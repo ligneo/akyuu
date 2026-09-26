@@ -226,10 +226,12 @@ std::string Settings::httpShareUrl() const {
   return value("sharing.http.url").toString().toStdString();
 }
 
+QString Settings::defaultHttpShareFormat() {
+  return u"user=%user%&name=%title%&ep=%episode%&eptotal=%total%&score=%score%&picurl=%image%"_s;
+}
+
 std::string Settings::httpShareFormat() const {
-  static const auto defaultFormat =
-      u"user=%user%&name=%title%&ep=%episode%&eptotal=%total%&score=%score%&picurl=%image%"_s;
-  return value("sharing.http.format", defaultFormat).toString().toStdString();
+  return value("sharing.http.format", defaultHttpShareFormat()).toString().toStdString();
 }
 
 // v1's `announce/mirc/*`. Its "active channel" mode has no counterpart: Konversation does not
@@ -238,13 +240,15 @@ bool Settings::ircShareEnabled() const {
   return value("sharing.irc.enabled", false).toBool();
 }
 
+QString Settings::defaultIrcShareFormat() {
+  return u"\00304$if($greater(%episode%,%watched%),Watching,Rewatching):\003 %title%"
+         u"$if(%episode%, \00303%episode%$if(%total%,/%total%))\003 "
+         u"$if(%score%,\00314[Score: %score%]\003) "
+         u"\00312%animeurl%"_s;
+}
+
 std::string Settings::ircShareFormat() const {
-  static const auto defaultFormat =
-      u"\00304$if($greater(%episode%,%watched%),Watching,Rewatching):\003 %title%"
-      u"$if(%episode%, \00303%episode%$if(%total%,/%total%))\003 "
-      u"$if(%score%,\00314[Score: %score%]\003) "
-      u"\00312%animeurl%"_s;
-  return value("sharing.irc.format", defaultFormat).toString().toStdString();
+  return value("sharing.irc.format", defaultIrcShareFormat()).toString().toStdString();
 }
 
 std::string Settings::ircShareChannels() const {
@@ -306,12 +310,14 @@ bool Settings::syncNotifyRecognized() const {
 }
 
 // v1's `program/notifications/balloon/format`, with its default.
+QString Settings::defaultSyncNotifyFormat() {
+  return u"$if(%title%,%title%)\\n"
+         u"$if(%episode%,Episode %episode%$if(%total%,/%total%) )$if(%group%,by %group%)\\n"
+         u"$if(%name%,%name%)"_s;
+}
+
 std::string Settings::syncNotifyFormat() const {
-  static const auto defaultFormat =
-      u"$if(%title%,%title%)\\n"
-      u"$if(%episode%,Episode %episode%$if(%total%,/%total%) )$if(%group%,by %group%)\\n"
-      u"$if(%name%,%name%)"_s;
-  return value("sync.notify.format", defaultFormat).toString().toStdString();
+  return value("sync.notify.format", defaultSyncNotifyFormat()).toString().toStdString();
 }
 
 anime::TitleLanguage Settings::titleLanguage() const {
