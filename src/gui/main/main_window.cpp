@@ -943,11 +943,13 @@ void MainWindow::navigateToListStatus(anime::list::Status status) {
   m_navigationController->navigateToListStatus(status);
 }
 
+// Qt appends the application display name to a title that does not already end with it, which
+// would turn "Akyuu [debug]" into "Akyuu [debug] — Akyuu". So the marker goes in front.
 void MainWindow::updateTitle() {
   auto title = u"Akyuu"_s;
 
   if (akyuu::app()->isDebug()) {
-    title += u" [debug]"_s;
+    title.prepend(u"[debug] "_s);
   }
 
   setWindowTitle(title);
