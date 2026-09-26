@@ -19,9 +19,12 @@
 
 #include "recognition_relations.hpp"
 
+#include <QNetworkReply>
 #include <QRegularExpression>
+#include <QSaveFile>
 #include <limits>
 
+#include "akyuu/network.hpp"
 #include "akyuu/path.hpp"
 #include "base/file.hpp"
 #include "base/log.hpp"
@@ -32,10 +35,14 @@ namespace track::recognition {
 
 namespace {
 
+QString relationsFilePath() {
+  return u"%1/anime-relations.txt"_s.arg(akyuu::get_data_path());
+}
+
 QString readRelationsFile() {
   // The data directory holds a newer copy once one is fetched, so it comes first. Until then the
   // bundled copy is used, the same way media player data is.
-  const auto path = u"%1/anime-relations.txt"_s.arg(akyuu::get_data_path());
+  const auto path = relationsFilePath();
 
   if (const auto contents = base::readFile(path); !contents.isEmpty()) {
     return contents;
@@ -49,10 +56,13 @@ QString readRelationsFile() {
   return contents;
 }
 
-Relations& relationsFor(const int column) {
+std::unordered_map<int, Relations>& relationsCache() {
   static std::unordered_map<int, Relations> cache;
+  return cache;
+}
 
-  auto [it, inserted] = cache.try_emplace(column);
+Relations& relationsFor(const int column) {
+  auto [it, inserted] = relationsCache().try_emplace(column);
   if (inserted) it->second.load(readRelationsFile(), column);
 
   return it->second;
@@ -191,6 +201,59 @@ std::optional<Redirection> findRedirection(const int id, const std::pair<int, in
       .id = first->id,
       .episode_range = {first->episode_range.first, second->episode_range.first},
   };
+}
+
+namespace {
+
+// The `last_modified` date in the file's `::meta` section, e.g. "2026-08-03"
+QString relationsLastModified(const QString& contents) {
+  static const QRegularExpression pattern{u"^- last_modified: (\\d{4}-\\d{2}-\\d{2})"_s,
+                                          QRegularExpression::MultilineOption};
+  return pattern.match(contents).captured(1);
+}
+
+}  // namespace
+
+// v1 checks for newer relation data along with its own updates (`update.cpp:109`). The file lives
+// in its own repository and changes more often than we release, so a newer copy is fetched into
+// the data directory, where it takes precedence over the bundled one.
+void updateRelations() {
+  static const QUrl url{
+      u"https://raw.githubusercontent.com/erengy/anime-relations/master/anime-relations.txt"_s};
+
+  QNetworkRequest request{url};
+  request.setHeaders(akyuu::NetworkAccessManager::commonHeaders());
+
+  const auto reply = akyuu::network()->get(request);
+
+  QObject::connect(reply, &QNetworkReply::finished, reply, [reply]() {
+    reply->deleteLater();
+
+    if (reply->error() != QNetworkReply::NoError) {
+      qWarning() << "Could not check for anime relations:" << reply->errorString();
+      return;
+    }
+
+    const auto contents = QString::fromUtf8(reply->readAll());
+    const auto latest = relationsLastModified(contents);
+    const auto current = relationsLastModified(readRelationsFile());
+
+    // ISO dates compare correctly as strings
+    if (latest.isEmpty() || !contents.contains(u"::rules"_s)) {
+      qWarning() << "Downloaded anime relations data is not valid";
+      return;
+    }
+    if (latest <= current) return;
+
+    QSaveFile file{relationsFilePath()};
+    if (!file.open(QIODevice::WriteOnly) || file.write(contents.toUtf8()) < 0 || !file.commit()) {
+      qWarning() << "Could not save anime relations data:" << file.errorString();
+      return;
+    }
+
+    relationsCache().clear();
+    qDebug() << "Updated anime relations:" << current << "->" << latest;
+  });
 }
 
 }  // namespace track::recognition

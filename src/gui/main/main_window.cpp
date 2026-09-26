@@ -78,6 +78,7 @@
 #include "track/library.hpp"
 #include "track/media.hpp"
 #include "track/play.hpp"
+#include "track/recognition_relations.hpp"
 #include "track/update_session.hpp"
 #include "ui_main_window.h"
 
@@ -144,7 +145,11 @@ void MainWindow::init() {
 
   // v1 can synchronize the list as soon as it starts
   if (akyuu::settings.syncOnStartup()) synchronize();
-  if (akyuu::settings.appCheckForUpdates()) checkForUpdates(true);
+  // Newer anime relations come with the update check, as in v1
+  if (akyuu::settings.appCheckForUpdates()) {
+    checkForUpdates(true);
+    track::recognition::updateRelations();
+  }
 }
 
 void MainWindow::initShortcuts() {

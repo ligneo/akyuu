@@ -56,4 +56,6 @@ private:
 
 std::optional<Redirection> findRedirection(const int id, const std::pair<int, int>& episode_range);
 
+void updateRelations();
+
 }  // namespace track::recognition
