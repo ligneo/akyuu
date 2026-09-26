@@ -142,7 +142,10 @@ std::string animePageUrl(const int id) {
 }
 
 std::string requestTokenUrl() {
-  constexpr auto kClientId = 161;
+  // Akyuu's own client (anilist.co/settings/developer). Its redirect URL is AniList's pin page,
+  // which shows the token for the user to paste; a desktop program has nowhere else to receive it.
+  // The implicit grant needs no client secret, so none is kept here.
+  constexpr auto kClientId = 52107;
   QUrl url{"https://anilist.co/api/v2/oauth/authorize"};
   url.setQuery({
       {"client_id", QString::number(kClientId)},
