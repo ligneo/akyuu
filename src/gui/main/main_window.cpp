@@ -766,11 +766,12 @@ void MainWindow::initServicesMenu() {
 void MainWindow::initViewMenu() {
   ui_->menuView->clear();
 
+  // Named as in the sidebar, in the same order
   static const QList<QPair<QString, MainWindowPage>> pages{
-      {tr("Home"), MainWindowPage::Home},       {tr("Anime List"), MainWindowPage::List},
-      {tr("History"), MainWindowPage::History}, {tr("Profile"), MainWindowPage::Profile},
-      {tr("Search"), MainWindowPage::Search},   {tr("Library"), MainWindowPage::Library},
-      {tr("Seasons"), MainWindowPage::Seasons}, {tr("Torrents"), MainWindowPage::Torrents},
+      {tr("Now Playing"), MainWindowPage::Home},  {tr("Anime List"), MainWindowPage::List},
+      {tr("History"), MainWindowPage::History},   {tr("Statistics"), MainWindowPage::Profile},
+      {tr("Search"), MainWindowPage::Search},     {tr("Seasons"), MainWindowPage::Seasons},
+      {tr("Torrents"), MainWindowPage::Torrents}, {tr("Library"), MainWindowPage::Library},
   };
 
   for (const auto& [text, page] : pages) {
