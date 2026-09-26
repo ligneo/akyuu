@@ -66,6 +66,7 @@ constexpr float get_duration(const float duration) {
 
 #ifdef AKYUU_HAS_MULTIMEDIA
 constexpr int kSampleRate = 44100;
+constexpr int kChannelCount = 2;
 
 // `Beep` takes a frequency and a length in milliseconds and plays a square wave; there is no Qt
 // equivalent, so the same notes are rendered into one buffer and handed to an audio sink. A sine
@@ -92,8 +93,12 @@ QByteArray renderNotes() {
       const float value = amplitude * std::sin(2.0f * std::numbers::pi_v<float> * frequency * time);
       const auto sample = static_cast<qint16>(value * std::numeric_limits<qint16>::max());
 
-      data.append(static_cast<char>(sample & 0xff));
-      data.append(static_cast<char>((sample >> 8) & 0xff));
+      // The same sample for the left and the right channel: a mono stream with no channel map
+      // can end up in the left ear only.
+      for (int channel = 0; channel < kChannelCount; ++channel) {
+        data.append(static_cast<char>(sample & 0xff));
+        data.append(static_cast<char>((sample >> 8) & 0xff));
+      }
     }
   }
 
@@ -122,7 +127,7 @@ void Hoot::run() {
 #elif defined(AKYUU_HAS_MULTIMEDIA)
   QAudioFormat format;
   format.setSampleRate(kSampleRate);
-  format.setChannelCount(1);
+  format.setChannelCount(kChannelCount);
   format.setSampleFormat(QAudioFormat::Int16);
 
   const auto device = QMediaDevices::defaultAudioOutput();
