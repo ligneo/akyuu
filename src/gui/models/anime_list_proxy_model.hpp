@@ -73,6 +73,11 @@ public:
 
   QVariant data(const QModelIndex& index, int role) const override;
 
+  int secondarySortColumn() const;
+  Qt::SortOrder secondarySortOrder() const;
+  void setSecondarySort(int column, Qt::SortOrder order);
+  void sort(int column, Qt::SortOrder order = Qt::AscendingOrder) override;
+
 signals:
   void groupByChanged();
 
@@ -81,8 +86,12 @@ protected:
   bool lessThan(const QModelIndex& lhs, const QModelIndex& rhs) const override;
 
 private:
+  bool lessThanByColumn(int column, const QModelIndex& lhs, const QModelIndex& rhs) const;
+
   AnimeListProxyModelFilter m_filter;
   AnimeListGroupBy m_groupBy = AnimeListGroupBy::None;
+  int m_secondaryColumn = -1;
+  Qt::SortOrder m_secondaryOrder = Qt::AscendingOrder;
 };
 
 }  // namespace gui

@@ -68,6 +68,14 @@ Qt::SortOrder Session::animeListSortOrder() const {
   return value("animeList.sortOrder", Qt::SortOrder::AscendingOrder).value<Qt::SortOrder>();
 }
 
+int Session::animeListSecondarySortColumn() const {
+  return value("animeList.sortColumn2", -1).toInt();
+}
+
+Qt::SortOrder Session::animeListSecondarySortOrder() const {
+  return value("animeList.sortOrder2", Qt::SortOrder::AscendingOrder).value<Qt::SortOrder>();
+}
+
 gui::ListViewMode Session::animeListViewMode() const {
   return value("animeList.viewMode", static_cast<int>(gui::ListViewMode::List))
       .value<gui::ListViewMode>();
@@ -177,6 +185,11 @@ void Session::setAnimeListSortColumn(const int column) const {
 
 void Session::setAnimeListSortOrder(const Qt::SortOrder order) const {
   setValue("animeList.sortOrder", order);
+}
+
+void Session::setAnimeListSecondarySort(const int column, const Qt::SortOrder order) const {
+  setValue("animeList.sortColumn2", column);
+  setValue("animeList.sortOrder2", order);
 }
 
 void Session::setAnimeListViewMode(const gui::ListViewMode mode) const {

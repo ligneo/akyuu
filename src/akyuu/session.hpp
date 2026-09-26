@@ -43,6 +43,8 @@ public:
   std::optional<QList<int>> animeListHiddenColumns() const;
   int animeListSortColumn() const;
   Qt::SortOrder animeListSortOrder() const;
+  int animeListSecondarySortColumn() const;
+  Qt::SortOrder animeListSecondarySortOrder() const;
   gui::ListViewMode animeListViewMode() const;
   QByteArray mainWindowGeometry() const;
   QByteArray mediaDialogGeometry() const;
@@ -62,6 +64,7 @@ public:
   void setAnimeListHiddenColumns(const QList<int>& columns) const;
   void setAnimeListSortColumn(const int column) const;
   void setAnimeListSortOrder(const Qt::SortOrder order) const;
+  void setAnimeListSecondarySort(const int column, const Qt::SortOrder order) const;
   void setAnimeListViewMode(const gui::ListViewMode mode) const;
   void setMainWindowGeometry(const QByteArray& geometry) const;
   void setMediaDialogGeometry(const QByteArray& geometry) const;

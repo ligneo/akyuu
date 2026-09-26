@@ -53,6 +53,8 @@ ListWidget::ListWidget(QWidget* parent)
       m_sortMenu(new QMenu(this)),
       m_viewMenu(new QMenu(this)),
       m_moreMenu(new QMenu(this)) {
+  m_proxyModel->setSecondarySort(akyuu::session.animeListSecondarySortColumn(),
+                                 akyuu::session.animeListSecondarySortOrder());
   m_proxyModel->sort(akyuu::session.animeListSortColumn(), akyuu::session.animeListSortOrder());
 
   initToolbar();
@@ -164,6 +166,8 @@ void ListWidget::setViewMode(ListViewMode mode) {
 void ListWidget::saveState() {
   akyuu::session.setAnimeListSortColumn(m_proxyModel->sortColumn());
   akyuu::session.setAnimeListSortOrder(m_proxyModel->sortOrder());
+  akyuu::session.setAnimeListSecondarySort(m_proxyModel->secondarySortColumn(),
+                                           m_proxyModel->secondarySortOrder());
   akyuu::session.setAnimeListViewMode(m_viewMode);
 }
 

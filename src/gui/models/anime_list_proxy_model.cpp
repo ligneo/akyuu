@@ -259,6 +259,27 @@ bool AnimeListProxyModel::filterAcceptsRow(int row, const QModelIndex& parent) c
   return true;
 }
 
+int AnimeListProxyModel::secondarySortColumn() const {
+  return m_secondaryColumn;
+}
+
+Qt::SortOrder AnimeListProxyModel::secondarySortOrder() const {
+  return m_secondaryOrder;
+}
+
+void AnimeListProxyModel::setSecondarySort(int column, Qt::SortOrder order) {
+  m_secondaryColumn = column;
+  m_secondaryOrder = order;
+}
+
+// As in v1, sorting by another column hands the previous one down as the secondary sort.
+void AnimeListProxyModel::sort(int column, Qt::SortOrder order) {
+  if (sortColumn() >= 0 && column != sortColumn()) {
+    setSecondarySort(sortColumn(), sortOrder());
+  }
+  QSortFilterProxyModel::sort(column, order);
+}
+
 bool AnimeListProxyModel::lessThan(const QModelIndex& lhs, const QModelIndex& rhs) const {
   const auto lhs_anime = getAnime(lhs);
   const auto rhs_anime = getAnime(rhs);
@@ -284,7 +305,32 @@ bool AnimeListProxyModel::lessThan(const QModelIndex& lhs, const QModelIndex& rh
     if (lhs_new != rhs_new) return sortOrder() == Qt::AscendingOrder ? lhs_new : rhs_new;
   }
 
-  switch (lhs.column()) {
+  const auto column = lhs.column();
+
+  if (lessThanByColumn(column, lhs, rhs)) return true;
+  if (lessThanByColumn(column, rhs, lhs)) return false;
+
+  // v1's `sort/column2`: rows that tie on the sorted column keep the order of the column that was
+  // sorted before. It has its own direction, while Qt reverses this whole comparison for a
+  // descending primary sort, so the operands are swapped when the two directions differ.
+  if (m_secondaryColumn < 0 || m_secondaryColumn == column) return false;
+
+  const auto lhs2 = lhs.siblingAtColumn(m_secondaryColumn);
+  const auto rhs2 = rhs.siblingAtColumn(m_secondaryColumn);
+  return m_secondaryOrder == sortOrder() ? lessThanByColumn(m_secondaryColumn, lhs2, rhs2)
+                                         : lessThanByColumn(m_secondaryColumn, rhs2, lhs2);
+}
+
+bool AnimeListProxyModel::lessThanByColumn(int column, const QModelIndex& lhs,
+                                           const QModelIndex& rhs) const {
+  const auto lhs_anime = getAnime(lhs);
+  const auto rhs_anime = getAnime(rhs);
+  if (!lhs_anime || !rhs_anime) return false;
+
+  const auto lhs_entry = getListEntry(lhs);
+  const auto rhs_entry = getListEntry(rhs);
+
+  switch (column) {
     case AnimeListModel::COLUMN_TITLE:
       return compareStrings(anime::preferredTitle(*lhs_anime), anime::preferredTitle(*rhs_anime),
                             Qt::CaseInsensitive) < 0;
