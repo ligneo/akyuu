@@ -975,7 +975,10 @@ void MainWindow::updateTitle() {
 }
 
 void MainWindow::displayWindow() {
+  // The window may not be shown at all: started in the tray, or closed to it
+  show();
   setWindowState((windowState() & ~Qt::WindowMinimized) | Qt::WindowActive);
+  raise();
   activateWindow();
 }
 
