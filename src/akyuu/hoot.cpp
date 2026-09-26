@@ -25,6 +25,7 @@
 #include <cmath>
 #include <limits>
 #include <numbers>
+#include <vector>
 
 #ifdef Q_OS_WINDOWS
 #include <windows.h>
@@ -41,10 +42,10 @@
 
 namespace {
 
-// Akyuu's own tune, in D minor pentatonic (D F G A C) and at about 128 bpm, after the mood of
-// KOKIA's "Fukurou" (owl) without borrowing its notes. The owl calls twice, a falling minor third;
-// a phrase rises into the night and a lower one answers; after one last call it walks slowly
-// down and lets D ring.
+// Akyuu's own tune, in D minor pentatonic (D F G A C), after the mood of KOKIA's "Fukurou" (owl)
+// but a little slower, and without borrowing its notes. The owl calls twice, a falling minor
+// third; a phrase rises into the night and a lower one answers; after one last call it walks
+// slowly down and lets D ring.
 // clang-format off
 constexpr std::array<std::pair<int, float>, 30> notes{{
   {84, 1/8.f}, {81, 3/8.f}, {84, 1/8.f}, {81, 3/8.f},
@@ -63,7 +64,7 @@ constexpr float get_frequency(const int note) {
 };
 
 constexpr float get_duration(const float duration) {
-  return 1880 * duration;  // a whole note, at about 128 bpm
+  return 2220 * duration;  // a whole note, at about 108 bpm
 };
 
 #ifdef AKYUU_HAS_MULTIMEDIA
@@ -80,7 +81,7 @@ QByteArray renderNotes() {
   constexpr int kReleaseSamples = kSampleRate * 35 / 1000;
   constexpr int kLastReleaseSamples = kSampleRate * 900 / 1000;  // the last note rings out
 
-  QByteArray data;
+  std::vector<float> wave;
 
   for (size_t n = 0; n < notes.size(); ++n) {
     const auto& [note, duration] = notes[n];
@@ -112,17 +113,33 @@ QByteArray renderNotes() {
       phase += 2.0f * kPi * frequency * vibrato / kSampleRate;
 
       // Two quiet overtones make it warmer than a plain sine
-      const float wave =
+      const float tone =
           std::sin(phase) + 0.22f * std::sin(2.0f * phase) + 0.07f * std::sin(3.0f * phase);
-      const float value = frequency > 0.0f ? 0.17f * envelope * wave : 0.0f;
-      const auto sample = static_cast<qint16>(value * std::numeric_limits<qint16>::max());
+      wave.push_back(frequency > 0.0f ? 0.17f * envelope * tone : 0.0f);
+    }
+  }
 
-      // The same sample for the left and the right channel: a mono stream with no channel map
-      // can end up in the left ear only.
-      for (int channel = 0; channel < kChannelCount; ++channel) {
-        data.append(static_cast<char>(sample & 0xff));
-        data.append(static_cast<char>((sample >> 8) & 0xff));
-      }
+  // A soft echo, as if the forest answered: two quieter repeats, 230 and 460 ms later
+  constexpr int kEchoSamples = kSampleRate * 230 / 1000;
+  wave.resize(wave.size() + kSampleRate * 600 / 1000, 0.0f);
+  std::vector<float> mixed = wave;
+  for (size_t i = kEchoSamples; i < wave.size(); ++i) {
+    mixed[i] += 0.22f * wave[i - kEchoSamples];
+    if (i >= 2 * kEchoSamples) mixed[i] += 0.09f * wave[i - 2 * kEchoSamples];
+  }
+
+  QByteArray data;
+  data.reserve(static_cast<qsizetype>(mixed.size()) * kChannelCount * 2);
+
+  for (const float value : mixed) {
+    const auto sample =
+        static_cast<qint16>(std::clamp(value, -1.0f, 1.0f) * std::numeric_limits<qint16>::max());
+
+    // The same sample for the left and the right channel: a mono stream with no channel map
+    // can end up in the left ear only.
+    for (int channel = 0; channel < kChannelCount; ++channel) {
+      data.append(static_cast<char>(sample & 0xff));
+      data.append(static_cast<char>((sample >> 8) & 0xff));
     }
   }
 
