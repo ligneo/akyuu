@@ -40,18 +40,17 @@
 
 namespace {
 
-// Akyuu's own tune, in the D yo pentatonic scale (D E G A B). The owl calls twice, a falling minor
-// third; the quill runs up the page and writes line by line; one more call, and it closes on D.
+// Akyuu's own tune, in D minor pentatonic (D F G A C) and at about 128 bpm, after the mood of
+// KOKIA's "Fukurou" (owl) without borrowing its notes. The owl calls twice, a falling minor third;
+// a phrase rises into the night and a lower one answers; one last call, and it comes home to D.
 // clang-format off
-constexpr std::array<std::pair<int, float>, 32> notes{{
-  {86, 1/8.f}, {83, 3/8.f}, {86, 1/8.f}, {83, 3/8.f},
-  {79, 1/8.f}, {81, 1/8.f}, {83, 1/8.f}, {86, 1/8.f},
-  {88, 1/4.f}, {86, 1/8.f}, {83, 1/8.f}, {81, 3/8.f},
-  {79, 1/8.f}, {76, 1/4.f}, {74, 1/4.f}, {76, 1/8.f},
-  {79, 1/8.f}, {81, 1/8.f}, {79, 1/8.f}, {76, 1/8.f},
-  {74, 1/8.f}, {71, 1/4.f}, {74, 1/8.f}, {76, 1/8.f},
-  {79, 1/4.f}, {83, 1/8.f}, {81, 1/8.f}, {79, 1/4.f},
-  {86, 1/8.f}, {83, 3/8.f}, {79, 1/8.f}, {74, 3/4.f},
+constexpr std::array<std::pair<int, float>, 27> notes{{
+  {84, 1/8.f}, {81, 3/8.f}, {84, 1/8.f}, {81, 3/8.f},
+  {74, 1/8.f}, {77, 1/8.f}, {79, 1/8.f}, {81, 1/4.f}, {84, 1/8.f},
+  {81, 1/8.f}, {79, 1/4.f}, {77, 1/8.f}, {74, 3/8.f},
+  {72, 1/8.f}, {74, 1/8.f}, {77, 1/4.f}, {79, 1/8.f}, {77, 1/8.f},
+  {74, 1/4.f}, {69, 1/8.f}, {72, 1/8.f}, {74, 1/4.f},
+  {84, 1/8.f}, {81, 3/8.f}, {79, 1/8.f}, {77, 1/8.f}, {74, 3/4.f},
 }};
 // clang-format on
 
@@ -61,7 +60,7 @@ constexpr float get_frequency(const int note) {
 };
 
 constexpr float get_duration(const float duration) {
-  return 1600 * duration;
+  return 1880 * duration;  // a whole note, at about 128 bpm
 };
 
 #ifdef AKYUU_HAS_MULTIMEDIA
