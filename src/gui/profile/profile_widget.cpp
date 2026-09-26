@@ -18,22 +18,29 @@
 
 #include "profile_widget.hpp"
 
+#include <QDir>
 #include <QFormLayout>
 #include <QGridLayout>
 #include <QGroupBox>
+#include <QLocale>
 #include <QTimer>
 #include <QVBoxLayout>
 #include <algorithm>
 #include <chrono>
 
 #include "akyuu/application.hpp"
+#include "akyuu/path.hpp"
 #include "akyuu/session.hpp"
 #include "base/chrono.hpp"
 #include "base/string.hpp"
 #include "gui/utils/format.hpp"
+#include "gui/utils/image_provider.hpp"
+#include "media/anime_db.hpp"
 #include "media/anime_list.hpp"
 
 namespace gui {
+
+using namespace Qt::StringLiterals;
 
 ProfileWidget::ProfileWidget(QWidget* parent) : PageWidget(parent) {
   const auto container = new QWidget(this);
@@ -87,6 +94,23 @@ ProfileWidget::ProfileWidget(QWidget* parent) : PageWidget(parent) {
       m_scoreBars.append(bar);
       m_scoreCounts.append(count);
     }
+
+    containerLayout->addWidget(group);
+  }
+
+  // Local database
+  // v1's `dlg_stats.cpp:220`: what the local database and the caches next to it hold.
+  {
+    const auto group = new QGroupBox(tr("Local database"), container);
+    const auto form = new QFormLayout(group);
+
+    m_animeItems = new QLabel("-", group);
+    m_imageFiles = new QLabel("-", group);
+    m_torrentFiles = new QLabel("-", group);
+
+    form->addRow(tr("Anime items:"), m_animeItems);
+    form->addRow(tr("Image files:"), m_imageFiles);
+    form->addRow(tr("Torrent files:"), m_torrentFiles);
 
     containerLayout->addWidget(group);
   }
@@ -148,6 +172,23 @@ void ProfileWidget::refresh() {
   m_tigersHarmed->setText(QString::number(akyuu::session.tigersHarmed()));
 }
 
+// Walks two folders, so it runs when the page is shown rather than with the one-second refresh.
+void ProfileWidget::refreshLocalDatabase() {
+  const auto describeFolder = [](const QString& path) {
+    const auto files = QDir{path}.entryInfoList(QDir::Files);
+    qint64 size = 0;
+    for (const auto& file : files) {
+      size += file.size();
+    }
+    return u"%1 (%2)"_s.arg(files.size()).arg(QLocale::system().formattedDataSize(size, 1));
+  };
+
+  m_animeItems->setText(QString::number(anime::db.items().size()));
+  m_imageFiles->setText(describeFolder(imageProvider.cachePath()));
+  m_torrentFiles->setText(
+      describeFolder(u"%1/torrents"_s.arg(QString::fromStdString(akyuu::get_data_path()))));
+}
+
 void ProfileWidget::hideEvent(QHideEvent* event) {
   m_refreshTimer->stop();
   PageWidget::hideEvent(event);
@@ -155,6 +196,7 @@ void ProfileWidget::hideEvent(QHideEvent* event) {
 
 void ProfileWidget::showEvent(QShowEvent* event) {
   refresh();
+  refreshLocalDatabase();
   m_refreshTimer->start();
   PageWidget::showEvent(event);
 }
