@@ -23,7 +23,7 @@
 #include <QWidget>
 
 namespace akyuu {
-class Orange;
+class Hoot;
 }
 
 namespace gui {
@@ -43,7 +43,7 @@ private slots:
 private:
   QMessageBox* messageBox() const;
 
-  akyuu::Orange* orange_;
+  akyuu::Hoot* hoot_;
   QString previousWindowTitle_;
 };
 

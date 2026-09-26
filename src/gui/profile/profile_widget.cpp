@@ -123,10 +123,10 @@ ProfileWidget::ProfileWidget(QWidget* parent) : PageWidget(parent) {
     const auto form = new QFormLayout(group);
 
     m_uptime = new QLabel("-", group);
-    m_tigersHarmed = new QLabel("-", group);
+    m_owlsWoken = new QLabel("-", group);
 
     form->addRow(tr("Uptime:"), m_uptime);
-    form->addRow(tr("Tigers harmed:"), m_tigersHarmed);
+    form->addRow(tr("Owls woken:"), m_owlsWoken);
 
     containerLayout->addWidget(group);
   }
@@ -169,7 +169,7 @@ void ProfileWidget::refresh() {
   }
 
   m_uptime->setText(formatDuration(akyuu::app()->uptime()));
-  m_tigersHarmed->setText(QString::number(akyuu::session.tigersHarmed()));
+  m_owlsWoken->setText(QString::number(akyuu::session.owlsWoken()));
 }
 
 // Walks two folders, so it runs when the page is shown rather than with the one-second refresh.

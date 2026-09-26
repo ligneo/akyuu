@@ -106,8 +106,9 @@ anime::Season Session::season() const {
 
 // v1 counts this in its statistics as well (`stats.tigers_harmed`), and the joke only works if
 // the number survives a restart.
-int Session::tigersHarmed() const {
-  return value("tigersHarmed", 0).toInt();
+// Taiga's tigers became owls; a count kept under the old key carries over.
+int Session::owlsWoken() const {
+  return value("owlsWoken", value("tigersHarmed", 0)).toInt();
 }
 
 gui::AnimeListGroupBy Session::seasonsGroupBy() const {
@@ -213,8 +214,8 @@ void Session::setSeason(const anime::Season season) const {
   setValue("seasons.year", static_cast<int>(season.year));
 }
 
-void Session::setTigersHarmed(const int count) const {
-  setValue("tigersHarmed", count);
+void Session::setOwlsWoken(const int count) const {
+  setValue("owlsWoken", count);
 }
 
 void Session::setSeasonsGroupBy(const gui::AnimeListGroupBy groupBy) const {

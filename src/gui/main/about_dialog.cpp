@@ -26,7 +26,7 @@
 #include <QMessageBox>
 #include <QMouseEvent>
 
-#include "akyuu/orange.hpp"
+#include "akyuu/hoot.hpp"
 #include "akyuu/session.hpp"
 #include "akyuu/version.hpp"
 #include "base/string.hpp"
@@ -137,9 +137,8 @@ void displayAboutDialog(QWidget* parent) {
   msgBox->exec();
 }
 
-AboutDialogHandler::AboutDialogHandler(QObject* parent)
-    : QObject(parent), orange_(akyuu::orange()) {
-  connect(orange_, &QThread::finished, this, &AboutDialogHandler::resetWindowTitle);
+AboutDialogHandler::AboutDialogHandler(QObject* parent) : QObject(parent), hoot_(akyuu::hoot()) {
+  connect(hoot_, &QThread::finished, this, &AboutDialogHandler::resetWindowTitle);
 }
 
 void AboutDialogHandler::resetWindowTitle() {
@@ -152,11 +151,11 @@ QMessageBox* AboutDialogHandler::messageBox() const {
 
 bool AboutDialogHandler::eventFilter(QObject* watched, QEvent* event) {
   if (event->type() == QEvent::MouseButtonDblClick) {
-    if (!orange_->isRunning()) {
+    if (!hoot_->isRunning()) {
       previousWindowTitle_ = messageBox()->windowTitle();
-      messageBox()->setWindowTitle("Orange");
-      akyuu::session.setTigersHarmed(akyuu::session.tigersHarmed() + 1);
-      orange_->start();
+      messageBox()->setWindowTitle("Hoot");
+      akyuu::session.setOwlsWoken(akyuu::session.owlsWoken() + 1);
+      hoot_->start();
     }
     return true;
   }

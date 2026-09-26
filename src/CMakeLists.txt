@@ -104,8 +104,8 @@ target_sources(akyuu PRIVATE
 	akyuu/config.h
 	akyuu/network.cpp
 	akyuu/network.hpp
-	akyuu/orange.cpp
-	akyuu/orange.hpp
+	akyuu/hoot.cpp
+	akyuu/hoot.hpp
 	akyuu/path.cpp
 	akyuu/path.hpp
 	akyuu/session.cpp
@@ -186,7 +186,7 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
 	set_target_properties(akyuu PROPERTIES WIN32_EXECUTABLE ON)
 endif()
 
-# The Orange easter egg needs a way to play its notes; Windows has `Beep`, everywhere else it
+# The Hoot easter egg needs a way to play its notes; Windows has `Beep`, everywhere else it
 # takes an audio sink. Qt Multimedia pulls in a whole media backend, so it stays optional: without
 # it the easter egg is silent and nothing else changes.
 if (NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")

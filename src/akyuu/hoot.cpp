@@ -17,7 +17,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "orange.hpp"
+#include "hoot.hpp"
 
 #include <array>
 #include <chrono>
@@ -40,16 +40,18 @@
 
 namespace {
 
+// Akyuu's own tune, in the D yo pentatonic scale (D E G A B). The owl calls twice, a falling minor
+// third; the quill runs up the page and writes line by line; one more call, and it closes on D.
 // clang-format off
 constexpr std::array<std::pair<int, float>, 32> notes{{
-  {84, 1/2.f}, {84, 1/4.f}, {86, 1/8.f}, {84, 1/4.f},
-  {82, 1/4.f}, {81, 1/4.f}, {77, 1/8.f}, {79, 1/8.f},
-  {72, 1/8.f}, {77, 1/2.f}, {76, 1/8.f}, {77, 1/8.f},
-  {79, 1/8.f}, {81, 1/4.f}, {79, 1/4.f}, {77, 1/4.f},
-  {79, 1/4.f}, {81, 1/8.f}, {84, 1/2.f}, {84, 1/4.f},
-  {86, 1/8.f}, {84, 1/4.f}, {82, 1/4.f}, {81, 1/4.f},
-  {77, 1/8.f}, {79, 1/8.f}, {72, 1/8.f}, {77, 1/2.f},
-  {76, 1/8.f}, {77, 1/8.f}, {76, 1/8.f}, {74, 1/2.f},
+  {86, 1/8.f}, {83, 3/8.f}, {86, 1/8.f}, {83, 3/8.f},
+  {79, 1/8.f}, {81, 1/8.f}, {83, 1/8.f}, {86, 1/8.f},
+  {88, 1/4.f}, {86, 1/8.f}, {83, 1/8.f}, {81, 3/8.f},
+  {79, 1/8.f}, {76, 1/4.f}, {74, 1/4.f}, {76, 1/8.f},
+  {79, 1/8.f}, {81, 1/8.f}, {79, 1/8.f}, {76, 1/8.f},
+  {74, 1/8.f}, {71, 1/4.f}, {74, 1/8.f}, {76, 1/8.f},
+  {79, 1/4.f}, {83, 1/8.f}, {81, 1/8.f}, {79, 1/4.f},
+  {86, 1/8.f}, {83, 3/8.f}, {79, 1/8.f}, {74, 3/4.f},
 }};
 // clang-format on
 
@@ -103,14 +105,14 @@ QByteArray renderNotes() {
 
 namespace akyuu {
 
-Orange::Orange(QObject* parent) : QThread(parent) {}
+Hoot::Hoot(QObject* parent) : QThread(parent) {}
 
-Orange::~Orange() {
+Hoot::~Hoot() {
   requestInterruption();
   wait();
 }
 
-void Orange::run() {
+void Hoot::run() {
 #ifdef Q_OS_WINDOWS
   for (const auto& [note, duration] : notes) {
     if (isInterruptionRequested()) break;

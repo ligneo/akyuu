@@ -24,23 +24,23 @@
 
 namespace akyuu {
 
-class Orange final : public QThread {
+class Hoot final : public QThread {
   Q_OBJECT
-  Q_DISABLE_COPY_MOVE(Orange)
+  Q_DISABLE_COPY_MOVE(Hoot)
 
 public:
-  Orange(QObject* parent);
-  ~Orange();
+  Hoot(QObject* parent);
+  ~Hoot();
 
 protected:
   void run() override;
 };
 
 // The melody outlives the About dialog it is started from. v1 keeps it in a global
-// (`akyuu::orange`) for the same reason: closing the window should not cut the song off.
-inline Orange* orange() {
-  static auto orange = new Orange(qApp);
-  return orange;
+// (`taiga::orange`) for the same reason: closing the window should not cut the tune off.
+inline Hoot* hoot() {
+  static auto hoot = new Hoot(qApp);
+  return hoot;
 }
 
 }  // namespace akyuu

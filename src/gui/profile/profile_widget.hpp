@@ -54,7 +54,7 @@ private:
   QLabel* m_imageFiles = nullptr;
   QLabel* m_torrentFiles = nullptr;
   QLabel* m_uptime = nullptr;
-  QLabel* m_tigersHarmed = nullptr;
+  QLabel* m_owlsWoken = nullptr;
 
   QList<QProgressBar*> m_scoreBars;
   QList<QLabel*> m_scoreCounts;

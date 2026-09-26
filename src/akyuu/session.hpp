@@ -59,7 +59,7 @@ public:
   int searchListSortColumn() const;
   Qt::SortOrder searchListSortOrder() const;
   gui::ListViewMode searchListViewMode() const;
-  int tigersHarmed() const;
+  int owlsWoken() const;
 
   void setAnimeListHiddenColumns(const QList<int>& columns) const;
   void setAnimeListSortColumn(const int column) const;
@@ -72,7 +72,7 @@ public:
   void setSeason(const anime::Season season) const;
   void setSeasonsSortColumn(const int column) const;
   void setSeasonsGroupBy(const gui::AnimeListGroupBy groupBy) const;
-  void setTigersHarmed(const int count) const;
+  void setOwlsWoken(const int count) const;
   void setSeasonsSortOrder(const Qt::SortOrder order) const;
   void setSeasonsViewMode(const gui::ListViewMode mode) const;
   void setSearchListFilters(const gui::AnimeListProxyModelFilter& filters) const;
