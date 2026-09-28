@@ -38,11 +38,7 @@ class Detection final : public QObject {
 public:
   using media_t = anisthesia::Media;
   using player_t = anisthesia::Player;
-#ifdef Q_OS_WINDOWS
-  using player_id_t = void*;  // window handle
-#else
-  using player_id_t = int;  // process ID
-#endif
+  using player_id_t = anisthesia::PlayerId;
 
   Detection(QObject* parent);
 

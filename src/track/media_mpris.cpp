@@ -90,9 +90,8 @@ QVariant getProperty(const QDBusConnection& bus, const QString& service, const Q
 
 }  // namespace
 
-std::vector<anisthesia::lin::Result> getMprisResults(
-    const std::vector<anisthesia::Player>& players) {
-  std::vector<anisthesia::lin::Result> results;
+std::vector<anisthesia::Result> getMprisResults(const std::vector<anisthesia::Player>& players) {
+  std::vector<anisthesia::Result> results;
 
   const auto bus = QDBusConnection::sessionBus();
   if (!bus.isConnected()) return results;
@@ -123,9 +122,9 @@ std::vector<anisthesia::lin::Result> getMprisResults(
     // provider filter and be recognized as is, whatever the video is. Chromium leaves it out.
     if (url.empty()) continue;
 
-    anisthesia::lin::Result result;
+    anisthesia::Result result;
     result.player = *player;
-    result.process = {.id = static_cast<int>(processId.value()), .name = processName};
+    result.id = {.process = processId.value()};
 
     const auto addMedia = [&result](const anisthesia::MediaInfoType type,
                                     const std::string& value) {

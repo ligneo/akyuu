@@ -20,6 +20,7 @@
 #include "media.hpp"
 
 #include <algorithm>
+#include <cstdint>
 #include <iterator>
 #include <optional>
 #include <string>
@@ -46,14 +47,7 @@ struct MediaFields {
   std::string url;
 };
 
-#if defined(Q_OS_WINDOWS)
-namespace platform = anisthesia::win;
-#elif defined(Q_OS_LINUX)
-namespace platform = anisthesia::lin;
-#endif
-
-#if defined(Q_OS_WINDOWS) || defined(Q_OS_LINUX)
-anisthesia::Media flattenMedia(const platform::Result& result) {
+anisthesia::Media flattenMedia(const anisthesia::Result& result) {
   anisthesia::Media media;
 
   for (const auto& item : result.media) {
@@ -67,7 +61,6 @@ bool isVideoFile(const std::string& path) {
   const auto fileName = QFileInfo{QString::fromStdString(path)}.fileName();
   return track::recognition::isVideoFile(track::recognition::parse(fileName.toStdString()));
 }
-#endif
 
 MediaFields extractMediaFields(const anisthesia::Media& media) {
   MediaFields fields;
@@ -159,19 +152,16 @@ bool Detection::init() {
 
 // v1's `program/general/enablerecognition`: detection can be turned off without quitting.
 void Detection::setEnabled(const bool enabled) {
-#if defined(Q_OS_WINDOWS) || defined(Q_OS_LINUX)
   if (enabled) {
     pollTimer_->start(akyuu::settings.mediaDetectionInterval());
   } else {
     pollTimer_->stop();
     reset();
   }
-#endif
   emit enabledChanged(enabled);
 }
 
 void Detection::poll() {
-#if defined(Q_OS_WINDOWS) || defined(Q_OS_LINUX)
   const auto players = getEnabledPlayers(players_);
 
   static const auto media_proc = [](const anisthesia::MediaInfo& info) {
@@ -180,8 +170,8 @@ void Detection::poll() {
     return true;
   };
 
-  std::vector<platform::Result> results;
-  if (!platform::GetResults(players, media_proc, results)) {
+  std::vector<anisthesia::Result> results;
+  if (!anisthesia::GetResults(players, media_proc, results)) {
     results.clear();
   }
 #ifdef Q_OS_LINUX
@@ -192,21 +182,12 @@ void Detection::poll() {
     return;
   }
 
-  static const auto getPlayerId = [](const platform::Result& result) -> player_id_t {
-#ifdef Q_OS_WINDOWS
-    return result.window.handle;
-#else
-    return result.process.id;
-#endif
-  };
-
-  const auto resultIt = std::ranges::find_if(
-      results, [this](const platform::Result& r) { return getPlayerId(r) == currentPlayerId_; });
+  const auto resultIt = std::ranges::find(results, currentPlayerId_, &anisthesia::Result::id);
   const auto& result = resultIt != results.end() ? *resultIt : results.front();
 
   currentPlayer_ = result.player;
   currentMedia_ = flattenMedia(result);
-  currentPlayerId_ = getPlayerId(result);
+  currentPlayerId_ = result.id;
 
   auto episode = resolveEpisode(extractMediaFields(*currentMedia_));
   if (!episode) {
@@ -221,15 +202,15 @@ void Detection::poll() {
     currentEpisode_ = episode;
     emit currentEpisodeChanged(episode);
   }
-#endif
 }
 
 bool Detection::isPlayerFocused() const {
 #ifdef Q_OS_WINDOWS
-  return currentPlayerId_ && currentPlayerId_ == static_cast<void*>(GetForegroundWindow());
+  const auto window = reinterpret_cast<std::uintptr_t>(GetForegroundWindow());
+  return currentPlayerId_.window && currentPlayerId_.window == window;
 #elif defined(Q_OS_LINUX)
   const auto processId = getFocusedProcessId();
-  return !processId || *processId == currentPlayerId_;  // assume focused if we can't tell
+  return !processId || *processId == currentPlayerId_.process;  // assume focused if we can't tell
 #else
   return true;  // no way to tell yet
 #endif

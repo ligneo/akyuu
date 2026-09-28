@@ -25,7 +25,6 @@ namespace track::media {
 
 // Web browsers do not expose their tabs to other processes on Linux, but they report playing media
 // via MPRIS. Results are returned in the same form as Anisthesia's, so they can be handled alike.
-std::vector<anisthesia::lin::Result> getMprisResults(
-    const std::vector<anisthesia::Player>& players);
+std::vector<anisthesia::Result> getMprisResults(const std::vector<anisthesia::Player>& players);
 
 }  // namespace track::media
