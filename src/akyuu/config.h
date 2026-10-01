@@ -34,7 +34,7 @@
 #define AKYUU_VERSION_MAJOR 0
 #define AKYUU_VERSION_MINOR 1
 #define AKYUU_VERSION_PATCH 0
-#define AKYUU_VERSION_PRE   "beta.1"
+#define AKYUU_VERSION_PRE   "beta.2"
 #define AKYUU_VERSION_BUILD 0
 
 // Used in akyuu.rc
