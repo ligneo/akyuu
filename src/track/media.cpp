@@ -56,6 +56,13 @@ anisthesia::Media flattenMedia(const anisthesia::Result& result) {
   return media;
 }
 
+// Only players that report their state (e.g. via MPRIS) can be told to be paused
+bool isPaused(const anisthesia::Result& result) {
+  return std::ranges::all_of(result.media, [](const anisthesia::Media& media) {
+    return media.state == anisthesia::MediaState::Paused;
+  });
+}
+
 bool isVideoFile(const std::string& path) {
   const auto fileName = QFileInfo{QString::fromStdString(path)}.fileName();
   return track::recognition::isVideoFile(track::recognition::parse(fileName.toStdString()));
@@ -173,11 +180,13 @@ void Detection::poll() {
   if (!anisthesia::GetResults(players, media_proc, results)) {
     results.clear();
   }
-  // The player followed so far comes first, so that another one does not take over while it is
-  // still playing an episode. Results that cannot be an episode (e.g. a browser tab that is not on
-  // a streaming site) are passed over rather than hiding the ones behind them.
-  std::ranges::stable_partition(
-      results, [this](const anisthesia::Result& r) { return r.id == currentPlayerId_; });
+  // A paused player comes last, so that a tab left open does not hide an episode playing elsewhere.
+  // Otherwise the player followed so far comes first, so that another one does not take over while
+  // it is still playing. Results that cannot be an episode (e.g. a browser tab that is not on a
+  // streaming site) are passed over rather than hiding the ones behind them.
+  std::ranges::stable_sort(results, {}, [this](const anisthesia::Result& r) {
+    return std::pair{isPaused(r), r.id != currentPlayerId_};
+  });
 
   for (const auto& result : results) {
     auto media = flattenMedia(result);
