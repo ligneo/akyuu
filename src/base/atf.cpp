@@ -249,7 +249,13 @@ QString evaluateFunction(const QString& name, const QString& body) {
     if (params.size() == 2) params.append(QString{});
     if (params.size() > 2) {
       str = params[0];
-      while (replaceString(str, params[1], params[2]));
+      // Repeated until the string settles, as in v1. When the replacement holds the string it
+      // replaces, that would never end (v1 hangs there), so a single pass is made instead.
+      if (params[2].contains(params[1])) {
+        replaceString(str, params[1], params[2]);
+      } else {
+        while (replaceString(str, params[1], params[2]));
+      }
     }
 
     // $substr(s,pos,n)
