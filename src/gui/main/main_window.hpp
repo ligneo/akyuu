@@ -101,6 +101,7 @@ protected:
 
 private:
   void initActions();
+  void saveSession();
   void initShortcuts();
   void initShareMenu();
   void initIcons();

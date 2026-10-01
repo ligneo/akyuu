@@ -195,6 +195,9 @@ void MainWindow::initActions() {
 
   connect(ui_->actionAddNewFolder, &QAction::triggered, this, &MainWindow::addNewFolder);
   connect(ui_->actionExit, &QAction::triggered, this, &QApplication::quit, Qt::QueuedConnection);
+  // Saved on quit rather than on close: with close to tray, closing only hides the window, and Exit
+  // from the tray menu reaches no close event at all.
+  connect(qApp, &QCoreApplication::aboutToQuit, this, &MainWindow::saveSession);
   connect(ui_->actionSettings, &QAction::triggered, this, [this]() { SettingsDialog::show(this); });
   connect(ui_->actionLibraryFolders, &QAction::triggered, this,
           [this]() { SettingsDialog::show(this, SettingsPageId::Library); });
@@ -936,11 +939,14 @@ void MainWindow::closeEvent(QCloseEvent* event) {
     return;
   }
 
+  event->accept();
+}
+
+void MainWindow::saveSession() {
   akyuu::session.setMainWindowGeometry(saveGeometry());
   if (m_listWidget) m_listWidget->saveState();
   if (m_searchWidget) m_searchWidget->saveState();
   if (m_seasonsWidget) m_seasonsWidget->saveState();
-  event->accept();
 }
 
 void MainWindow::addNewFolder() {
