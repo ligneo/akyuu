@@ -41,13 +41,13 @@ namespace {
 // v1's `recognition/mediaplayers/launchpath`: episodes open in a chosen player rather than the
 // default application for the file type. The command may carry arguments, e.g. `mpv --fs`.
 bool openEpisodeFile(const QString& path) {
-  const auto command = QString::fromStdString(akyuu::settings.libraryMediaPlayerPath()).trimmed();
+  const auto command = QString::fromStdString(akyuu::settings.libraryMediaPlayerPath());
+  auto arguments = QProcess::splitCommand(command);
 
-  if (command.isEmpty()) {
-    return openEpisodeFile(path);
+  if (arguments.isEmpty()) {
+    return QDesktopServices::openUrl(QUrl::fromLocalFile(path));
   }
 
-  auto arguments = QProcess::splitCommand(command);
   const auto program = arguments.takeFirst();
   arguments.append(path);
 
@@ -61,7 +61,7 @@ bool playEpisode(int animeId, int number) {
   // it has nothing for this one.
   if (const auto path = library()->episodePath(animeId, number); !path.isEmpty()) {
     qDebug() << "Found file:" << path;
-    return QDesktopServices::openUrl(QUrl::fromLocalFile(path));
+    return openEpisodeFile(path);
   }
 
   for (const auto& folder : akyuu::settings.libraryFolders()) {
