@@ -24,6 +24,7 @@
 #include <iterator>
 #include <optional>
 #include <string>
+#include <utility>
 
 #include "akyuu/settings.hpp"
 #include "media/anime.hpp"
@@ -177,31 +178,32 @@ void Detection::poll() {
 #ifdef Q_OS_LINUX
   std::ranges::move(getMprisResults(players), std::back_inserter(results));
 #endif
-  if (results.empty()) {
-    reset();
+  // The player followed so far comes first, so that another one does not take over while it is
+  // still playing an episode. Results that cannot be an episode (e.g. a browser tab that is not on
+  // a streaming site) are passed over rather than hiding the ones behind them.
+  std::ranges::stable_partition(
+      results, [this](const anisthesia::Result& r) { return r.id == currentPlayerId_; });
+
+  for (const auto& result : results) {
+    auto media = flattenMedia(result);
+    auto episode = resolveEpisode(extractMediaFields(media));
+    if (!episode) continue;
+
+    currentPlayer_ = result.player;
+    currentMedia_ = std::move(media);
+    currentPlayerId_ = result.id;
+
+    const auto animeId = track::recognition::identify(*episode);
+    episode->setAnimeId(animeId);
+
+    if (hasEpisodeChanged(*episode)) {
+      currentEpisode_ = episode;
+      emit currentEpisodeChanged(episode);
+    }
     return;
   }
 
-  const auto resultIt = std::ranges::find(results, currentPlayerId_, &anisthesia::Result::id);
-  const auto& result = resultIt != results.end() ? *resultIt : results.front();
-
-  currentPlayer_ = result.player;
-  currentMedia_ = flattenMedia(result);
-  currentPlayerId_ = result.id;
-
-  auto episode = resolveEpisode(extractMediaFields(*currentMedia_));
-  if (!episode) {
-    reset();
-    return;
-  }
-
-  const auto animeId = track::recognition::identify(*episode);
-  episode->setAnimeId(animeId);
-
-  if (hasEpisodeChanged(*episode)) {
-    currentEpisode_ = episode;
-    emit currentEpisodeChanged(episode);
-  }
+  reset();
 }
 
 bool Detection::isPlayerFocused() const {
