@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.0-beta.2
+
+- Torrent notifications now follow the filtered selection, as in Taiga v1. Unselected or
+  discarded files no longer trigger a notification just because their episode number is ahead
+  of your progress.
+- Installation instructions are in the wiki's existing build guide; the README stays concise.
+
+The known limitations listed for beta.1 still apply.
+
 ## 0.1.0-beta.1
 
 First Akyuu beta for Linux, based on Taiga's Qt rewrite. This release retains the upstream
