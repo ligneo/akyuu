@@ -128,8 +128,12 @@ void Aggregator::fetch(const QString& requestedUrl, const bool automatic) {
           emit newEpisodesFound(lines);
         }
       } else if (akyuu::settings.torrentDownloadNewEpisodes()) {
-        // The filters decide what is selected. With them off, this would download everything.
-        if (akyuu::settings.torrentFilterEnabled()) downloadSelected();
+        // The filters decide what is selected. With them off, this would download everything. A
+        // check that selects nothing stays quiet rather than reporting an error each time.
+        const auto selected = std::ranges::any_of(feed_.items, [](const FeedItem& item) {
+          return item.state == FeedItemState::Selected;
+        });
+        if (akyuu::settings.torrentFilterEnabled() && selected) downloadSelected();
       }
     }
   });
