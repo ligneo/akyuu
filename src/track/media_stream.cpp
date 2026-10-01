@@ -30,7 +30,7 @@ namespace {
 
 QString applyTitlePattern(const StreamData& stream, const QString& title) {
   const auto match = stream.titlePattern.match(title, 0, QRegularExpression::NormalMatch,
-                                               QRegularExpression::AnchoredMatchOption);
+                                               QRegularExpression::AnchorAtOffsetMatchOption);
   if (!match.hasMatch()) return {};
 
   // Use the first non-empty capture. Patterns also match pages without a video (e.g. the home page
@@ -83,6 +83,33 @@ QString cleanStreamTitle(const StreamData& stream, QString title) {
 }
 
 }  // namespace
+
+std::string cleanBrowserTitle(const std::string& title) {
+  // Upload labels precede the episode number; removing words anywhere in the title would alter
+  // anime names such as Full Metal Panic.
+  static const QRegularExpression pattern{
+      u"^(.+?)\\s+(?:Anime\\s+)?Full\\s+Episode\\s+(\\d+(?:\\.\\d+)?(?:-\\d+(?:\\.\\d+)?)?)\\b(.*)$"_s,
+      QRegularExpression::CaseInsensitiveOption};
+  const auto value = QString::fromStdString(title).trimmed();
+  const auto match = pattern.match(value);
+  if (!match.hasMatch()) return value.toStdString();
+
+  return u"%1 - %2%3"_s.arg(match.captured(1), match.captured(2), match.captured(3)).toStdString();
+}
+
+std::optional<std::string> titleFromBrowserMedia(const std::string& url, const std::string& title) {
+  if (!url.empty()) {
+    const auto extracted = titleFromStreamingProvider(url, title);
+    if (!extracted) return std::nullopt;
+    return cleanBrowserTitle(*extracted);
+  }
+
+  // Without an address, none of the disabled providers can be ruled out.
+  if (!akyuu::settings.disabledStreamingProviders().empty()) return std::nullopt;
+
+  const auto cleaned = cleanBrowserTitle(title);
+  return cleaned.empty() ? std::nullopt : std::optional{cleaned};
+}
 
 const std::vector<StreamData>& streamData() {
   // clang-format off
@@ -195,8 +222,8 @@ const std::vector<StreamData>& streamData() {
       Stream::Youtube,
       u"YouTube"_s,
       u"https://www.youtube.com"_s,
-      QRegularExpression{u"youtube\\.com/watch"_s},
-      QRegularExpression{u"YouTube|(?:▶ )?(.+) - YouTube"_s},
+      QRegularExpression{u"^(?:https?://)?(?:www\\.|m\\.|music\\.)?youtube\\.com/watch(?:[?#]|$)"_s},
+      QRegularExpression{u"YouTube$|(?:▶ )?(.+?)(?: - YouTube)?$"_s},
     },
   };
   // clang-format on

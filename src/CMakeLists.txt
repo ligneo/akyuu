@@ -244,4 +244,14 @@ if (AKYUU_BUILD_TESTS AND BUILD_TESTING)
 	target_include_directories(akyuu-private-settings-tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 	target_link_libraries(akyuu-private-settings-tests PRIVATE Qt6::Core)
 	add_test(NAME private-settings COMMAND akyuu-private-settings-tests)
+	add_executable(akyuu-streaming-tests
+		${CMAKE_SOURCE_DIR}/tests/streaming/streaming.cpp
+		track/media_stream.cpp
+	)
+	set_target_properties(akyuu-streaming-tests PROPERTIES
+		RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests
+	)
+	target_include_directories(akyuu-streaming-tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+	target_link_libraries(akyuu-streaming-tests PRIVATE Qt6::Core Qt6::Network anitomy)
+	add_test(NAME streaming COMMAND akyuu-streaming-tests)
 endif()

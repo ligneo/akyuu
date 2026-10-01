@@ -26,6 +26,7 @@
 #include <utility>
 
 #include "akyuu/settings.hpp"
+#include "base/log.hpp"
 #include "media/anime.hpp"
 #include "media/anime_db.hpp"
 #include "track/episode.hpp"
@@ -94,7 +95,7 @@ MediaFields extractMediaFields(const anisthesia::Media& media) {
   return fields;
 }
 
-std::optional<Episode> resolveEpisode(const MediaFields& fields) {
+std::optional<Episode> resolveEpisode(const MediaFields& fields, const bool webBrowser) {
   if (!fields.file.empty()) {
     const QFileInfo fileInfo{QString::fromStdString(fields.file)};
     auto episode = track::recognition::parseFileInfo(fileInfo);
@@ -108,14 +109,21 @@ std::optional<Episode> resolveEpisode(const MediaFields& fields) {
 
   if (value.empty()) return std::nullopt;
 
-  if (!fields.url.empty()) {
-    const auto title = track::recognition::titleFromStreamingProvider(fields.url, value);
+  if (webBrowser || !fields.url.empty()) {
+    const auto title = webBrowser
+                           ? track::recognition::titleFromBrowserMedia(fields.url, value)
+                           : track::recognition::titleFromStreamingProvider(fields.url, value);
     if (!title) return std::nullopt;
 
     value = *title;
   }
 
-  return track::recognition::parse(value);
+  auto episode = track::recognition::parse(value);
+  if (webBrowser && fields.url.empty() && !episode.contains(anitomy::ElementKind::Episode)) {
+    return std::nullopt;
+  }
+
+  return episode;
 }
 
 }  // namespace
@@ -190,7 +198,8 @@ void Detection::poll() {
 
   for (const auto& result : results) {
     auto media = flattenMedia(result);
-    auto episode = resolveEpisode(extractMediaFields(media));
+    auto episode = resolveEpisode(extractMediaFields(media),
+                                  result.player.type == anisthesia::PlayerType::WebBrowser);
     if (!episode) continue;
 
     const auto previousFile = getCurrentFile();
@@ -203,6 +212,8 @@ void Detection::poll() {
 
     if (hasEpisodeChanged(*episode) || previousFile != getCurrentFile()) {
       currentEpisode_ = episode;
+      qDebug() << "Detected episode:" << animeId
+               << QString::fromStdString(episode->element(anitomy::ElementKind::Episode));
       emit currentEpisodeChanged(episode);
     }
     return;

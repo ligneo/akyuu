@@ -53,6 +53,9 @@ struct StreamData {
   QRegularExpression titlePattern;
 };
 
+std::string cleanBrowserTitle(const std::string& title);
+std::optional<std::string> titleFromBrowserMedia(const std::string& url, const std::string& title);
+
 const std::vector<StreamData>& streamData();
 
 bool isStreamEnabled(const StreamData& stream);
