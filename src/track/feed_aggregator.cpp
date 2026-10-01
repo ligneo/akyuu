@@ -377,12 +377,12 @@ void Aggregator::download(const FeedItem& item) {
   });
 }
 
-// One line per anime, with the episode numbers that are new. v1 groups the same way.
+// One line per anime, with the selected episode numbers.
 QStringList Aggregator::newEpisodeLines() const {
   std::map<QString, std::set<int>> episodes;
 
   for (const auto& item : feed_.items) {
-    if (!item.new_episode) continue;
+    if (item.state != FeedItemState::Selected) continue;
 
     const auto anime = anime::db.item(item.episode.animeId());
     const auto title =
