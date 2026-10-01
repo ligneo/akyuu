@@ -7,7 +7,7 @@ your computer and synchronizes your progress with [AniList](https://anilist.co),
 [Kitsu](https://kitsu.app) or [MyAnimeList](https://myanimelist.net). It helps you manage your
 anime library, follow the season, share watched episodes and download new ones.
 
-> **Status:** early development (0.1.0-alpha). Things work day to day, but expect rough edges.
+> **Status:** early development. Things work day to day, but expect rough edges.
 
 ## Based on Taiga
 
