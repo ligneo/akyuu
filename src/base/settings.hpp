@@ -1,6 +1,7 @@
 /**
  * Akyuu
  * Copyright (C) 2010-2024, Eren Okka
+ * Copyright (C) 2026, cenky <cenkkgl@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +28,7 @@ namespace base {
 class Settings {
 protected:
   virtual QString fileName() const = 0;
+  virtual bool isPrivate() const { return false; }
 
   QVariant value(QAnyStringView key) const;
   QVariant value(QAnyStringView key, const QVariant& defaultValue) const;
@@ -34,6 +36,9 @@ protected:
   void setValue(QAnyStringView key, const std::string_view value) const;
 
   QSettings settings() const;
+
+private:
+  bool prepareFile(bool create) const;
 };
 
 }  // namespace base
