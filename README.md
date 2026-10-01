@@ -7,7 +7,8 @@ your computer and synchronizes your progress with [AniList](https://anilist.co),
 [Kitsu](https://kitsu.app) or [MyAnimeList](https://myanimelist.net). It helps you manage your
 anime library, follow the season, share watched episodes and download new ones.
 
-> **Status:** early development. Things work day to day, but expect rough edges.
+> **Status:** beta. Intended for daily use and feedback; known limitations are listed in the
+> [changelog](CHANGELOG.md).
 
 ## Based on Taiga
 
@@ -25,6 +26,9 @@ Taiga contributors stays visible commit by commit.
 
 More on building, moving from Taiga, debug logs and contributing is in the
 [wiki](https://github.com/ligneo/akyuu/wiki).
+
+Read the [privacy notice](PRIVACY.md) before connecting an account.
+[Release and versioning policy](RELEASING.md) describes how beta and stable releases are numbered.
 
 ## Building
 

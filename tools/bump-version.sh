@@ -6,16 +6,24 @@
 # commits do. Nothing is pushed.
 #
 # Usage: tools/bump-version.sh 0.2.0
-#        tools/bump-version.sh 0.2.0-alpha
+#        tools/bump-version.sh 0.2.0-beta.1
 
 set -euo pipefail
 
 version=${1:-}
-if [[ ! $version =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)(-([0-9A-Za-z.]+))?$ ]]; then
+if [[ ! $version =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?$ ]]; then
 	echo "usage: $0 MAJOR.MINOR.PATCH[-PRERELEASE]" >&2
 	exit 1
 fi
 major=${BASH_REMATCH[1]} minor=${BASH_REMATCH[2]} patch=${BASH_REMATCH[3]} pre=${BASH_REMATCH[5]}
+
+IFS='.' read -ra identifiers <<< "$pre"
+for identifier in "${identifiers[@]}"; do
+	if [[ $identifier =~ ^[0-9]+$ && $identifier != 0 && $identifier == 0* ]]; then
+		echo "Numeric prerelease identifiers must not have leading zeroes." >&2
+		exit 1
+	fi
+done
 
 cd "$(git rev-parse --show-toplevel)"
 config=src/akyuu/config.h
@@ -36,13 +44,10 @@ sed -i -E \
 	-e "s/^(#define AKYUU_VERSION_PRE) +\"[^\"]*\"$/\1   \"$pre\"/" \
 	"$config"
 
-if git diff --quiet -- "$config"; then
-	echo "$config already has version $version." >&2
-	exit 1
+if ! git diff --quiet -- "$config"; then
+	git commit -q -m "Bump version to $version" -- "$config"
 fi
-
-git commit -q -m "Bump version to $version" -- "$config"
 git tag -a "v$version" -m "Akyuu $version"
 
-echo "Committed and tagged v$version. To publish:"
+echo "Created tag v$version. To publish:"
 echo "  git push origin HEAD v$version"
