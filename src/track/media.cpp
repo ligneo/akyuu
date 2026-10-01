@@ -193,6 +193,7 @@ void Detection::poll() {
     auto episode = resolveEpisode(extractMediaFields(media));
     if (!episode) continue;
 
+    const auto previousFile = getCurrentFile();
     currentPlayer_ = result.player;
     currentMedia_ = std::move(media);
     currentPlayerId_ = result.id;
@@ -200,7 +201,7 @@ void Detection::poll() {
     const auto animeId = track::recognition::identify(*episode);
     episode->setAnimeId(animeId);
 
-    if (hasEpisodeChanged(*episode)) {
+    if (hasEpisodeChanged(*episode) || previousFile != getCurrentFile()) {
       currentEpisode_ = episode;
       emit currentEpisodeChanged(episode);
     }
@@ -247,6 +248,11 @@ void Detection::reset() {
 bool Detection::hasEpisodeChanged(const Episode& episode) const {
   if (!currentEpisode_) return true;
   if (currentEpisode_->animeId() != episode.animeId()) return true;
+  if (episode.animeId() == anime::kUnknownId &&
+      currentEpisode_->elements(anitomy::ElementKind::Title) !=
+          episode.elements(anitomy::ElementKind::Title)) {
+    return true;
+  }
 
   return currentEpisode_->elements(anitomy::ElementKind::Episode) !=
          episode.elements(anitomy::ElementKind::Episode);
