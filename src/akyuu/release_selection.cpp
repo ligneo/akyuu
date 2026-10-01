@@ -1,0 +1,101 @@
+/**
+ * Akyuu
+ * Copyright (C) 2026, cenky <cenkkgl@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+#include "release_selection.hpp"
+
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonParseError>
+#include <QJsonValue>
+#include <QUrl>
+#include <optional>
+
+namespace akyuu {
+namespace {
+
+std::optional<semaver::Version> releaseVersion(const QString& tag) {
+  auto versionText = tag;
+  if (versionText.startsWith(u'v')) versionText.remove(0, 1);
+  if (versionText.isEmpty()) return std::nullopt;
+
+  semaver::Version version{versionText.toStdString()};
+  if (version.to_string() != versionText.toStdString()) return std::nullopt;
+  return version;
+}
+
+bool validReleasePage(const QString& page, const QString& tag) {
+  const QUrl url{page};
+  if (!url.isValid() || url.scheme() != u"https" || url.host() != u"github.com" ||
+      !url.userInfo().isEmpty() || url.port(-1) != -1 || !url.query().isEmpty() ||
+      !url.fragment().isEmpty()) {
+    return false;
+  }
+
+  const auto path = url.path(QUrl::FullyDecoded);
+  return path == QStringLiteral("/ligneo/akyuu/releases/tag/") + tag;
+}
+
+}  // namespace
+
+ReleaseSelection selectRelease(const QByteArray& response, const semaver::Version& current) {
+  QJsonParseError parseError;
+  const auto document = QJsonDocument::fromJson(response, &parseError);
+  if (parseError.error != QJsonParseError::NoError || !document.isArray())
+    return {.status = ReleaseSelection::Status::InvalidResponse};
+
+  const auto releases = document.array();
+  if (releases.isEmpty()) return {.status = ReleaseSelection::Status::NoReleases};
+
+  std::optional<ReleaseSelection> newest;
+  for (const auto& value : releases) {
+    if (!value.isObject()) continue;
+    const auto release = value.toObject();
+    if (release[QStringLiteral("draft")].toBool(true)) continue;
+
+    const auto tagValue = release[QStringLiteral("tag_name")];
+    const auto prereleaseValue = release[QStringLiteral("prerelease")];
+    const auto pageValue = release[QStringLiteral("html_url")];
+    if (!tagValue.isString() || !prereleaseValue.isBool() || !pageValue.isString()) continue;
+
+    const auto tag = tagValue.toString();
+    const auto version = releaseVersion(tag);
+    if (!version ||
+        (current.prerelease.empty() &&
+         (prereleaseValue.toBool() || !version->prerelease.empty())) ||
+        !validReleasePage(pageValue.toString(), tag)) {
+      continue;
+    }
+
+    if (!newest || newest->version < *version) {
+      newest = ReleaseSelection{
+          .status = ReleaseSelection::Status::UpToDate,
+          .version = *version,
+          .tag = tag,
+          .page = pageValue.toString(),
+      };
+    }
+  }
+
+  if (!newest) return {.status = ReleaseSelection::Status::NoCompatibleRelease};
+  newest->status = newest->version > current ? ReleaseSelection::Status::UpdateAvailable
+                                             : ReleaseSelection::Status::UpToDate;
+  return *newest;
+}
+
+}  // namespace akyuu

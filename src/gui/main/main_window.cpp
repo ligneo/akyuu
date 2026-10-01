@@ -21,8 +21,6 @@
 
 #include <QDesktopServices>
 #include <QFileDialog>
-#include <QJsonDocument>
-#include <QJsonObject>
 #include <QMessageBox>
 #include <QNetworkReply>
 #include <QShortcut>
@@ -60,6 +58,7 @@
 #include "akyuu/application.hpp"
 #include "akyuu/config.h"
 #include "akyuu/network.hpp"
+#include "akyuu/release_selection.hpp"
 #include "akyuu/script.hpp"
 #include "akyuu/session.hpp"
 #include "akyuu/settings.hpp"
@@ -672,7 +671,9 @@ void MainWindow::exportList(const ExportFormat format) {
 // `silent` is the check at startup, as v1's `program/startup/checkversion`: it only speaks up when
 // there is something newer, and says nothing about errors or being up to date.
 void MainWindow::checkForUpdates(bool silent) {
-  static const QUrl url{u"https://api.github.com/repos/ligneo/akyuu/releases/latest"_s};
+  // The releases endpoint includes prereleases. We inspect the first 100; pagination is not
+  // followed because the repository currently has far fewer published releases.
+  static const QUrl url{u"https://api.github.com/repos/ligneo/akyuu/releases?per_page=100"_s};
 
   QNetworkRequest request{url};
   request.setHeaders(akyuu::NetworkAccessManager::commonHeaders());
@@ -695,7 +696,8 @@ void MainWindow::checkForUpdates(bool silent) {
       // GitHub answers 404 while there is no release yet (or the repository is not public).
       if (reply->error() == QNetworkReply::ContentNotFoundError) {
         QMessageBox::information(this, tr("Check for Updates"),
-                                 tr("No release has been published yet."));
+                                 tr("Could not find public releases. The repository may be private "
+                                    "or have no published releases yet."));
         return;
       }
       QMessageBox::warning(this, tr("Check for Updates"),
@@ -703,30 +705,42 @@ void MainWindow::checkForUpdates(bool silent) {
       return;
     }
 
-    const auto json = QJsonDocument::fromJson(reply->readAll()).object();
-    auto tag = json[u"tag_name"_s].toString();
-    if (tag.startsWith(u'v')) tag.remove(0, 1);
-
-    const semaver::Version latest{tag.toStdString()};
     const auto& current = akyuu::version();
-
-    if (!latest || !(latest > current)) {
+    const auto selected = akyuu::selectRelease(reply->readAll(), current);
+    if (selected.status == akyuu::ReleaseSelection::Status::InvalidResponse) {
+      if (silent) return;
+      QMessageBox::warning(this, tr("Check for Updates"),
+                           tr("GitHub returned invalid release data. Try again later."));
+      return;
+    }
+    if (selected.status == akyuu::ReleaseSelection::Status::NoReleases) {
+      if (silent) return;
+      QMessageBox::information(this, tr("Check for Updates"),
+                               tr("No releases have been published yet."));
+      return;
+    }
+    if (selected.status == akyuu::ReleaseSelection::Status::NoCompatibleRelease) {
+      if (silent) return;
+      QMessageBox::information(this, tr("Check for Updates"),
+                               tr("No compatible releases are available yet."));
+      return;
+    }
+    if (selected.status == akyuu::ReleaseSelection::Status::UpToDate) {
       if (silent) return;
       QMessageBox::information(
           this, tr("Check for Updates"),
-          tr("You are using the latest version (%1). The newest release is %2.")
+          tr("You are using the latest version (%1). The newest compatible release is %2.")
               .arg(QString::fromStdString(current.to_string()))
-              .arg(tag.isEmpty() ? tr("unknown") : tag));
+              .arg(selected.tag));
       return;
     }
 
-    const auto page = json[u"html_url"_s].toString();
     const auto answer =
         QMessageBox::question(this, tr("Check for Updates"),
                               tr("Akyuu %1 is available (you have %2). Open the release page?")
-                                  .arg(tag)
+                                  .arg(selected.tag)
                                   .arg(QString::fromStdString(current.to_string())));
-    if (answer == QMessageBox::Yes) QDesktopServices::openUrl(QUrl{page});
+    if (answer == QMessageBox::Yes) QDesktopServices::openUrl(QUrl{selected.page});
   });
 }
 

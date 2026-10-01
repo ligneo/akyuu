@@ -108,6 +108,8 @@ target_sources(akyuu PRIVATE
 	akyuu/hoot.hpp
 	akyuu/path.cpp
 	akyuu/path.hpp
+	akyuu/release_selection.cpp
+	akyuu/release_selection.hpp
 	akyuu/session.cpp
 	akyuu/session.hpp
 	akyuu/script.cpp
@@ -220,3 +222,26 @@ qt_add_translations(akyuu
 	TS_FILE_DIR resources/translations
 	LUPDATE_OPTIONS -no-obsolete -locations none
 )
+
+if (AKYUU_BUILD_TESTS AND BUILD_TESTING)
+	add_executable(akyuu-release-selection-tests
+		${CMAKE_SOURCE_DIR}/tests/release_selection/release_selection.cpp
+		akyuu/release_selection.cpp
+	)
+	set_target_properties(akyuu-release-selection-tests PROPERTIES
+		RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests
+	)
+	target_link_libraries(akyuu-release-selection-tests PRIVATE Qt6::Core semaver)
+	add_test(NAME release-selection COMMAND akyuu-release-selection-tests)
+
+	add_executable(akyuu-private-settings-tests
+		${CMAKE_SOURCE_DIR}/tests/private_settings.cpp
+		base/settings.cpp
+	)
+	set_target_properties(akyuu-private-settings-tests PROPERTIES
+		RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests
+	)
+	target_include_directories(akyuu-private-settings-tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+	target_link_libraries(akyuu-private-settings-tests PRIVATE Qt6::Core)
+	add_test(NAME private-settings COMMAND akyuu-private-settings-tests)
+endif()

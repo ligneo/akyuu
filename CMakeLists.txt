@@ -15,6 +15,11 @@ project(Akyuu
 	LANGUAGES CXX
 )
 
+option(AKYUU_BUILD_TESTS "Build focused Akyuu tests" OFF)
+if (AKYUU_BUILD_TESTS)
+	include(CTest)
+endif()
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(CMAKE_CXX_STANDARD 23)
