@@ -342,6 +342,14 @@ void MainWindow::shareEpisode(const std::optional<track::Episode>& episode) cons
   }
 
   link::http::announce(*episode);
+
+  // As in v1, only HTTP hears about episodes that are not recognized. IRC and Discord are public,
+  // and the raw file name could be anything.
+  if (episode->animeId() == anime::kUnknownId) {
+    link::discord()->clearPresence();
+    return;
+  }
+
 #ifdef Q_OS_LINUX
   link::irc::announce(*episode);
 #endif
