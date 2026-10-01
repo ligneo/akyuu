@@ -10,6 +10,55 @@ anime library, follow the season, share watched episodes and download new ones.
 > **Status:** beta. Intended for daily use and feedback; known limitations are listed in the
 > [changelog](CHANGELOG.md).
 
+## Download and install
+
+Open [Releases](https://github.com/ligneo/akyuu/releases) and select a published Akyuu release.
+Download the appropriate file under **Assets**. The first beta is currently a draft; its files
+will become available to other users when the repository and release are public.
+
+| System | Available installation |
+| --- | --- |
+| Arch Linux, x86_64 | Prebuilt `.pkg.tar.zst` package |
+| Other Linux distributions | Build the full-source `.tar.xz` archive |
+| Windows | No tested build or `.exe` installer is available yet |
+| macOS | Not supported by this beta; native media detection is not implemented |
+
+### Arch Linux
+
+Download `akyuu-0.1.0beta.1-1-x86_64.pkg.tar.zst` from the release assets. From the directory
+containing that file, install it with:
+
+```sh
+sudo pacman -U ./akyuu-0.1.0beta.1-1-x86_64.pkg.tar.zst
+```
+
+Then launch **Akyuu** from your application menu or run `akyuu`.
+The package declares its dependencies; pacman installs missing dependencies from configured
+repositories. Use a fully updated Arch installation. This beta package was built with Qt 6.11.2,
+GCC 16.2 and glibc 2.44 and is not intended for other distributions. AUR publication is pending.
+
+### Other Linux distributions
+
+Download `akyuu-0.1.0-beta.1-source.tar.xz`. It includes the exact dependency sources used by the
+release. Install the build requirements listed below, then:
+
+```sh
+tar -xf akyuu-0.1.0-beta.1-source.tar.xz
+cd akyuu-0.1.0-beta.1
+cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$HOME/.local"
+cmake --build build
+cmake --install build
+```
+
+Launch Akyuu from the application menu or run `~/.local/bin/akyuu`. Other distribution toolchains
+have not been validated yet. There is no AppImage, Flatpak, `.deb` or `.rpm` package in this beta.
+GitHub's automatic **Source code (zip/tar.gz)** files omit submodule contents; use our full-source
+asset for an offline source build.
+
+Read the [privacy notice](PRIVACY.md) before connecting an account. Release assets include
+`SHA256SUMS`; after downloading all listed files to one directory, verify them with
+`sha256sum -c SHA256SUMS`.
+
 ## Based on Taiga
 
 Akyuu is a fork of [Taiga](https://github.com/erengy/taiga) by Eren Okka, modified since
@@ -32,7 +81,7 @@ Read the [privacy notice](PRIVACY.md) before connecting an account.
 
 ## Building
 
-Requirements: CMake 3.21+, a C++23 compiler, and Qt 6 with the Concurrent, DBus, Network, Sql,
+Requirements: CMake 3.21+, Ninja, a C++23 compiler, and Qt 6 with the Concurrent, DBus, Network, Sql,
 Svg, Widgets and LinguistTools modules. Qt Multimedia is optional. On Linux, media players are
 read via sd-bus, so libsystemd is needed as well (`-DANISTHESIA_MPRIS=OFF` leaves it out, along
 with web browser detection).
@@ -51,6 +100,14 @@ Data is kept in `~/.local/share/akyuu/data`. If you used Taiga before, the first
 Taiga's data folder from `~/.local/share/erengy/taiga/data`, and leaves the original untouched.
 
 Pass `-DAKYUU_PORTABLE=ON` to keep data in `bin/data` next to the executable instead.
+
+### Dependency sources
+
+The exact commits are recorded as Git submodules; normal recursive clones use those commits,
+not the newest branch tips. Anisthesia uses [our fork](https://github.com/ligneo/anisthesia) at
+`6988ab4` for the native Linux work. Anitomy uses [Eren's upstream](https://github.com/erengy/anitomy)
+at `8498b53`; it does not need a separate Akyuu fork push. The other upstream dependency pins
+are included in the full-source release asset too.
 
 ### Related projects
 
