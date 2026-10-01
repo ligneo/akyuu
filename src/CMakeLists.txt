@@ -204,8 +204,6 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
 		link/irc.hpp
 		track/media_focus.cpp
 		track/media_focus.hpp
-		track/media_mpris.cpp
-		track/media_mpris.hpp
 	)
 	target_link_libraries(akyuu PRIVATE Qt6::DBus)
 

@@ -21,7 +21,6 @@
 
 #include <algorithm>
 #include <cstdint>
-#include <iterator>
 #include <optional>
 #include <string>
 #include <utility>
@@ -34,7 +33,6 @@
 #include "track/media_stream.hpp"
 #ifdef Q_OS_LINUX
 #include "track/media_focus.hpp"
-#include "track/media_mpris.hpp"
 #endif
 #include "track/recognition.hpp"
 
@@ -175,9 +173,6 @@ void Detection::poll() {
   if (!anisthesia::GetResults(players, media_proc, results)) {
     results.clear();
   }
-#ifdef Q_OS_LINUX
-  std::ranges::move(getMprisResults(players), std::back_inserter(results));
-#endif
   // The player followed so far comes first, so that another one does not take over while it is
   // still playing an episode. Results that cannot be an episode (e.g. a browser tab that is not on
   // a streaming site) are passed over rather than hiding the ones behind them.
