@@ -20,14 +20,19 @@
 
 #include <QCheckBox>
 #include <QComboBox>
+#include <QDialog>
+#include <QDialogButtonBox>
 #include <QDesktopServices>
+#include <QFile>
 #include <QFormLayout>
 #include <QGroupBox>
 #include <QInputDialog>
 #include <QLabel>
 #include <QLineEdit>
+#include <QMessageBox>
 #include <QPushButton>
 #include <QTabWidget>
+#include <QTextBrowser>
 #include <QUrl>
 #include <QUrlQuery>
 #include <QVBoxLayout>
@@ -84,6 +89,53 @@ bool enterAuthorizationPin(QWidget* parent, const QString& service, QString& pin
       QLineEdit::Normal, {}, &ok);
   pin = text;
   return ok && !text.trimmed().isEmpty();
+}
+
+bool acceptMyAnimeListPrivacyNotice(QWidget* parent) {
+  QFile policyFile{":/PRIVACY.md"};
+  if (!policyFile.open(QIODevice::ReadOnly)) {
+    QMessageBox::critical(parent, AccountsPage::tr("MyAnimeList privacy notice"),
+                          AccountsPage::tr("Could not load the privacy notice. "
+                                           "MyAnimeList sign-in was not started."));
+    return false;
+  }
+  const auto policyText = policyFile.readAll();
+  if (policyText.isEmpty()) {
+    QMessageBox::critical(parent, AccountsPage::tr("MyAnimeList privacy notice"),
+                          AccountsPage::tr("The privacy notice is empty. "
+                                           "MyAnimeList sign-in was not started."));
+    return false;
+  }
+
+  QDialog dialog{parent};
+  dialog.setWindowTitle(AccountsPage::tr("MyAnimeList privacy notice"));
+  dialog.setMinimumSize(560, 440);
+
+  const auto layout = new QVBoxLayout(&dialog);
+  const auto introduction = new QLabel(
+      AccountsPage::tr("Review how Akyuu handles your information before continuing to "
+                       "MyAnimeList sign-in."),
+      &dialog);
+  introduction->setWordWrap(true);
+  layout->addWidget(introduction);
+
+  const auto policy = new QTextBrowser(&dialog);
+  policy->setReadOnly(true);
+  policy->setMarkdown(QString::fromUtf8(policyText));
+  layout->addWidget(policy, 1);
+
+  const auto buttons = new QDialogButtonBox(&dialog);
+  const auto acceptButton = buttons->addButton(
+      AccountsPage::tr("Accept and continue"), QDialogButtonBox::AcceptRole);
+  const auto cancelButton = buttons->addButton(QDialogButtonBox::Cancel);
+  cancelButton->setDefault(true);
+  acceptButton->setAutoDefault(false);
+  policy->setOpenExternalLinks(false);
+  QObject::connect(acceptButton, &QPushButton::clicked, &dialog, &QDialog::accept);
+  QObject::connect(cancelButton, &QPushButton::clicked, &dialog, &QDialog::reject);
+  layout->addWidget(buttons);
+
+  return dialog.exec() == QDialog::Accepted;
 }
 
 }  // namespace
@@ -235,9 +287,16 @@ void AccountsPage::authorizeAnilist() {
 }
 
 void AccountsPage::authorizeMyanimelist() {
+  if (!acceptMyAnimeListPrivacyNotice(this)) return;
+
   std::string codeVerifier;
   const auto url = sync::myanimelist::authorizationCodeUrl(codeVerifier);
-  QDesktopServices::openUrl(QUrl{QString::fromStdString(url)});
+  if (!QDesktopServices::openUrl(QUrl{QString::fromStdString(url)})) {
+    QMessageBox::critical(this, tr("MyAnimeList sign-in"),
+                          tr("Could not open MyAnimeList in your web browser. "
+                             "Sign-in was not started."));
+    return;
+  }
 
   QString pin;
   if (!enterAuthorizationPin(this, u"MyAnimeList"_s, pin)) return;

@@ -1,5 +1,6 @@
 <RCC>
   <qresource>
+    <file alias="PRIVACY.md">../../PRIVACY.md</file>
     <file alias="players.anisthesia">../../deps/anisthesia/data/players.anisthesia</file>
     <file alias="anime-relations.txt">../../deps/anime-relations/anime-relations.txt</file>
   </qresource>
