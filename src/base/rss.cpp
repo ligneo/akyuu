@@ -24,6 +24,12 @@ namespace rss {
 
 namespace {
 
+// Some feeds nest elements in item fields (e.g. `media:group`, or XHTML left unescaped in the
+// description). Reading only the text would put the reader in an error state and lose the feed.
+std::string text(QXmlStreamReader& xml) {
+  return xml.readElementText(QXmlStreamReader::IncludeChildElements).toStdString();
+}
+
 std::string attribute(const QXmlStreamReader& xml, QAnyStringView name) {
   return xml.attributes().value(name).toString().toStdString();
 }
@@ -35,26 +41,26 @@ Item parseItem(QXmlStreamReader& xml) {
     const auto name = xml.qualifiedName().toString();
 
     if (name == u"title") {
-      item.title = xml.readElementText().toStdString();
+      item.title = text(xml);
 
     } else if (name == u"link") {
-      item.link = xml.readElementText().toStdString();
+      item.link = text(xml);
 
     } else if (name == u"description") {
-      item.description = xml.readElementText().toStdString();
+      item.description = text(xml);
 
     } else if (name == u"author") {
-      item.author = xml.readElementText().toStdString();
+      item.author = text(xml);
 
     } else if (name == u"comments") {
-      item.comments = xml.readElementText().toStdString();
+      item.comments = text(xml);
 
     } else if (name == u"pubDate") {
-      item.pub_date = xml.readElementText().toStdString();
+      item.pub_date = text(xml);
 
     } else if (name == u"category") {
       item.category.domain = attribute(xml, u"domain");
-      item.category.value = xml.readElementText().toStdString();
+      item.category.value = text(xml);
 
     } else if (name == u"enclosure") {
       item.enclosure.url = attribute(xml, u"url");
@@ -64,15 +70,15 @@ Item parseItem(QXmlStreamReader& xml) {
 
     } else if (name == u"guid") {
       item.guid.is_permalink = xml.attributes().value(u"isPermaLink") != u"false";
-      item.guid.value = xml.readElementText().toStdString();
+      item.guid.value = text(xml);
 
     } else if (name == u"source") {
       item.source.url = attribute(xml, u"url");
-      item.source.name = xml.readElementText().toStdString();
+      item.source.name = text(xml);
 
     } else if (name.contains(u':')) {
       // Providers publish the file size, seeders and the like in their own namespace.
-      item.namespace_elements[name.toStdString()] = xml.readElementText().toStdString();
+      item.namespace_elements[name.toStdString()] = text(xml);
 
     } else {
       xml.skipCurrentElement();
@@ -116,13 +122,13 @@ std::optional<Feed> parse(const QString& data) {
         }
 
       } else if (name == u"title") {
-        feed.channel.title = xml.readElementText().toStdString();
+        feed.channel.title = text(xml);
 
       } else if (name == u"link") {
-        feed.channel.link = xml.readElementText().toStdString();
+        feed.channel.link = text(xml);
 
       } else if (name == u"description") {
-        feed.channel.description = xml.readElementText().toStdString();
+        feed.channel.description = text(xml);
 
       } else {
         xml.skipCurrentElement();
