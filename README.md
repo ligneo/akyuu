@@ -29,7 +29,9 @@ More on building, moving from Taiga, debug logs and contributing is in the
 ## Building
 
 Requirements: CMake 3.21+, a C++23 compiler, and Qt 6 with the Concurrent, DBus, Network, Sql,
-Svg, Widgets and LinguistTools modules. Qt Multimedia is optional.
+Svg, Widgets and LinguistTools modules. Qt Multimedia is optional. On Linux, media players are
+read via sd-bus, so libsystemd is needed as well (`-DANISTHESIA_MPRIS=OFF` leaves it out, along
+with web browser detection).
 
 ```sh
 git clone --recurse-submodules https://github.com/ligneo/akyuu.git
