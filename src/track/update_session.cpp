@@ -34,8 +34,13 @@ namespace {
 
 bool isSameMedia(const Episode& previous, const Episode& current) {
   if (previous.animeId() != current.animeId()) {
-    // Identifying the anime doesn't make it a new one.
+    // Identifying the anime doesn't make it a new one, but another title with the same episode
+    // number does.
     if (previous.animeId() != anime::kUnknownId) return false;
+    if (previous.elements(anitomy::ElementKind::Title) !=
+        current.elements(anitomy::ElementKind::Title)) {
+      return false;
+    }
   }
 
   return previous.elements(anitomy::ElementKind::Episode) ==
