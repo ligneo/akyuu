@@ -27,8 +27,9 @@ export C_INCLUDE_PATH=/usr/include/x86_64-linux-gnu
 export LIBRARY_PATH=/usr/lib/x86_64-linux-gnu
 export LD_LIBRARY_PATH="$GCC_RUNTIME_DIR:$SDK_DIR/Qt/6.11.2/gcc_64/lib"
 export PATH="$SDK_DIR/gcc/usr/bin:$PATH"
-work=$(mktemp -d)
-trap 'rm -rf "$work"' EXIT
+work=${AKYUU_PACKAGE_WORK:-$(mktemp -d)}
+mkdir -p "$work"
+if [[ -z ${AKYUU_PACKAGE_WORK:-} ]]; then trap 'rm -rf "$work"' EXIT; fi
 for format in appimage deb rpm; do
 	build="$work/build"
 	cmake -S "$root" -B "$build" -G Ninja -DCMAKE_BUILD_TYPE=Release \

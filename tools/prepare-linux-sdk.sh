@@ -18,6 +18,8 @@ while read -r hash name; do
 	tar -xf "$sdk/cache/$name" -C "$sdk/gcc" --exclude='.*'
 done <<'PACKAGES'
 1d79371ccf3138e3c172dd83b51560687b65ab824c1ad7e9cb41b7857ed9c55f gcc-16.2.1+r23+gd564253eb6c8-1-x86_64.pkg.tar.zst
+7367dad49fc3229bde804816d412ab77306d433b1f92e4126b8b3ba3502c67d6 libgcc-16.2.1+r23+gd564253eb6c8-1-x86_64.pkg.tar.zst
+15dc6bd2f3a2ee17fcd79a14325e9e0037722a592b2bdc55e1665d92112eaa51 libstdc++-16.2.1+r23+gd564253eb6c8-1-x86_64.pkg.tar.zst
 dbeca7c4844e3112de98ba95f7c2b2618f4dd2b9c693c34076b7ba51ddf4611e gcc-libs-16.2.1+r23+gd564253eb6c8-1-x86_64.pkg.tar.zst
 d9508ad848fd6c31473ac0925cf8c3ec0d2a71bbbb5c7e39274186338a285660 binutils-2.47-4-x86_64.pkg.tar.zst
 PACKAGES
