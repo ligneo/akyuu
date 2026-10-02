@@ -82,6 +82,8 @@ Binary assets use these names, with `VERSION` matching the release tag without `
 
 - Linux AppImage: `akyuu-VERSION-x86_64.AppImage` or `akyuu-VERSION-arm64.AppImage`
 - Arch: `akyuu-ARCHVERSION-PKGREL-x86_64.pkg.tar.zst` (prerelease hyphens removed)
+- Debian/Ubuntu: `akyuu-VERSION-x86_64.deb`
+- Fedora/openSUSE: `akyuu-VERSION-x86_64.rpm`
 - Windows installer: `akyuu-VERSION-x86_64-setup.exe`
 - macOS disk image: `akyuu-VERSION-arm64.dmg`
 
@@ -118,3 +120,39 @@ third-party source archive.
 Check the final file in separate Ubuntu and Fedora environments without a Qt SDK. Verify
 startup, SQLite, HTTPS and required GLIBC symbols; document the measured minimum and the
 limits of desktop testing. Recheck downloaded release assets, not just local build outputs.
+
+## Automated packages
+
+The Packages workflow builds and tests Linux and Windows packages on development pushes,
+pull requests and manual runs. A named `vVERSION` tag also prepares a **draft** release after
+all build and installation checks pass. It does not publish automatically. Downloaded draft
+assets must pass their checksums before the maintainer publishes it. Existing releases are
+never overwritten.
+
+Linux builds use the prepared x86_64 SDK in `setup/linux/Dockerfile`. Run
+`tools/build-linux-packages.sh output` inside that image to create the AppImage, DEB, RPM,
+full committed source archive and corresponding third-party source archive. Only the update
+package policy is rebuilt between formats; the GUI and download service are shared. Native
+packages keep their runtime under `/opt/akyuu` and use the distribution's graphics drivers
+and system C library. Their package versions sort numbered betas before the final release.
+
+The workflow installs, upgrades from a synthetic older package fixture, starts and removes
+packages in Ubuntu 24.04, Debian 13, Fedora 44 and openSUSE Leap 16.0. SQLite, TLS and
+PNG/JPEG/SVG checks run without a Qt SDK on the installation path. These checks cover
+packaging and runtime loading; real graphics, audio, Wayland and player integrations require
+desktop testing. The compiler/tool hashes and exact bundled Ubuntu source package versions
+are recorded in the corresponding source payload. The base image is pinned, while Ubuntu
+security updates and Python transitive tooling can change between builds; this is not a
+claim of byte-for-byte reproducibility.
+
+Windows builds use MSVC 2022, Qt 6.11.2 and `windeployqt`, followed by the NSIS installer.
+`tools/package-windows.ps1` verifies the official Microsoft runtime signature and creates a
+removal manifest from the deployed files. The installation test runs only on a disposable
+Windows Actions runner and verifies startup, TLS/database/image plugins, reinstall, and
+preservation of user data and unrelated files during removal. User data lives in AppData;
+the installer is not a portable build. The installer is unsigned. macOS is deferred.
+
+An Arch package is built from the **same** full-source archive as the release; its recipe
+and checksum are included. Publishing downloadable packages on GitHub requires no AUR,
+Debian, Fedora or openSUSE account. Distribution repository submission and maintenance are
+separate work. AUR publication remains deferred.

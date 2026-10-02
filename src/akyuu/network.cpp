@@ -70,7 +70,8 @@ NetworkAccessManager::NetworkAccessManager(QObject* parent) : QNetworkAccessMana
     for (const auto& [name, value] : reply->rawHeaderPairs()) {
       // Debug logs end up in bug reports, and a session cookie is as good as being signed in
       const bool secret = name.compare("set-cookie", Qt::CaseInsensitive) == 0;
-      qDebug() << u"%1: %2"_s.arg(name).arg(secret ? "(redacted)" : value);
+      qDebug() << u"%1: %2"_s.arg(QString::fromUtf8(name))
+                      .arg(secret ? u"(redacted)"_s : QString::fromUtf8(value));
     }
   });
 }
