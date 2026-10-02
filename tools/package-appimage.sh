@@ -62,11 +62,15 @@ for driver in "$sql_plugins"/libqsql*.so; do
 	qt_arguments+=(--exclude-library "$(basename "$driver")")
 done
 "$LINUXDEPLOY_QT" "${qt_arguments[@]}"
-# Keep vendor-neutral OpenGL entry points; graphics drivers come from the host.
-for name in libOpenGL.so.0 libGLdispatch.so.0; do
+# linuxdeploy excludes libraries normally present on a desktop. Keep the
+# non-driver runtime complete even on a minimal installation. Graphics drivers,
+# glibc, font files and TLS certificates still come from the host.
+for name in libOpenGL.so.0 libGLdispatch.so.0 libfontconfig.so.1 libfreetype.so.6 \
+	libexpat.so.1 libz.so.1 libcom_err.so.2 libgpg-error.so.0; do
 	library=$(ldconfig -p | awk -v name="$name" '$1 == name && !found { print $NF; found=1 }')
 	[[ -n $library ]]
 	cp -L "$library" "$appdir/usr/lib/$name"
+	patchelf --set-rpath '$ORIGIN' "$appdir/usr/lib/$name"
 done
 if [[ -n ${SDK_DIR:-} ]]; then
 	python3 "$root/tools/collect-linux-sources.py" "$appdir" "$SDK_DIR"
