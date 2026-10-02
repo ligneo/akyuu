@@ -28,7 +28,13 @@ for library in (bundle / 'usr').rglob('*.so*'):
         continue  # The pinned Qt/GNU/ICU/FFmpeg payload accompanies the SDK.
     origin = paths.get(library.name)
     if not origin:
-        raise RuntimeError(f'No system origin for bundled library: {library.name}')
+        # Some packaged aliases and private helper libraries are absent from ldconfig.
+        owners = subprocess.run(['dpkg-query', '-S', f'*/{library.name}'], text=True, capture_output=True)
+        candidates = [Path(line.split(': ', 1)[1]) for line in owners.stdout.splitlines() if ': ' in line]
+        candidates = [path for path in candidates if path.is_file() and path.name == library.name]
+        if not candidates:
+            raise RuntimeError(f'No system origin for bundled library: {library.name}')
+        origin = candidates[0]
     package = None
     for path in {str(origin), str(origin.resolve()), str(origin).removeprefix('/usr')}:
         result = subprocess.run(['dpkg-query', '-S', path], text=True, capture_output=True)
