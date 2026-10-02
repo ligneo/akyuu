@@ -725,22 +725,27 @@ void MainWindow::checkForUpdates(bool silent) {
                                tr("No compatible releases are available yet."));
       return;
     }
-    if (selected.status == akyuu::ReleaseSelection::Status::UpToDate) {
-      if (silent) return;
-      QMessageBox::information(
-          this, tr("Check for Updates"),
-          tr("You are using the latest version (%1). The newest compatible release is %2.")
-              .arg(QString::fromStdString(current.to_string()))
-              .arg(selected.tag));
-      return;
-    }
+    const bool upToDate = selected.status == akyuu::ReleaseSelection::Status::UpToDate;
+    if (upToDate && silent) return;
 
-    const auto answer =
-        QMessageBox::question(this, tr("Check for Updates"),
-                              tr("Akyuu %1 is available (you have %2). Open the release page?")
-                                  .arg(selected.tag)
-                                  .arg(QString::fromStdString(current.to_string())));
-    if (answer == QMessageBox::Yes) QDesktopServices::openUrl(QUrl{selected.page});
+    const auto version = QString::fromStdString(current.to_string());
+    const auto message = upToDate ? tr("You are up to date (%1).").arg(version)
+                                  : tr("Akyuu %1 is available. Installed version: %2.")
+                                        .arg(QString::fromStdString(selected.version.to_string()))
+                                        .arg(version);
+    QMessageBox dialog{QMessageBox::Information, tr("Check for Updates"), message,
+                       QMessageBox::Close, this};
+    const auto downloads = dialog.addButton(tr("Downloads"), QMessageBox::ActionRole);
+    const auto guide = dialog.addButton(tr("Installation guide"), QMessageBox::ActionRole);
+    dialog.setDefaultButton(QMessageBox::Close);
+    dialog.exec();
+
+    if (dialog.clickedButton() == downloads) {
+      QDesktopServices::openUrl(QUrl{selected.page});
+    } else if (dialog.clickedButton() == guide) {
+      QDesktopServices::openUrl(
+          QUrl{u"https://github.com/ligneo/akyuu/wiki/How-to-Compile#installing-a-release"_s});
+    }
   });
 }
 
