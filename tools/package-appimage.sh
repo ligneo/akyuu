@@ -82,6 +82,5 @@ if [[ $format == appimage ]]; then
 	[[ -s $LDAI_OUTPUT ]]
 	echo "$LDAI_OUTPUT"
 else
-	ln -s usr/bin/akyuu "$appdir/AppRun"
 	echo "$appdir"
 fi
