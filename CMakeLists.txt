@@ -21,8 +21,8 @@ if (AKYUU_BUILD_TESTS)
 endif()
 
 set(AKYUU_PACKAGE_FORMAT "source" CACHE STRING "Distribution package format")
-set_property(CACHE AKYUU_PACKAGE_FORMAT PROPERTY STRINGS source appimage arch)
-if (NOT AKYUU_PACKAGE_FORMAT MATCHES "^(source|appimage|arch)$")
+set_property(CACHE AKYUU_PACKAGE_FORMAT PROPERTY STRINGS source appimage arch deb rpm)
+if (NOT AKYUU_PACKAGE_FORMAT MATCHES "^(source|appimage|arch|deb|rpm)$")
 	message(FATAL_ERROR "Unsupported AKYUU_PACKAGE_FORMAT")
 endif()
 
@@ -38,11 +38,13 @@ check_cxx_source_compiles("#include <algorithm>
 int main() { return std::ranges::starts_with(std::array{1, 2}, std::array{1}) ? 0 : 1; }"
 	AKYUU_HAS_CXX23_RANGES)
 if (NOT AKYUU_HAS_CXX23_RANGES)
-	message(FATAL_ERROR "A C++23 standard library with std::ranges::starts_with is required (GCC 16 or newer).")
+	message(FATAL_ERROR "A C++23 standard library with std::ranges::starts_with is required (for example GCC 16 or MSVC 2022).")
 endif()
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
+if (NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
+endif()
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
 	option(AKYUU_PORTABLE "Portable mode" ON)

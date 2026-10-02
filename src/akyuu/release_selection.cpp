@@ -83,6 +83,10 @@ std::vector<ReleaseAsset> releaseAssets(const QJsonArray& values, const QString&
         const auto stem = QStringLiteral("akyuu-%1-%2").arg(versionText, architecture);
         if (asset.name == stem + u".AppImage") {
           asset.target = {UpdatePlatform::Linux, architecture, PackageFormat::AppImage};
+        } else if (asset.name == stem + u".deb") {
+          asset.target = {UpdatePlatform::Linux, architecture, PackageFormat::Deb};
+        } else if (asset.name == stem + u".rpm") {
+          asset.target = {UpdatePlatform::Linux, architecture, PackageFormat::Rpm};
         } else if (asset.name == stem + u"-setup.exe") {
           asset.target = {UpdatePlatform::Windows, architecture, PackageFormat::WindowsInstaller};
         } else if (asset.name == stem + u".dmg") {

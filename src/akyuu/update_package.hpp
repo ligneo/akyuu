@@ -25,7 +25,7 @@
 namespace akyuu {
 
 enum class UpdatePlatform { Linux, Windows, MacOS, Unknown };
-enum class PackageFormat { AppImage, Arch, WindowsInstaller, MacDiskImage };
+enum class PackageFormat { AppImage, Arch, Deb, Rpm, WindowsInstaller, MacDiskImage };
 
 struct UpdateTarget {
   UpdatePlatform platform = UpdatePlatform::Unknown;

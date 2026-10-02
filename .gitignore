@@ -3,3 +3,7 @@
 /.vscode/
 /bin/
 /build/
+/packages/
+/licenses/
+/third-party-sources/
+/sources.tar

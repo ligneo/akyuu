@@ -37,6 +37,10 @@ UpdateTarget updateTarget(const QString& kernel, const QString& architecture,
       packageFormat == u"arch") {
     target.format = PackageFormat::Arch;
   }
+  if (target.platform == UpdatePlatform::Linux && packageFormat == u"deb")
+    target.format = PackageFormat::Deb;
+  if (target.platform == UpdatePlatform::Linux && packageFormat == u"rpm")
+    target.format = PackageFormat::Rpm;
   return target;
 }
 

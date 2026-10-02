@@ -26,6 +26,7 @@
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QTemporaryDir>
+#include <QSysInfo>
 #include <QTimer>
 #include <cstdlib>
 #include <iostream>
@@ -158,13 +159,19 @@ void testPaginationAndReuse() {
           "a service must be reusable after failure");
 }
 
-void testDownload(const Response& response, bool validHash, bool cancel, bool success) {
+void testDownload(const Response& response, bool validHash, bool cancel, bool success,
+                  akyuu::PackageFormat format) {
   Network network;
   network.server.responses = {response};
   akyuu::UpdateService service{&network};
   QTemporaryDir directory;
   require(directory.isValid(), "test directory must exist");
-  const auto path = directory.filePath(QStringLiteral("update.AppImage"));
+  QString extension = QStringLiteral(".AppImage");
+  if (format == akyuu::PackageFormat::Deb) extension = QStringLiteral(".deb");
+  if (format == akyuu::PackageFormat::Rpm) extension = QStringLiteral(".rpm");
+  if (format == akyuu::PackageFormat::WindowsInstaller) extension = QStringLiteral("-setup.exe");
+  const auto name = QStringLiteral("akyuu-0.2.0-x86_64") + extension;
+  const auto path = directory.filePath(name);
   QFile original{path};
   require(original.open(QIODevice::WriteOnly), "original destination must open");
   original.write("previous file");
@@ -173,13 +180,13 @@ void testDownload(const Response& response, bool validHash, bool cancel, bool su
   auto hash = QCryptographicHash::hash(expected, QCryptographicHash::Sha256);
   if (!validHash) hash[0] ^= 1;
   const akyuu::ReleaseAsset asset{
-      .name = QStringLiteral("akyuu-0.2.0-x86_64.AppImage"),
-      .url = QUrl{QStringLiteral(
-          "https://github.com/ligneo/akyuu/releases/download/v0.2.0/akyuu-0.2.0-x86_64.AppImage")},
+      .name = name,
+      .url = QUrl{QStringLiteral("https://github.com/ligneo/akyuu/releases/download/v0.2.0/") + name},
       .size = expected.size(),
       .sha256 = hash,
-      .target = {akyuu::UpdatePlatform::Linux, QStringLiteral("x86_64"),
-                 akyuu::PackageFormat::AppImage}};
+      .target = {format == akyuu::PackageFormat::WindowsInstaller ? akyuu::UpdatePlatform::Windows
+                                                               : akyuu::UpdatePlatform::Linux,
+                 QStringLiteral("x86_64"), format}};
   QEventLoop loop;
   bool downloaded = false, failed = false, cancelled = false;
   QObject::connect(&service, &akyuu::UpdateService::downloaded, &loop, [&](auto) {
@@ -205,7 +212,7 @@ void testDownload(const Response& response, bool validHash, bool cancel, bool su
   require(original.open(QIODevice::ReadOnly), "destination must remain readable");
   require(original.readAll() == (success ? expected : QByteArray{"previous file"}),
           "failed, truncated, oversized or cancelled downloads must preserve the existing file");
-  if (success)
+  if (success && format == akyuu::PackageFormat::AppImage)
     require(original.permissions() & QFileDevice::ExeOwner, "an AppImage must be executable");
 }
 
@@ -215,10 +222,14 @@ int main(int argc, char** argv) {
   QCoreApplication application{argc, argv};
   testPaginationAndReuse();
   const QByteArray body = "verified package bytes";
-  testDownload({body}, true, false, true);
-  testDownload({body}, false, false, false);
-  testDownload({body + "extra"}, true, false, false);
-  testDownload({body.left(5), {}, body.size()}, true, false, false);
-  testDownload({body, {}, -1, true}, true, true, false);
+  const auto format = QSysInfo::kernelType() == u"winnt" ? akyuu::PackageFormat::WindowsInstaller
+                                                       : akyuu::PackageFormat::AppImage;
+  testDownload({body}, true, false, true, format);
+  testDownload({body}, true, false, true, akyuu::PackageFormat::Deb);
+  testDownload({body}, true, false, true, akyuu::PackageFormat::Rpm);
+  testDownload({body}, false, false, false, format);
+  testDownload({body + "extra"}, true, false, false, format);
+  testDownload({body.left(5), {}, body.size()}, true, false, false, format);
+  testDownload({body, {}, -1, true}, true, true, false, format);
   std::cout << "Passed paginated update checks and atomic download tests.\n";
 }

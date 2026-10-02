@@ -17,7 +17,8 @@ output=$(realpath -m "$4")
 : "${GCC_RUNTIME_DIR:?Set GCC_RUNTIME_DIR to the compiler runtime library directory}"
 : "${LDAI_RUNTIME_FILE:?Set LDAI_RUNTIME_FILE to a verified AppImage runtime}"
 [[ ! -e $appdir ]] || { echo "APPDIR must not exist." >&2; exit 1; }
-grep -q '^AKYUU_PACKAGE_FORMAT:STRING=appimage$' "$build/CMakeCache.txt"
+format=$(sed -n 's/^AKYUU_PACKAGE_FORMAT:STRING=//p' "$build/CMakeCache.txt")
+[[ $format == appimage || $format == deb || $format == rpm ]]
 grep -q '^AKYUU_PORTABLE:BOOL=OFF$' "$build/CMakeCache.txt"
 grep -q '^CMAKE_INSTALL_PREFIX:PATH=/usr$' "$build/CMakeCache.txt"
 
@@ -32,14 +33,16 @@ print('.'.join(parts) + ('-' + pre if pre else ''))
 PY
 )
 architecture=$(uname -m)
-[[ $architecture != aarch64 ]] || architecture=arm64
-[[ $architecture == x86_64 || $architecture == arm64 ]]
+[[ $architecture == x86_64 ]] || { echo "The prepared Linux SDK supports x86_64 only." >&2; exit 1; }
 
 cmake --build "$build" --parallel "${BUILD_JOBS:-2}"
 DESTDIR="$appdir" cmake --install "$build"
 mkdir -p "$appdir/usr/share/doc/akyuu" "$output"
 cp "$root/LICENSE" "$appdir/usr/share/doc/akyuu/LICENSE"
 cp -a "$licenses/." "$appdir/usr/share/doc/akyuu/"
+if [[ -f $build/tests/akyuu-deployment-tests ]]; then
+	cp "$build/tests/akyuu-deployment-tests" "$appdir/usr/bin/akyuu-deployment-tests"
+fi
 export QMAKE LDAI_RUNTIME_FILE APPIMAGE_EXTRACT_AND_RUN=1
 export EXTRA_QT_MODULES=svg
 export EXTRA_PLATFORM_PLUGINS='libqwayland.so;libqoffscreen.so'
@@ -65,6 +68,20 @@ for name in libOpenGL.so.0 libGLdispatch.so.0; do
 	[[ -n $library ]]
 	cp -L "$library" "$appdir/usr/lib/$name"
 done
-"$LINUXDEPLOY" --appdir "$appdir" --output appimage
-[[ -s $LDAI_OUTPUT ]]
-echo "$LDAI_OUTPUT"
+if [[ -n ${SDK_DIR:-} ]]; then
+	python3 "$root/tools/collect-linux-sources.py" "$appdir" "$SDK_DIR"
+	cp -a "$licenses/." "$appdir/usr/share/doc/akyuu/"
+fi
+if [[ -f $appdir/usr/bin/akyuu-deployment-tests ]]; then
+	mkdir -p "$output/diagnostics"
+	cp "$appdir/usr/bin/akyuu-deployment-tests" "$output/diagnostics/deployment-$format"
+	rm "$appdir/usr/bin/akyuu-deployment-tests"
+fi
+if [[ $format == appimage ]]; then
+	"$LINUXDEPLOY" --appdir "$appdir" --output appimage
+	[[ -s $LDAI_OUTPUT ]]
+	echo "$LDAI_OUTPUT"
+else
+	ln -s usr/bin/akyuu "$appdir/AppRun"
+	echo "$appdir"
+fi

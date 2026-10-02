@@ -191,6 +191,8 @@ void testPlatformPackages() {
   add(QStringLiteral("akyuu-0.1.0-beta.3-x86_64.AppImage"));
   add(QStringLiteral("akyuu-0.1.0-beta.3-arm64.AppImage"));
   add(QStringLiteral("akyuu-0.1.0beta.3-1-x86_64.pkg.tar.zst"));
+  add(QStringLiteral("akyuu-0.1.0-beta.3-x86_64.deb"));
+  add(QStringLiteral("akyuu-0.1.0-beta.3-x86_64.rpm"));
   add(QStringLiteral("akyuu-0.1.0-beta.3-x86_64-setup.exe"));
   add(QStringLiteral("akyuu-0.1.0-beta.3-arm64.dmg"));
   add(QStringLiteral("akyuu-0.1.0-beta.3-source.tar.xz"));
@@ -199,7 +201,7 @@ void testPlatformPackages() {
       QStringLiteral("example.com"));
   item.insert(QStringLiteral("assets"), assets);
   const auto selected = akyuu::selectRelease(response({item}), semaver::Version{"0.1.0-beta.2"});
-  require(selected.assets.size() == 5,
+  require(selected.assets.size() == 7,
           "source archives and untrusted assets must not become install packages");
   using Platform = akyuu::UpdatePlatform;
   using Format = akyuu::PackageFormat;
@@ -207,6 +209,8 @@ void testPlatformPackages() {
        {akyuu::UpdateTarget{Platform::Linux, QStringLiteral("x86_64"), Format::AppImage},
         akyuu::UpdateTarget{Platform::Linux, QStringLiteral("arm64"), Format::AppImage},
         akyuu::UpdateTarget{Platform::Linux, QStringLiteral("x86_64"), Format::Arch},
+        akyuu::UpdateTarget{Platform::Linux, QStringLiteral("x86_64"), Format::Deb},
+        akyuu::UpdateTarget{Platform::Linux, QStringLiteral("x86_64"), Format::Rpm},
         akyuu::UpdateTarget{Platform::Windows, QStringLiteral("x86_64"), Format::WindowsInstaller},
         akyuu::UpdateTarget{Platform::MacOS, QStringLiteral("arm64"), Format::MacDiskImage}}) {
     const auto package = akyuu::selectPackage(selected.assets, target);
@@ -218,6 +222,15 @@ void testPlatformPackages() {
   require(!akyuu::selectPackage(selected.assets, {Platform::Windows, QStringLiteral("arm64"),
                                                   Format::WindowsInstaller}),
           "an unavailable architecture must never receive another platform's installer");
+  require(akyuu::updateTarget(QStringLiteral("linux"), QStringLiteral("x86_64"),
+                              QStringLiteral("deb")).format == Format::Deb,
+          "a DEB installation must keep its package format");
+  require(akyuu::updateTarget(QStringLiteral("linux"), QStringLiteral("x86_64"),
+                              QStringLiteral("rpm")).format == Format::Rpm,
+          "an RPM installation must keep its package format");
+  require(!akyuu::selectPackage(selected.assets, {Platform::Linux, QStringLiteral("arm64"),
+                                                  Format::Deb}),
+          "missing DEB architectures must not fall back to AppImages");
   auto duplicates = selected.assets;
   duplicates.push_back(duplicates.front());
   require(!akyuu::selectPackage(duplicates,
