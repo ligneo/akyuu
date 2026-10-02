@@ -8,6 +8,14 @@ root=$(cd "$(dirname "$0")/.." && pwd)
 output=$(realpath -m "$1")
 mkdir -p "$output"
 version=$(python3 "$root/tools/release-version.py")
+python3 "$root/tools/source-bundle.py" "$output"
+python3 - "$SDK_DIR" "$version" <<'PYTHON'
+from pathlib import Path
+import sys
+sdk, version = Path(sys.argv[1]), sys.argv[2]
+for path in (sdk / "licenses/NOTICE", sdk / "sources/third-party-sources/README"):
+    path.write_text(path.read_text().replace("0.1.0-beta.3", version))
+PYTHON
 export LINUXDEPLOY="$SDK_DIR/tools/linuxdeploy-x86_64.AppImage"
 export LINUXDEPLOY_QT="$SDK_DIR/tools/linuxdeploy-plugin-qt-x86_64.AppImage"
 export LDAI_RUNTIME_FILE="$SDK_DIR/tools/runtime-x86_64"
@@ -41,6 +49,5 @@ for format in appimage deb rpm; do
 	fi
 done
 
-python3 "$root/tools/source-bundle.py" "$output"
 cp -a "$SDK_DIR/licenses" "$SDK_DIR/sources/licenses"
 tar -cf "$output/akyuu-$version-third-party-sources.tar" -C "$SDK_DIR/sources" licenses third-party-sources

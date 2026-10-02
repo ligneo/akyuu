@@ -1,4 +1,4 @@
-FROM ubuntu:24.04
+FROM ubuntu:24.04@sha256:008173c23f95b170204355c12626cb5a965d779a7e1283b09e9cffbb1bf33ca3
 RUN sed -i 's/^Types: deb$/Types: deb deb-src/' /etc/apt/sources.list.d/ubuntu.sources && apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     ca-certificates curl python3-venv cmake ninja-build git pkg-config libsystemd-dev libc6-dev linux-libc-dev \
     libgmp10 libmpfr6 libmpc3 libisl23 libzstd1 zlib1g libjansson4 \
