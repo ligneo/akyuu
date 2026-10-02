@@ -91,3 +91,30 @@ archives are never offered as installers. Build Arch packages with `-DAKYUU_PACK
 and AppImages with `-DAKYUU_PACKAGE_FORMAT=appimage`. Source builds default to the portable Linux
 package on Linux; AppImage installations keep that format. Add another installer format in the
 package model and its tests, without adding platform conditions to the main window.
+
+## Linux AppImage
+
+Build the tagged sources on an older supported Linux base, with `AKYUU_PORTABLE=OFF`,
+`AKYUU_PACKAGE_FORMAT=appimage` and `CMAKE_INSTALL_PREFIX=/usr`. The beta.3 build uses
+Ubuntu 24.04, GCC 16.2.1 and the official Qt 6.11.2 SDK. GCC 14 and 15 lack the required
+`std::ranges::starts_with`; CMake checks the feature before building. Keep the compiler
+runtime compatible with the build base, rather than copying the host's glibc.
+
+Use verified linuxdeploy, its Qt plugin and a pinned AppImage runtime. Set `LINUXDEPLOY`,
+`LINUXDEPLOY_QT`, `QMAKE`, `GCC_RUNTIME_DIR` and `LDAI_RUNTIME_FILE`, then run:
+
+```sh
+tools/package-appimage.sh build AppDir licenses output
+```
+
+The tool requires a new AppDir, includes Qt's SQLite driver, X11 and Wayland plugins, and
+keeps screen drivers on the host. `licenses` contains third-party copyright notices, full
+license texts and a source inventory. Include the corresponding Qt, compiler runtime,
+FFmpeg, ICU, system library and AppImage runtime sources alongside the release, with their
+checksums. Users may extract an AppImage and replace its dynamic libraries; no installation
+key or locked runtime is required. Akyuu's full-source archive is separate from this
+third-party source archive.
+
+Check the final file in separate Ubuntu and Fedora environments without a Qt SDK. Verify
+startup, SQLite, HTTPS and required GLIBC symbols; document the measured minimum and the
+limits of desktop testing. Recheck downloaded release assets, not just local build outputs.
