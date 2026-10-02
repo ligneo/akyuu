@@ -202,13 +202,19 @@ void Detection::poll() {
                                   result.player.type == anisthesia::PlayerType::WebBrowser);
     if (!episode) continue;
 
+    const auto animeId = track::recognition::identify(*episode);
+    episode->setAnimeId(animeId);
+
+    if (result.player.type == anisthesia::PlayerType::WebBrowser &&
+        !episode->contains(anitomy::ElementKind::Episode)) {
+      const auto* item = anime::db.item(animeId);
+      if (!item || item->episode_count != 1) continue;
+    }
+
     const auto previousFile = getCurrentFile();
     currentPlayer_ = result.player;
     currentMedia_ = std::move(media);
     currentPlayerId_ = result.id;
-
-    const auto animeId = track::recognition::identify(*episode);
-    episode->setAnimeId(animeId);
 
     if (hasEpisodeChanged(*episode) || previousFile != getCurrentFile()) {
       currentEpisode_ = episode;
