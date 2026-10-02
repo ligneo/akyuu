@@ -58,7 +58,7 @@
 #include "akyuu/application.hpp"
 #include "akyuu/config.h"
 #include "akyuu/network.hpp"
-#include "akyuu/release_selection.hpp"
+#include "akyuu/update_service.hpp"
 #include "akyuu/script.hpp"
 #include "akyuu/session.hpp"
 #include "akyuu/settings.hpp"
@@ -665,88 +665,110 @@ void MainWindow::exportList(const ExportFormat format) {
   report(text);
 }
 
-// v1 downloads its NSIS installer and runs it silently (`/S /D=<folder>`) to replace itself. That
-// is a Windows mechanism; on Linux Akyuu is installed by the user or a package manager, so the
-// honest thing to do is say whether there is something newer and where to get it.
-// `silent` is the check at startup, as v1's `program/startup/checkversion`: it only speaks up when
-// there is something newer, and says nothing about errors or being up to date.
 void MainWindow::checkForUpdates(bool silent) {
-  // The releases endpoint includes prereleases. We inspect the first 100; pagination is not
-  // followed because the repository currently has far fewer published releases.
-  static const QUrl url{u"https://api.github.com/repos/ligneo/akyuu/releases?per_page=100"_s};
-
-  QNetworkRequest request{url};
-  request.setHeaders(akyuu::NetworkAccessManager::commonHeaders());
-
-  const auto reply = akyuu::network()->get(request);
-
+  if (m_updateService) return;
+  const auto service = new akyuu::UpdateService{akyuu::network(), this};
+  m_updateService = service;
   if (!silent) {
     m_statusBarController->showMessage({
         .source = StatusBarController::Source::Sync,
         .text = tr("Checking for updates..."),
     });
   }
+  connect(service, &akyuu::UpdateService::failed, this,
+          [this, service, silent](const QString& error) {
+            m_updateService.clear();
+            service->deleteLater();
+            if (silent) return;
+            m_statusBarController->clearMessage(StatusBarController::Source::Sync);
+            QMessageBox::warning(this, tr("Check for Updates"),
+                                 tr("Could not check for updates: %1").arg(error));
+          });
+  connect(service, &akyuu::UpdateService::checked, this,
+          [this, service, silent](const akyuu::ReleaseSelection& selected) {
+            m_updateService.clear();
+            service->deleteLater();
+            if (!silent) m_statusBarController->clearMessage(StatusBarController::Source::Sync);
+            using Status = akyuu::ReleaseSelection::Status;
+            if (selected.status == Status::NoReleases ||
+                selected.status == Status::NoCompatibleRelease ||
+                selected.status == Status::InvalidResponse) {
+              if (!silent)
+                QMessageBox::information(this, tr("Check for Updates"),
+                                         tr("No compatible releases are available yet."));
+              return;
+            }
+            const bool upToDate = selected.status == Status::UpToDate;
+            if (upToDate && silent) return;
+            const auto version = QString::fromStdString(akyuu::version().to_string());
+            const auto message =
+                upToDate ? tr("You are up to date (%1).").arg(version)
+                         : tr("Akyuu %1 is available. Installed version: %2.")
+                               .arg(QString::fromStdString(selected.version.to_string()))
+                               .arg(version);
+            const auto package = akyuu::selectPackage(selected.assets, akyuu::updateTarget());
+            QMessageBox dialog{QMessageBox::Information, tr("Check for Updates"), message,
+                               QMessageBox::Close, this};
+            const auto download =
+                package ? dialog.addButton(tr("Download"), QMessageBox::AcceptRole) : nullptr;
+            const auto downloads = dialog.addButton(tr("All downloads"), QMessageBox::ActionRole);
+            const auto guide = dialog.addButton(tr("Installation guide"), QMessageBox::ActionRole);
+            dialog.setDefaultButton(QMessageBox::Close);
+            dialog.exec();
+            if (download && dialog.clickedButton() == download) {
+              downloadUpdate(*package, selected.tag);
+            } else if (dialog.clickedButton() == downloads) {
+              QDesktopServices::openUrl(QUrl{selected.page});
+            } else if (dialog.clickedButton() == guide) {
+              QDesktopServices::openUrl(QUrl{
+                  u"https://github.com/ligneo/akyuu/wiki/How-to-Compile#installing-a-release"_s});
+            }
+          });
+  service->check(akyuu::version());
+}
 
-  connect(reply, &QNetworkReply::finished, this, [this, reply, silent]() {
-    reply->deleteLater();
-    if (!silent) m_statusBarController->clearMessage(StatusBarController::Source::Sync);
-
-    if (reply->error() != QNetworkReply::NoError) {
-      if (silent) return;
-      // GitHub answers 404 while there is no release yet (or the repository is not public).
-      if (reply->error() == QNetworkReply::ContentNotFoundError) {
-        QMessageBox::information(this, tr("Check for Updates"),
-                                 tr("Could not find public releases. The repository may be private "
-                                    "or have no published releases yet."));
-        return;
-      }
-      QMessageBox::warning(this, tr("Check for Updates"),
-                           tr("Could not check for updates: %1").arg(reply->errorString()));
-      return;
-    }
-
-    const auto& current = akyuu::version();
-    const auto selected = akyuu::selectRelease(reply->readAll(), current);
-    if (selected.status == akyuu::ReleaseSelection::Status::InvalidResponse) {
-      if (silent) return;
-      QMessageBox::warning(this, tr("Check for Updates"),
-                           tr("GitHub returned invalid release data. Try again later."));
-      return;
-    }
-    if (selected.status == akyuu::ReleaseSelection::Status::NoReleases) {
-      if (silent) return;
-      QMessageBox::information(this, tr("Check for Updates"),
-                               tr("No releases have been published yet."));
-      return;
-    }
-    if (selected.status == akyuu::ReleaseSelection::Status::NoCompatibleRelease) {
-      if (silent) return;
-      QMessageBox::information(this, tr("Check for Updates"),
-                               tr("No compatible releases are available yet."));
-      return;
-    }
-    const bool upToDate = selected.status == akyuu::ReleaseSelection::Status::UpToDate;
-    if (upToDate && silent) return;
-
-    const auto version = QString::fromStdString(current.to_string());
-    const auto message = upToDate ? tr("You are up to date (%1).").arg(version)
-                                  : tr("Akyuu %1 is available. Installed version: %2.")
-                                        .arg(QString::fromStdString(selected.version.to_string()))
-                                        .arg(version);
-    QMessageBox dialog{QMessageBox::Information, tr("Check for Updates"), message,
-                       QMessageBox::Close, this};
-    const auto downloads = dialog.addButton(tr("Downloads"), QMessageBox::ActionRole);
-    const auto guide = dialog.addButton(tr("Installation guide"), QMessageBox::ActionRole);
-    dialog.setDefaultButton(QMessageBox::Close);
+void MainWindow::downloadUpdate(const akyuu::ReleaseAsset& asset, const QString& tag) {
+  const auto destination = QFileDialog::getSaveFileName(
+      this, tr("Download update"),
+      QDir{QStandardPaths::writableLocation(QStandardPaths::DownloadLocation)}.filePath(
+          asset.name));
+  if (destination.isEmpty() || m_updateService) return;
+  const auto service = new akyuu::UpdateService{akyuu::network(), this};
+  m_updateService = service;
+  const auto progress =
+      new QProgressDialog{tr("Downloading %1...").arg(asset.name), tr("Cancel"), 0, 100, this};
+  progress->setAutoClose(false);
+  progress->setAutoReset(false);
+  progress->setMinimumDuration(0);
+  const auto finish = [this, service, progress]() {
+    m_updateService.clear();
+    progress->hide();
+    progress->deleteLater();
+    service->deleteLater();
+  };
+  connect(progress, &QProgressDialog::canceled, service, &akyuu::UpdateService::cancel);
+  connect(service, &akyuu::UpdateService::progress, progress,
+          [progress](qint64 received, qint64 total) {
+            progress->setValue(static_cast<int>(received * 100 / total));
+          });
+  connect(service, &akyuu::UpdateService::cancelled, this, finish);
+  connect(service, &akyuu::UpdateService::failed, this, [this, finish](const QString& error) {
+    finish();
+    QMessageBox::warning(this, tr("Download update"),
+                         tr("Could not download the update: %1").arg(error));
+  });
+  connect(service, &akyuu::UpdateService::downloaded, this, [this, finish](const QString& path) {
+    finish();
+    QMessageBox dialog{QMessageBox::Information, tr("Download complete"),
+                       tr("The verified download was saved to %1.").arg(path), QMessageBox::Close,
+                       this};
+    const auto folder = dialog.addButton(tr("Open folder"), QMessageBox::ActionRole);
     dialog.exec();
-
-    if (dialog.clickedButton() == downloads) {
-      QDesktopServices::openUrl(QUrl{selected.page});
-    } else if (dialog.clickedButton() == guide) {
-      QDesktopServices::openUrl(
-          QUrl{u"https://github.com/ligneo/akyuu/wiki/How-to-Compile#installing-a-release"_s});
+    if (dialog.clickedButton() == folder) {
+      QDesktopServices::openUrl(QUrl::fromLocalFile(QFileInfo{path}.absolutePath()));
     }
   });
+  service->download(asset, tag, destination);
 }
 
 // v1 builds this menu from a setting, one `Name|URL` per line, with "-" for a separator.

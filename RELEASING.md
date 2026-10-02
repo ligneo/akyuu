@@ -71,7 +71,23 @@ cmake --build build
 ctest --test-dir build --output-on-failure
 ```
 
-The update checker follows stable releases for stable installations and also offers prereleases
-for prerelease installations. Updates are announced with a release page; installation remains
-with the user or package manager. The current checker reads the first page of up to 100 releases;
-add pagination before release volume can hide eligible stable versions beyond that page.
+The update service follows stable releases for stable installations and also offers prereleases
+for prerelease installations. It reads paginated GitHub release metadata and downloads only a
+package matching the operating system, architecture and installed package format. An ambiguous
+or unverified package falls back to the release page. SHA-256 and size are checked before an
+atomic save; cancellation and failure leave any existing file intact. Installation remains with
+the user or package manager.
+
+Binary assets use these names, with `VERSION` matching the release tag without `v`:
+
+- Linux AppImage: `akyuu-VERSION-x86_64.AppImage` or `akyuu-VERSION-arm64.AppImage`
+- Arch: `akyuu-ARCHVERSION-PKGREL-x86_64.pkg.tar.zst` (prerelease hyphens removed)
+- Windows installer: `akyuu-VERSION-x86_64-setup.exe`
+- macOS disk image: `akyuu-VERSION-arm64.dmg`
+
+These are packaging contracts, not a claim that each platform has a published build. GitHub must
+report the asset as uploaded, with its exact download URL, byte size and SHA-256 digest. Source
+archives are never offered as installers. Build Arch packages with `-DAKYUU_PACKAGE_FORMAT=arch`
+and AppImages with `-DAKYUU_PACKAGE_FORMAT=appimage`. Source builds default to the portable Linux
+package on Linux; AppImage installations keep that format. Add another installer format in the
+package model and its tests, without adding platform conditions to the main window.

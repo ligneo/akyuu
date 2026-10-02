@@ -110,6 +110,10 @@ target_sources(akyuu PRIVATE
 	akyuu/path.hpp
 	akyuu/release_selection.cpp
 	akyuu/release_selection.hpp
+	akyuu/update_package.cpp
+	akyuu/update_package.hpp
+	akyuu/update_service.cpp
+	akyuu/update_service.hpp
 	akyuu/session.cpp
 	akyuu/session.hpp
 	akyuu/script.cpp
@@ -166,6 +170,8 @@ target_sources(akyuu PRIVATE
 
 	main.cpp
 )
+
+target_compile_definitions(akyuu PRIVATE AKYUU_PACKAGE_FORMAT="${AKYUU_PACKAGE_FORMAT}")
 
 target_link_libraries(akyuu PRIVATE
 	Qt6::Core
@@ -227,10 +233,12 @@ if (AKYUU_BUILD_TESTS AND BUILD_TESTING)
 	add_executable(akyuu-release-selection-tests
 		${CMAKE_SOURCE_DIR}/tests/release_selection/release_selection.cpp
 		akyuu/release_selection.cpp
+		akyuu/update_package.cpp
 	)
 	set_target_properties(akyuu-release-selection-tests PROPERTIES
 		RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests
 	)
+	target_compile_definitions(akyuu-release-selection-tests PRIVATE AKYUU_PACKAGE_FORMAT="source")
 	target_link_libraries(akyuu-release-selection-tests PRIVATE Qt6::Core semaver)
 	add_test(NAME release-selection COMMAND akyuu-release-selection-tests)
 
@@ -254,4 +262,16 @@ if (AKYUU_BUILD_TESTS AND BUILD_TESTING)
 	target_include_directories(akyuu-streaming-tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 	target_link_libraries(akyuu-streaming-tests PRIVATE Qt6::Core Qt6::Network anitomy)
 	add_test(NAME streaming COMMAND akyuu-streaming-tests)
+	add_executable(akyuu-update-service-tests
+		${CMAKE_SOURCE_DIR}/tests/update_service.cpp
+		akyuu/update_service.cpp
+		akyuu/update_service.hpp
+		akyuu/update_package.cpp
+		akyuu/release_selection.cpp
+	)
+	set_target_properties(akyuu-update-service-tests PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
+	target_include_directories(akyuu-update-service-tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+	target_compile_definitions(akyuu-update-service-tests PRIVATE AKYUU_PACKAGE_FORMAT="source")
+	target_link_libraries(akyuu-update-service-tests PRIVATE Qt6::Core Qt6::Network semaver)
+	add_test(NAME update-service COMMAND akyuu-update-service-tests)
 endif()

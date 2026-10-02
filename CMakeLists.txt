@@ -20,6 +20,12 @@ if (AKYUU_BUILD_TESTS)
 	include(CTest)
 endif()
 
+set(AKYUU_PACKAGE_FORMAT "source" CACHE STRING "Distribution package format")
+set_property(CACHE AKYUU_PACKAGE_FORMAT PROPERTY STRINGS source appimage arch)
+if (NOT AKYUU_PACKAGE_FORMAT MATCHES "^(source|appimage|arch)$")
+	message(FATAL_ERROR "Unsupported AKYUU_PACKAGE_FORMAT")
+endif()
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(CMAKE_CXX_STANDARD 23)

@@ -23,6 +23,7 @@
 #include <QJsonObject>
 #include <QJsonParseError>
 #include <QJsonValue>
+#include <QRegularExpression>
 #include <QUrl>
 #include <optional>
 
@@ -49,6 +50,49 @@ bool validReleasePage(const QString& page, const QString& tag) {
 
   const auto path = url.path(QUrl::FullyDecoded);
   return path == QStringLiteral("/ligneo/akyuu/releases/tag/") + tag;
+}
+
+std::vector<ReleaseAsset> releaseAssets(const QJsonArray& values, const QString& tag,
+                                        const semaver::Version& version) {
+  std::vector<ReleaseAsset> assets;
+  const auto versionText = QString::fromStdString(version.to_string());
+  auto archVersion = versionText;
+  archVersion.remove(u'-');
+  const QRegularExpression archName{
+      QStringLiteral("^akyuu-%1-[1-9][0-9]*-(x86_64|arm64)\\.pkg\\.tar\\.zst$")
+          .arg(QRegularExpression::escape(archVersion))};
+  const QRegularExpression digestPattern{QStringLiteral("^sha256:([0-9a-fA-F]{64})$")};
+  for (const auto& value : values) {
+    const auto object = value.toObject();
+    if (object[QStringLiteral("state")].toString() != u"uploaded") continue;
+    const auto digest = digestPattern.match(object[QStringLiteral("digest")].toString());
+    if (!digest.hasMatch()) continue;
+    ReleaseAsset asset{
+        .name = object[QStringLiteral("name")].toString(),
+        .url = QUrl{object[QStringLiteral("browser_download_url")].toString()},
+        .size = object[QStringLiteral("size")].toInteger(-1),
+        .sha256 = QByteArray::fromHex(digest.captured(1).toLatin1()),
+        .target = {},
+    };
+    if (!validReleaseAsset(asset, tag)) continue;
+    const auto arch = archName.match(asset.name);
+    if (arch.hasMatch()) {
+      asset.target = {UpdatePlatform::Linux, arch.captured(1), PackageFormat::Arch};
+    } else {
+      for (const auto& architecture : {QStringLiteral("x86_64"), QStringLiteral("arm64")}) {
+        const auto stem = QStringLiteral("akyuu-%1-%2").arg(versionText, architecture);
+        if (asset.name == stem + u".AppImage") {
+          asset.target = {UpdatePlatform::Linux, architecture, PackageFormat::AppImage};
+        } else if (asset.name == stem + u"-setup.exe") {
+          asset.target = {UpdatePlatform::Windows, architecture, PackageFormat::WindowsInstaller};
+        } else if (asset.name == stem + u".dmg") {
+          asset.target = {UpdatePlatform::MacOS, architecture, PackageFormat::MacDiskImage};
+        }
+      }
+    }
+    if (asset.target.platform != UpdatePlatform::Unknown) assets.push_back(std::move(asset));
+  }
+  return assets;
 }
 
 }  // namespace
@@ -88,6 +132,7 @@ ReleaseSelection selectRelease(const QByteArray& response, const semaver::Versio
           .version = *version,
           .tag = tag,
           .page = pageValue.toString(),
+          .assets = releaseAssets(release[QStringLiteral("assets")].toArray(), tag, *version),
       };
     }
   }

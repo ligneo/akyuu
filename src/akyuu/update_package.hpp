@@ -18,30 +18,32 @@
 
 #pragma once
 
-#include <QByteArray>
-#include <QString>
-#include <semaver.hpp>
-
-#include "update_package.hpp"
+#include <QUrl>
+#include <optional>
+#include <vector>
 
 namespace akyuu {
 
-struct ReleaseSelection {
-  enum class Status {
-    InvalidResponse,
-    NoReleases,
-    NoCompatibleRelease,
-    UpToDate,
-    UpdateAvailable,
-  };
+enum class UpdatePlatform { Linux, Windows, MacOS, Unknown };
+enum class PackageFormat { AppImage, Arch, WindowsInstaller, MacDiskImage };
 
-  Status status = Status::InvalidResponse;
-  semaver::Version version{};
-  QString tag{};
-  QString page{};
-  std::vector<ReleaseAsset> assets{};
+struct UpdateTarget {
+  UpdatePlatform platform = UpdatePlatform::Unknown;
+  QString architecture;
+  PackageFormat format = PackageFormat::AppImage;
 };
 
-ReleaseSelection selectRelease(const QByteArray& response, const semaver::Version& current);
+struct ReleaseAsset {
+  QString name;
+  QUrl url;
+  qint64 size = 0;
+  QByteArray sha256;
+  UpdateTarget target;
+};
+
+UpdateTarget updateTarget();
+std::optional<ReleaseAsset> selectPackage(const std::vector<ReleaseAsset>& assets,
+                                          const UpdateTarget& target);
+bool validReleaseAsset(const ReleaseAsset& asset, const QString& tag);
 
 }  // namespace akyuu

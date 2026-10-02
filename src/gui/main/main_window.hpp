@@ -20,6 +20,7 @@
 #pragma once
 
 #include <QMainWindow>
+#include <QPointer>
 #include <map>
 #include <optional>
 
@@ -27,6 +28,11 @@
 #include "track/episode.hpp"
 
 class QLineEdit;
+
+namespace akyuu {
+class UpdateService;
+struct ReleaseAsset;
+}
 
 namespace Ui {
 class MainWindow;
@@ -112,6 +118,7 @@ private:
   void initStatusbar();
   void exportList(const ExportFormat format);
   void checkForUpdates(bool silent = false);
+  void downloadUpdate(const akyuu::ReleaseAsset& asset, const QString& tag);
   void initExternalLinksMenu();
   void initServicesMenu();
   void initViewMenu();
@@ -119,6 +126,7 @@ private:
   void initTrayIcon();
 
   Ui::MainWindow* ui_ = nullptr;
+  QPointer<akyuu::UpdateService> m_updateService;
 
   HistoryWidget* m_historyWidget = nullptr;
   LibraryWidget* m_libraryWidget = nullptr;
