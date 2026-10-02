@@ -20,7 +20,9 @@ install_package() {
 install_package "${previous[0]}"
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
-export HOME="$work/home" XDG_CONFIG_HOME="$work/config" XDG_DATA_HOME="$work/data"
+export XDG_CONFIG_HOME="$work/config" XDG_DATA_HOME="$work/data"
+export TMPDIR="$work/tmp"
+mkdir -p "$TMPDIR"
 mkdir -p "$XDG_DATA_HOME/akyuu/data"
 marker="$XDG_DATA_HOME/akyuu/data/packaging-test-marker"
 echo 'Preserve user data' > "$marker"

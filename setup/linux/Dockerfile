@@ -2,7 +2,7 @@ FROM ubuntu:24.04@sha256:008173c23f95b170204355c12626cb5a965d779a7e1283b09e9cffb
 RUN sed -i 's/^Types: deb$/Types: deb deb-src/' /etc/apt/sources.list.d/ubuntu.sources && apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     ca-certificates curl python3-venv cmake ninja-build git pkg-config libsystemd-dev libc6-dev linux-libc-dev \
     libgmp10 libmpfr6 libmpc3 libisl23 libzstd1 zlib1g libjansson4 \
-    libglvnd-dev libopengl0 libglx0 libgl1 libegl1 libxkbcommon-x11-0 libxcb-cursor0 \
+    libglvnd-dev libopengl0 libglx0 libgl1 libegl1 libxkbcommon-x11-0 libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 libxcb-shape0 libwayland-cursor0 \
     libglib2.0-0t64 libfontconfig1 libfreetype6 libdbus-1-3 libasound2t64 libpulse0 libgbm1 \
     libnss3 libxcomposite1 libxdamage1 libxrandr2 libxtst6 \
     xvfb xauth rpm patchelf zstd xz-utils p7zip-full xdg-utils
