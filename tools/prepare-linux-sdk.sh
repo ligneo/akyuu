@@ -39,3 +39,7 @@ chmod +x "$sdk/cache/baseline.AppImage"
 (cd "$sdk/baseline" && "$sdk/cache/baseline.AppImage" --appimage-extract >/dev/null)
 cp -a "$sdk/baseline/squashfs-root/usr/share/doc/akyuu" "$sdk/licenses"
 tar -xf "$sdk/cache/baseline-sources.tar" -C "$sdk/sources"
+
+mkdir -p "$sdk/templates"
+cp "$sdk/licenses/NOTICE" "$sdk/templates/NOTICE"
+cp "$sdk/sources/third-party-sources/README" "$sdk/templates/third-party-README"

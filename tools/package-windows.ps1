@@ -19,7 +19,7 @@ $stage = Join-Path $Output 'windows-stage'
 if (Test-Path $stage) { throw 'The Windows staging directory must not exist.' }
 New-Item -ItemType Directory -Force $stage, $Output | Out-Null
 $cache = Get-Content (Join-Path $Build 'CMakeCache.txt') -Raw
-if ($cache -notmatch '(?m)^AKYUU_PORTABLE:BOOL=OFF$') { throw 'Installer builds must keep user data outside the application directory.' }
+if ($cache -notmatch '(?m)^AKYUU_PORTABLE:BOOL=OFF\r?$') { throw 'Installer builds must keep user data outside the application directory.' }
 Copy-Item (Join-Path $Build 'bin/Akyuu.exe') $stage
 & "$Qt/bin/windeployqt.exe" --release --no-compiler-runtime --dir $stage "$stage/Akyuu.exe"
 if ($LASTEXITCODE) { throw 'Qt deployment failed.' }

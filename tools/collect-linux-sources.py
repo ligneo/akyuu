@@ -6,6 +6,7 @@ from pathlib import Path
 import hashlib
 import json
 import shutil
+import re
 import subprocess
 import sys
 
@@ -17,6 +18,17 @@ for line in subprocess.check_output(['ldconfig', '-p'], text=True).splitlines():
     if '=>' in line:
         name, path = line.split('=>', 1)
         paths.setdefault(name.split()[0], Path(path.strip()))
+# Retain downloaded archives in a cache, but create fresh release inventories.
+ubuntu = sources / 'ubuntu'
+cache = sdk / 'cache' / 'ubuntu-sources'
+cache.mkdir(parents=True, exist_ok=True)
+if ubuntu.is_dir():
+    for path in ubuntu.iterdir():
+        if path.is_file():
+            shutil.copyfile(path, cache / path.name)
+    shutil.rmtree(ubuntu)
+ubuntu.mkdir()
+shutil.rmtree(licenses / 'ubuntu', ignore_errors=True)
 packages = {}
 for library in (bundle / 'usr').rglob('*.so*'):
     if library.is_symlink():
@@ -54,10 +66,29 @@ for library in (bundle / 'usr').rglob('*.so*'):
     destination.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(notice, destination / 'copyright')
 
-ubuntu = sources / 'ubuntu'
-ubuntu.mkdir(parents=True, exist_ok=True)
 for package, data in sorted(packages.items()):
-    subprocess.run(['apt-get', 'source', '--download-only', f'{package}={data["version"]}'], cwd=ubuntu, check=True)
+    subprocess.run(['apt-get', 'source', '--download-only', f'{package}={data["version"]}'], cwd=cache, check=True)
+    descriptors = []
+    for descriptor in cache.glob('*.dsc'):
+        text = descriptor.read_text()
+        if re.search(r'^Source: ' + re.escape(package) + r'$', text, re.M) and re.search(r'^Version: ' + re.escape(data['version']) + r'$', text, re.M):
+            descriptors.append((descriptor, text))
+    if len(descriptors) != 1:
+        raise RuntimeError(f'Expected one source descriptor for {package}={data["version"]}')
+    descriptor, text = descriptors[0]
+    shutil.copyfile(descriptor, ubuntu / descriptor.name)
+    checksums = re.search(r'^Checksums-Sha256:\n((?: .+\n)+)', text, re.M)
+    if not checksums:
+        raise RuntimeError(f'Missing source checksums: {descriptor}')
+    for line in checksums[1].splitlines():
+        expected, size, name = line.split()
+        if Path(name).name != name:
+            raise RuntimeError(f'Invalid source filename: {name}')
+        path = cache / name
+        with path.open('rb') as stream:
+            if path.stat().st_size != int(size) or hashlib.file_digest(stream, 'sha256').hexdigest() != expected:
+                raise RuntimeError(f'Source checksum mismatch: {name}')
+        shutil.copyfile(path, ubuntu / name)
 inventory = json.dumps(packages, indent=2, sort_keys=True) + '\n'
 for directory in (sources, licenses):
     (directory / 'source-packages.json').write_text(inventory)

@@ -13,8 +13,9 @@ python3 - "$SDK_DIR" "$version" <<'PYTHON'
 from pathlib import Path
 import sys
 sdk, version = Path(sys.argv[1]), sys.argv[2]
-for path in (sdk / "licenses/NOTICE", sdk / "sources/third-party-sources/README"):
-    path.write_text(path.read_text().replace("0.1.0-beta.3", version))
+for template, path in (("NOTICE", sdk / "licenses/NOTICE"),
+                       ("third-party-README", sdk / "sources/third-party-sources/README")):
+    path.write_text((sdk / "templates" / template).read_text().replace("0.1.0-beta.3", version))
 PYTHON
 export LINUXDEPLOY="$SDK_DIR/tools/linuxdeploy-x86_64.AppImage"
 export LINUXDEPLOY_QT="$SDK_DIR/tools/linuxdeploy-plugin-qt-x86_64.AppImage"
