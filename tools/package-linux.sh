@@ -10,6 +10,6 @@ output=$(realpath -m "$4")
 root=$(cd "$(dirname "$0")/.." && pwd)
 build=$(mktemp -d)
 trap 'rm -rf "$build"' EXIT
-cmake -S "$root/setup/linux" -B "$build" -DAKYUU_FORMAT="$format" \
+cmake -S "$root/setup/linux" -B "$build" -G Ninja -DAKYUU_FORMAT="$format" \
 	-DAKYUU_BUNDLE="$bundle" -DAKYUU_VERSION="$version" -DAKYUU_OUTPUT="$output"
 (cd "$build" && cpack --config CPackConfig.cmake)
