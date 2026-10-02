@@ -5,7 +5,7 @@ RUN sed -i 's/^Types: deb$/Types: deb deb-src/' /etc/apt/sources.list.d/ubuntu.s
     libglvnd-dev libopengl0 libglx0 libgl1 libegl1 libxkbcommon-x11-0 libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 libxcb-shape0 libwayland-cursor0 \
     libglib2.0-0t64 libfontconfig1 libfreetype6 libdbus-1-3 libasound2t64 libpulse0 libgbm1 \
     libnss3 libxcomposite1 libxdamage1 libxrandr2 libxtst6 \
-    xvfb xauth rpm patchelf zstd xz-utils p7zip-full xdg-utils
+    xvfb xauth rpm file desktop-file-utils patchelf zstd xz-utils p7zip-full xdg-utils
 COPY tools/prepare-linux-sdk.sh /prepare-linux-sdk.sh
 RUN bash /prepare-linux-sdk.sh /opt/sdk
 ENV PATH="/opt/sdk/gcc/usr/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
