@@ -41,6 +41,8 @@ struct ReleaseAsset {
   UpdateTarget target;
 };
 
+UpdateTarget updateTarget(const QString& kernel, const QString& architecture,
+                          const QString& packageFormat);
 UpdateTarget updateTarget();
 std::optional<ReleaseAsset> selectPackage(const std::vector<ReleaseAsset>& assets,
                                           const UpdateTarget& target);

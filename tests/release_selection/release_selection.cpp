@@ -21,6 +21,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QSysInfo>
 #include <cstdlib>
 #include <iostream>
 
@@ -147,6 +148,32 @@ void testFirstPageCanSelectFromOneHundredReleases() {
           "the selector should handle all 100 releases returned on the API's first page");
 }
 
+void testInstallationTargets() {
+  using Platform = akyuu::UpdatePlatform;
+  using Format = akyuu::PackageFormat;
+  const auto check = [](const char* kernel, const char* architecture, const char* format,
+                        Platform platform, const char* normalized, Format package) {
+    const auto target = akyuu::updateTarget(QString::fromLatin1(kernel),
+        QString::fromLatin1(architecture), QString::fromLatin1(format));
+    require(target.platform == platform && target.architecture == QString::fromLatin1(normalized) &&
+                target.format == package, "installation target must follow the build contract");
+  };
+  check("linux", "x86_64", "arch", Platform::Linux, "x86_64", Format::Arch);
+  check("linux", "aarch64", "appimage", Platform::Linux, "arm64", Format::AppImage);
+  check("linux", "x86_64", "source", Platform::Linux, "x86_64", Format::AppImage);
+  check("winnt", "x86_64", "source", Platform::Windows, "x86_64", Format::WindowsInstaller);
+  check("darwin", "arm64", "source", Platform::MacOS, "arm64", Format::MacDiskImage);
+  check("unknown", "x86_64", "source", Platform::Unknown, "x86_64", Format::AppImage);
+  qputenv("APPIMAGE", "/unrelated-launcher.AppImage");
+  check("linux", "x86_64", "arch", Platform::Linux, "x86_64", Format::Arch);
+  const auto target = akyuu::updateTarget();
+  const auto expected = akyuu::updateTarget(QSysInfo::kernelType(),
+      QSysInfo::currentCpuArchitecture(), QStringLiteral("source"));
+  require(target.platform == expected.platform && target.architecture == expected.architecture &&
+              target.format == expected.format, "runtime target must use the same policy");
+  qunsetenv("APPIMAGE");
+}
+
 void testPlatformPackages() {
   const QString tag = QStringLiteral("v0.1.0-beta.3");
   auto item = release(tag, true);
@@ -209,6 +236,7 @@ int main() {
   testMalformedPagesAndTagsAreSkipped();
   testEmptyAndInvalidResponses();
   testFirstPageCanSelectFromOneHundredReleases();
+  testInstallationTargets();
   testPlatformPackages();
   std::cout << "Passed release selection tests.\n";
 }

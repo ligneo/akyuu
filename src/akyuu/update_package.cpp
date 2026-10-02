@@ -18,28 +18,31 @@
 
 #include "update_package.hpp"
 
-#include <QRegularExpression>
 #include <QSysInfo>
 
 namespace akyuu {
 
-UpdateTarget updateTarget() {
+UpdateTarget updateTarget(const QString& kernel, const QString& architecture,
+                          const QString& packageFormat) {
   UpdateTarget target;
-  const auto kernel = QSysInfo::kernelType();
   if (kernel == u"linux") target.platform = UpdatePlatform::Linux;
   if (kernel == u"winnt") target.platform = UpdatePlatform::Windows;
   if (kernel == u"darwin") target.platform = UpdatePlatform::MacOS;
-  target.architecture = QSysInfo::currentCpuArchitecture();
+  target.architecture = architecture;
   if (target.architecture == u"aarch64") target.architecture = QStringLiteral("arm64");
 
   if (target.platform == UpdatePlatform::Windows) target.format = PackageFormat::WindowsInstaller;
   if (target.platform == UpdatePlatform::MacOS) target.format = PackageFormat::MacDiskImage;
   if (target.platform == UpdatePlatform::Linux &&
-      QString::fromLatin1(AKYUU_PACKAGE_FORMAT) == u"arch" &&
-      qEnvironmentVariableIsEmpty("APPIMAGE")) {
+      packageFormat == u"arch") {
     target.format = PackageFormat::Arch;
   }
   return target;
+}
+
+UpdateTarget updateTarget() {
+  return updateTarget(QSysInfo::kernelType(), QSysInfo::currentCpuArchitecture(),
+                      QString::fromLatin1(AKYUU_PACKAGE_FORMAT));
 }
 
 bool validReleaseAsset(const ReleaseAsset& asset, const QString& tag) {

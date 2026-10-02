@@ -32,6 +32,15 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+include(CheckCXXSourceCompiles)
+check_cxx_source_compiles("#include <algorithm>
+#include <array>
+int main() { return std::ranges::starts_with(std::array{1, 2}, std::array{1}) ? 0 : 1; }"
+	AKYUU_HAS_CXX23_RANGES)
+if (NOT AKYUU_HAS_CXX23_RANGES)
+	message(FATAL_ERROR "A C++23 standard library with std::ranges::starts_with is required (GCC 16 or newer).")
+endif()
+
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 
