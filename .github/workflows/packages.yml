@@ -120,6 +120,9 @@ jobs:
       - name: Install test tools
         shell: nu {0}
         run: |
+          let system_paths = ['/usr/local/sbin' '/usr/local/bin' '/usr/sbin' '/usr/bin' '/sbin' '/bin']
+          $env.PATH = ($env.PATH | append $system_paths | uniq)
+          (($system_paths | str join "\n") + "\n") | save --append $env.GITHUB_PATH
           def --wrapped checked [program: string, ...arguments: string] {
             ^$program ...$arguments
             if $env.LAST_EXIT_CODE != 0 { error make {msg: $"($program) failed"} }
