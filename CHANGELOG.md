@@ -1,15 +1,17 @@
 # Changelog
 
-## 0.1.0-beta.4
+## 0.1.0-beta.5
 
 - Supply Debian/Ubuntu and Fedora/openSUSE packages alongside the AppImage and Arch package.
-  Each Linux format uses the same private Qt and compiler runtime, with its own update format.
+  AppImage, DEB and RPM builds share a private Qt and compiler runtime; Arch uses
+  distribution libraries. Each format has its own update target.
 - Supply a Windows x64 installer with Qt and the Microsoft Visual C++ runtime. Uninstalling
   removes installed application files while preserving user data and unrelated files.
 - Build packages in GitHub Actions, test installed runtimes, and prepare a checked release draft
   after the platform checks pass. Publication remains a maintainer action.
 - Include libraries omitted by desktop deployment defaults and collect the corresponding
-  versioned third-party sources and licenses for every bundled Linux library.
+  versioned third-party sources and licenses for every bundled Linux library. Check the
+  produced source archive inventories, notices and checksums before creating a release draft.
 
 macOS remains deferred. Linux desktop and media detection checks remain separate from package
 installation checks; the earlier MPRIS and credential-storage limitations still apply.

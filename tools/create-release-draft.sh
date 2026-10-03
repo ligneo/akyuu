@@ -16,6 +16,7 @@ if gh release view "$tag" --repo ligneo/akyuu >/dev/null 2>&1; then
     echo 'A release already exists. Published files are immutable; inspect any existing draft manually.' >&2
     exit 1
 fi
+python3 "$root/tools/verify-source-companion.py" "$packages/akyuu-$version-third-party-sources.tar" "$version"
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
 (cd "$packages" && sha256sum "${assets[@]}" > SHA256SUMS)

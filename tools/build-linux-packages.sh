@@ -8,6 +8,7 @@ root=$(cd "$(dirname "$0")/.." && pwd)
 output=$(realpath -m "$1")
 mkdir -p "$output"
 version=$(python3 "$root/tools/release-version.py")
+python3 "$root/tests/source_companion.py"
 python3 "$root/tools/source-bundle.py" "$output"
 python3 - "$SDK_DIR" "$version" <<'PYTHON'
 from pathlib import Path
@@ -51,5 +52,6 @@ for format in appimage deb rpm; do
 	fi
 done
 
-cp -a "$SDK_DIR/licenses" "$SDK_DIR/sources/licenses"
-tar -cf "$output/akyuu-$version-third-party-sources.tar" -C "$SDK_DIR/sources" licenses third-party-sources
+tar -cf "$output/akyuu-$version-third-party-sources.tar" \
+	-C "$SDK_DIR" licenses -C "$SDK_DIR/sources" third-party-sources
+python3 "$root/tools/verify-source-companion.py" "$output/akyuu-$version-third-party-sources.tar" "$version"
