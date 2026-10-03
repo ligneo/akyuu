@@ -20,7 +20,7 @@ arch=('x86_64')
 url='https://github.com/ligneo/akyuu'
 license=('GPL-3.0-or-later')
 depends=('qt6-base' 'qt6-multimedia' 'qt6-svg' 'systemd-libs' 'hicolor-icon-theme')
-makedepends=('cmake' 'ninja' 'gcc')
+makedepends=('cmake' 'ninja' 'gcc' 'qt6-tools')
 source=('https://github.com/ligneo/akyuu/releases/download/v$version/$(basename "$archive")')
 sha256sums=('$(sha256sum "$archive" | cut -d' ' -f1)')
 build() {

@@ -139,7 +139,7 @@ jobs:
     steps:
       - name: Install build dependencies
         run: |
-          pacman -Syu --noconfirm git python cmake ninja qt6-base qt6-svg qt6-multimedia systemd-libs hicolor-icon-theme
+          pacman -Syu --noconfirm git python cmake ninja qt6-base qt6-svg qt6-multimedia qt6-tools systemd-libs hicolor-icon-theme
           useradd --create-home builder
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
