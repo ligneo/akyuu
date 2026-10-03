@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.21)
 
 # The version is kept in one place, `src/akyuu/config.h`, where the installer reads it as well.
-# `tools/bump-version.sh` changes it there.
+# The release tool updates it there.
 file(STRINGS src/akyuu/config.h _akyuu_version_lines REGEX "^#define AKYUU_VERSION_(MAJOR|MINOR|PATCH) ")
 foreach(_line IN LISTS _akyuu_version_lines)
 	string(REGEX MATCH "AKYUU_VERSION_([A-Z]+) +([0-9]+)" _ "${_line}")

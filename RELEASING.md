@@ -26,10 +26,11 @@ instructions. Do not schedule or publish releases merely because a commit landed
 
 ## Source of truth
 
-`src/akyuu/config.h` supplies the version to the application and CMake. Use:
+`src/akyuu/config.h` supplies the version to the application and CMake. Release commands
+use the standalone C++ tool in `tools/release`; the optional Nu entry builds and runs it. Use:
 
 ```sh
-tools/bump-version.sh 0.1.0-beta.1
+nu tools/release.nu bump-version 0.1.0-beta.1
 ```
 
 The tool validates the version, commits a change when necessary and creates an annotated
@@ -106,7 +107,7 @@ Use verified linuxdeploy, its Qt plugin and a pinned AppImage runtime. Set `LINU
 `LINUXDEPLOY_QT`, `QMAKE`, `GCC_RUNTIME_DIR` and `LDAI_RUNTIME_FILE`, then run:
 
 ```sh
-tools/package-appimage.sh build AppDir licenses output
+nu tools/release.nu package-appimage build AppDir licenses output
 ```
 
 The tool requires a new AppDir, includes Qt's SQLite driver, X11 and Wayland plugins, and
@@ -130,7 +131,7 @@ assets must pass their checksums before the maintainer publishes it. Existing re
 never overwritten.
 
 Linux builds use the prepared x86_64 SDK in `setup/linux/Dockerfile`. Run
-`tools/build-linux-packages.sh output` inside that image to create the AppImage, DEB, RPM,
+`akyuu-release --root /work build-linux output` inside that image to create the AppImage, DEB, RPM,
 full committed source archive and corresponding third-party source archive. Only the update
 package policy is rebuilt between formats; the GUI and download service are shared. Native
 packages keep their runtime under `/opt/akyuu` and use the distribution's graphics drivers
@@ -142,11 +143,11 @@ PNG/JPEG/SVG checks run without a Qt SDK on the installation path. These checks 
 packaging and runtime loading; real graphics, audio, Wayland and player integrations require
 desktop testing. The compiler/tool hashes and exact bundled Ubuntu source package versions
 are recorded in the corresponding source payload. The base image is pinned, while Ubuntu
-security updates and Python transitive tooling can change between builds; this is not a
+security updates and the external aqt SDK downloader's Python dependencies can change between builds; this is not a
 claim of byte-for-byte reproducibility.
 
 Windows builds use MSVC 2022, Qt 6.11.2 and `windeployqt`, followed by the NSIS installer.
-`tools/package-windows.ps1` verifies the official Microsoft runtime signature and creates a
+The C++ `package-windows` command verifies the official Microsoft runtime signature and creates a
 removal manifest from the deployed files. The installation test runs only on a disposable
 Windows Actions runner and verifies startup, TLS/database/image plugins, reinstall, and
 preservation of user data and unrelated files during removal. User data lives in AppData;
