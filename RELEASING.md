@@ -130,8 +130,8 @@ tag also prepares a **draft** release after all build and installation checks pa
 assets must pass their checksums before the maintainer publishes it. Existing releases are
 never overwritten.
 
-Linux builds use the prepared x86_64 SDK in `setup/linux/Dockerfile`. Run
-`akyuu-release --root /work build-linux output` inside that image to create the AppImage, DEB, RPM,
+Linux builds use the prepared x86_64 SDK in `setup/linux/Dockerfile`. Its entry point
+accepts `build-linux output` to create the AppImage, DEB, RPM,
 full committed source archive and corresponding third-party source archive. Only the update
 package policy is rebuilt between formats; the GUI and download service are shared. Native
 packages keep their runtime under `/opt/akyuu` and use the distribution's graphics drivers
