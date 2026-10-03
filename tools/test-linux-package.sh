@@ -32,11 +32,12 @@ mkdir -p "$XDG_DATA_HOME/akyuu/data"
 marker="$XDG_DATA_HOME/akyuu/data/packaging-test-marker"
 echo 'Preserve user data' > "$marker"
 expected=$(sha256sum "$marker")
+chown -R nobody "$work"
 install_package "${current[0]}"
 cp "$packages/diagnostics/deployment-$format" /opt/akyuu/bin/packaging-probe
 chmod +x /opt/akyuu/bin/packaging-probe
 unset LD_LIBRARY_PATH QT_PLUGIN_PATH QML_IMPORT_PATH QML2_IMPORT_PATH
-QT_QPA_PLATFORM=offscreen /opt/akyuu/bin/packaging-probe --network
+runuser -u nobody -- env QT_QPA_PLATFORM=offscreen /opt/akyuu/bin/packaging-probe --network
 rm /opt/akyuu/bin/packaging-probe
 Xvfb -displayfd 3 -screen 0 1280x720x24 -nolisten tcp 3>"$work/display" >"$work/xvfb.log" 2>&1 &
 display_pid=$!
@@ -48,7 +49,7 @@ done
 [[ -s $work/display ]] || { cat "$work/xvfb.log"; exit 1; }
 export DISPLAY=":$(cat "$work/display")"
 set +e
-timeout 10s /usr/bin/akyuu --debug
+runuser -u nobody -- timeout 10s /usr/bin/akyuu --debug
 result=$?
 set -e
 [[ $result == 124 ]] || { echo "Installed application exited early ($result)." >&2; exit 1; }
