@@ -114,10 +114,11 @@ void verifyMicrosoftSignature(const QString& path) {
     WINTRUST_DATA& trust;
     ~State() {
       trust.dwStateAction = WTD_STATEACTION_CLOSE;
-      WinVerifyTrust(INVALID_HANDLE_VALUE, &action, &trust);
+      WinVerifyTrust(reinterpret_cast<HWND>(INVALID_HANDLE_VALUE), &action, &trust);
     }
   } state{action, trust};
-  require(WinVerifyTrust(INVALID_HANDLE_VALUE, &action, &trust) == ERROR_SUCCESS,
+  require(WinVerifyTrust(reinterpret_cast<HWND>(INVALID_HANDLE_VALUE), &action, &trust) ==
+              ERROR_SUCCESS,
           u"The Visual C++ Redistributable must have a valid Authenticode signature."_s);
   const auto library = LoadLibraryExW(L"wintrust.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
   require(library != nullptr, u"Cannot load the Windows trust provider."_s);

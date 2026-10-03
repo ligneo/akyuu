@@ -7,7 +7,7 @@ on:
       target:
         description: Package jobs to run
         type: choice
-        options: [all, nix]
+        options: [all, nix, packages]
         default: all
 permissions:
   contents: read
@@ -16,6 +16,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   nix:
+    if: github.event_name != 'workflow_dispatch' || inputs.target != 'packages'
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     steps:
@@ -52,33 +53,11 @@ jobs:
         with:
           arch: x64
       - name: Install Qt SDK
-        run: |
-          use '${{ github.workspace }}/tools/release.nu' checked
-          # aqt is an upstream SDK downloader, not application or packaging policy.
-          checked python -m pip install git+https://github.com/miurahr/aqtinstall.git@8c3695d4a4e1ceabf6a74dc6c79681656dc6b74b
-          let extractor = ($env.ProgramFiles | path join 7-Zip 7z.exe)
-          if not ($extractor | path exists) { error make {msg: 'The Windows build image requires 7-Zip.'} }
-          $env.AQT_CONFIG = ($env.RUNNER_TEMP | path join akyuu-aqt.ini)
-          "[aqt]\nconcurrency = 1\n" | save --force $env.AQT_CONFIG
-          mkdir C:/Qt/6.11.2/msvc2022_64
-          checked python -m aqt install-qt windows desktop 6.11.2 win64_msvc2022_64 --outputdir C:/Qt --external $extractor
+        run: nu --no-config-file tools/ci.nu windows-sdk
       - name: Build and test
-        run: |
-          use '${{ github.workspace }}/tools/release.nu' checked
-          $env.PATH = ($env.PATH | prepend 'C:/Qt/6.11.2/msvc2022_64/bin')
-          checked cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=C:/Qt/6.11.2/msvc2022_64 -DAKYUU_PORTABLE=OFF -DAKYUU_BUILD_TESTS=ON $"-DCMAKE_RUNTIME_OUTPUT_DIRECTORY=($env.PWD)/build/bin"
-          checked cmake --build build --parallel 2
-          checked ctest --test-dir build --output-on-failure
-          checked nu tools/release.nu source-tests --qt C:/Qt/6.11.2/msvc2022_64
-          checked ctest --test-dir build/release-tools --output-on-failure
+        run: nu --no-config-file tools/ci.nu windows-build
       - name: Package and test installed application
-        run: |
-          use '${{ github.workspace }}/tools/release.nu' checked
-          $env.PATH = ($env.PATH | prepend 'C:/Qt/6.11.2/msvc2022_64/bin')
-          let tool = ($env.PWD | path join build release-tools bin akyuu-release.exe)
-          checked $tool prepare-windows-licenses packages/windows-licenses
-          checked $tool package-windows build C:/Qt/6.11.2/msvc2022_64 packages/windows-licenses packages
-          checked $tool test-windows (glob packages/*-setup.exe | first) ($env.PWD | path join build tests akyuu-deployment-tests.exe)
+        run: nu --no-config-file tools/ci.nu windows-package
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: windows-packages
@@ -98,10 +77,7 @@ jobs:
           version: '0.116.0'
       - name: Prepare SDK image and build packages
         shell: nu {0}
-        run: |
-          use '${{ github.workspace }}/tools/release.nu' checked
-          checked docker build -f setup/linux/Dockerfile -t akyuu-build .
-          checked docker run --rm -v $"($env.PWD):/work" akyuu-build build-linux /work/packages
+        run: nu --no-config-file tools/ci.nu linux-build
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: linux-packages
@@ -115,6 +91,8 @@ jobs:
             packages/fixtures/
           if-no-files-found: error
   install-linux:
+    env:
+      PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
     needs: linux
     runs-on: ubuntu-24.04
     timeout-minutes: 20
@@ -165,11 +143,7 @@ jobs:
         shell: nu {0}
         env:
           FORMAT: ${{ matrix.format }}
-        run: |
-          use '${{ github.workspace }}/tools/release.nu' checked
-          let tool = ($env.PWD | path join packages diagnostics akyuu-release.AppImage)
-          checked chmod +x $tool
-          checked $tool --appimage-extract-and-run test-linux $env.FORMAT packages
+        run: nu --no-config-file tools/ci.nu test-linux
   arch:
     needs: linux
     runs-on: ubuntu-24.04
@@ -196,13 +170,7 @@ jobs:
           path: packages
       - name: Build and test package
         shell: nu {0}
-        run: |
-          use '${{ github.workspace }}/tools/release.nu' checked
-          checked cmake -S tools/release -B build/release-tools -G Ninja -DCMAKE_BUILD_TYPE=Release
-          checked cmake --build build/release-tools --parallel 2
-          checked chown -R builder:builder .
-          let archive = (glob packages/*-source.tar.xz | first | path expand)
-          checked runuser -u builder -- ($env.PWD | path join build release-tools bin akyuu-release) --root $env.PWD package-arch $archive packages
+        run: nu --no-config-file tools/ci.nu arch-build
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: arch-packages
@@ -232,8 +200,4 @@ jobs:
         shell: nu {0}
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          use '${{ github.workspace }}/tools/release.nu' checked
-          let tool = ($env.PWD | path join packages diagnostics akyuu-release.AppImage)
-          checked chmod +x $tool
-          checked $tool --appimage-extract-and-run create-release-draft $env.GITHUB_REF_NAME packages
+        run: nu --no-config-file tools/ci.nu release-draft
