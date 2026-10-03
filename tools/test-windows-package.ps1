@@ -56,15 +56,34 @@ foreach ($attempt in 1..2) {
     Wait-Process -InputObject $process -ErrorAction SilentlyContinue
 }
 $packagedFiles = @(Get-ChildItem -LiteralPath $install -File -Recurse | Where-Object { $_.FullName -ne $unrelated } | Select-Object -ExpandProperty FullName)
-Invoke-InstallerProcess "$install/Uninstall.exe" @('/S')
-# NSIS's launcher returns before its copied uninstaller finishes; wait for removal.
-$deadline = (Get-Date).AddSeconds(30)
-do {
-    $remaining = @($packagedFiles | Where-Object { Test-Path -LiteralPath $_ })
-    if (-not $remaining.Count) { break }
-    Start-Sleep -Milliseconds 200
-} while ((Get-Date) -lt $deadline)
-if ($remaining.Count) { throw "Uninstaller left packaged files: $($remaining -join ', ')" }
+function Remove-InstalledPayload {
+    Invoke-InstallerProcess "$install/Uninstall.exe" @('/S')
+    # NSIS's launcher returns before its copied uninstaller finishes.
+    $deadline = (Get-Date).AddSeconds(30)
+    do {
+        $remaining = @($packagedFiles | Where-Object { Test-Path -LiteralPath $_ })
+        if (-not $remaining.Count) { break }
+        Start-Sleep -Milliseconds 200
+    } while ((Get-Date) -lt $deadline)
+    if ($remaining.Count) { throw "Uninstaller left packaged files: $($remaining -join ', ')" }
+}
+$startup = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'
+if (-not (Test-Path -LiteralPath $startup)) { New-Item -Path $startup | Out-Null }
+$ownedCommand = '"' + (Join-Path $install 'Akyuu.exe') + '" --minimized'
+New-ItemProperty -Path $startup -Name Akyuu -Value $ownedCommand -PropertyType String -Force | Out-Null
+Remove-InstalledPayload
+if ((Get-Item -LiteralPath $startup).GetValueNames() -contains 'Akyuu') {
+    throw 'Uninstaller left the owned startup command.'
+}
+# An unrelated startup command under the same value name must survive removal.
+Invoke-InstallerProcess $Installer @('/S', "/D=$install")
+$otherCommand = '"C:\Unrelated Application\startup.exe" --keep'
+New-ItemProperty -Path $startup -Name Akyuu -Value $otherCommand -PropertyType String -Force | Out-Null
+Remove-InstalledPayload
+if ((Get-ItemPropertyValue -Path $startup -Name Akyuu) -cne $otherCommand) {
+    throw 'Uninstaller changed an unrelated startup command.'
+}
+Remove-ItemProperty -Path $startup -Name Akyuu
 if ((Get-FileHash $unrelated).Hash -ne $unrelatedHash) { throw 'Uninstallation changed unrelated installation-directory files.' }
 if ((Get-FileHash $marker).Hash -ne $expected) { throw 'Installation or removal changed user data.' }
-Write-Output 'Passed installed startup, runtime, reinstall, user-data and unrelated-file preservation checks.'
+Write-Output 'Passed installed startup, runtime, reinstall, user-data, unrelated-file preservation and owned-startup cleanup checks.'

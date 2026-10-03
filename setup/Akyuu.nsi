@@ -102,6 +102,10 @@ Section Uninstall
     SetErrorLevel 2
     Abort
   ${EndIf}
+  ; Remove this account's owned startup command, preserving another installation.
+  ReadRegStr $0 HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "Akyuu"
+  StrCmpS $0 '$\"$INSTDIR\Akyuu.exe$\" --minimized' 0 +2
+  DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "Akyuu"
   DeleteRegKey HKLM "${UNINST_KEY}"
   Delete "$SMPROGRAMS\Akyuu\Akyuu.lnk"
   Delete "$SMPROGRAMS\Akyuu\Uninstall.lnk"
