@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.1.0-beta.4
 
 - Supply Debian/Ubuntu and Fedora/openSUSE packages alongside the AppImage and Arch package.
   Each Linux format uses the same private Qt and compiler runtime, with its own update format.
