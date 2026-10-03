@@ -34,53 +34,51 @@ jobs:
     if: github.event_name != 'workflow_dispatch' || inputs.target != 'nix'
     runs-on: windows-2022
     timeout-minutes: 45
+    defaults:
+      run:
+        shell: nu {0}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           submodules: recursive
           persist-credentials: false
+      - uses: hustcer/setup-nu@9215c80adb545a85c419d5085b76eb6d082f49e7
+        with:
+          version: '0.116.0'
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
           python-version: '3.12'
       - uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756
         with:
           arch: x64
-      - name: Install Qt
-        shell: pwsh
+      - name: Install Qt SDK
         run: |
-          # Qt 6.11 moved the Windows repository; use the merged upstream fix.
-          python -m pip install git+https://github.com/miurahr/aqtinstall.git@8c3695d4a4e1ceabf6a74dc6c79681656dc6b74b
-          $extractor = "${env:ProgramFiles}/7-Zip/7z.exe"
-          if (-not (Test-Path $extractor)) { throw 'The Windows build image requires 7-Zip.' }
-          $env:AQT_CONFIG = Join-Path $env:RUNNER_TEMP 'akyuu-aqt.ini'
-          Set-Content $env:AQT_CONFIG @('[aqt]', 'concurrency = 1')
-          New-Item -ItemType Directory -Force C:/Qt/6.11.2/msvc2022_64 | Out-Null
-          python -m aqt install-qt windows desktop 6.11.2 win64_msvc2022_64 --outputdir C:/Qt --external $extractor
+          use tools/release.nu checked
+          # aqt is an upstream SDK downloader, not application or packaging policy.
+          checked python -m pip install git+https://github.com/miurahr/aqtinstall.git@8c3695d4a4e1ceabf6a74dc6c79681656dc6b74b
+          let extractor = ($env.ProgramFiles | path join 7-Zip 7z.exe)
+          if not ($extractor | path exists) { error make {msg: 'The Windows build image requires 7-Zip.'} }
+          $env.AQT_CONFIG = ($env.RUNNER_TEMP | path join akyuu-aqt.ini)
+          "[aqt]\nconcurrency = 1\n" | save --force $env.AQT_CONFIG
+          mkdir C:/Qt/6.11.2/msvc2022_64
+          checked python -m aqt install-qt windows desktop 6.11.2 win64_msvc2022_64 --outputdir C:/Qt --external $extractor
       - name: Build and test
-        shell: pwsh
         run: |
-          $qt = 'C:/Qt/6.11.2/msvc2022_64'
-          $env:PATH = "$qt/bin;$env:PATH"
-          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=$qt -DAKYUU_PORTABLE=OFF -DAKYUU_BUILD_TESTS=ON -DCMAKE_RUNTIME_OUTPUT_DIRECTORY="$PWD/build/bin"
-          if ($LASTEXITCODE) { throw 'CMake failed.' }
-          cmake --build build --parallel 2
-          if ($LASTEXITCODE) { throw 'Build failed.' }
-          ctest --test-dir build --output-on-failure
-          if ($LASTEXITCODE) { throw 'Tests failed.' }
-      - name: Prepare licenses
-        shell: pwsh
-        run: |
-          $url = 'https://github.com/ligneo/akyuu/releases/download/v0.1.0-beta.3/akyuu-0.1.0-beta.3-third-party-sources.tar'
-          Invoke-WebRequest $url -OutFile sources.tar
-          if ((Get-FileHash sources.tar -Algorithm SHA256).Hash.ToLower() -ne 'f8f33db2e8dd807cc094b9820a34acc21ac8c88c14987a98e6318f21e22a7d95') { throw 'Source archive checksum mismatch.' }
-          tar -xf sources.tar
-          if (-not (Test-Path licenses/NOTICE)) { throw 'Missing license payload.' }
-          Set-Content licenses/NOTICE 'Akyuu uses Qt 6.11.2. Qt and its third-party sources and full licenses accompany the release. The Windows compiler runtime is the official Microsoft Visual C++ Redistributable, distributed under its included license.'
+          use tools/release.nu checked
+          $env.PATH = ($env.PATH | prepend 'C:/Qt/6.11.2/msvc2022_64/bin')
+          checked cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=C:/Qt/6.11.2/msvc2022_64 -DAKYUU_PORTABLE=OFF -DAKYUU_BUILD_TESTS=ON $"-DCMAKE_RUNTIME_OUTPUT_DIRECTORY=($env.PWD)/build/bin"
+          checked cmake --build build --parallel 2
+          checked ctest --test-dir build --output-on-failure
+          checked nu tools/release.nu source-tests --qt C:/Qt/6.11.2/msvc2022_64
+          checked ctest --test-dir build/release-tools --output-on-failure
       - name: Package and test installed application
-        shell: pwsh
         run: |
-          ./tools/package-windows.ps1 -Build "$PWD/build" -Qt C:/Qt/6.11.2/msvc2022_64 -Licenses "$PWD/licenses" -Output "$PWD/packages"
-          ./tools/test-windows-package.ps1 -Installer (Get-ChildItem packages/*-setup.exe).FullName -Probe "$PWD/build/tests/akyuu-deployment-tests.exe"
+          use tools/release.nu checked
+          $env.PATH = ($env.PATH | prepend 'C:/Qt/6.11.2/msvc2022_64/bin')
+          let tool = ($env.PWD | path join build release-tools bin akyuu-release.exe)
+          checked $tool prepare-windows-licenses packages/windows-licenses
+          checked $tool package-windows build C:/Qt/6.11.2/msvc2022_64 packages/windows-licenses packages
+          checked $tool test-windows (glob packages/*-setup.exe | first) ($env.PWD | path join build tests akyuu-deployment-tests.exe)
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: windows-packages
@@ -95,10 +93,15 @@ jobs:
         with:
           submodules: recursive
           persist-credentials: false
-      - name: Prepare SDK image
-        run: docker build -f setup/linux/Dockerfile -t akyuu-build .
-      - name: Build packages
-        run: docker run --rm -v "$PWD:/work" akyuu-build bash tools/build-linux-packages.sh /work/packages
+      - uses: hustcer/setup-nu@9215c80adb545a85c419d5085b76eb6d082f49e7
+        with:
+          version: '0.116.0'
+      - name: Prepare SDK image and build packages
+        shell: nu {0}
+        run: |
+          use tools/release.nu checked
+          checked docker build -f setup/linux/Dockerfile -t akyuu-build .
+          checked docker run --rm -v $"($env.PWD):/work" akyuu-build build-linux /work/packages
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: linux-packages
@@ -133,17 +136,24 @@ jobs:
             name: opensuse
     container: ${{ matrix.image }}
     steps:
+      - uses: hustcer/setup-nu@9215c80adb545a85c419d5085b76eb6d082f49e7
+        with:
+          version: '0.116.0'
       - name: Install test tools
-        shell: bash
+        shell: nu {0}
         run: |
-          if command -v apt-get >/dev/null; then
-            apt-get update
-            apt-get install -y --no-install-recommends ca-certificates git xvfb xauth
-          elif command -v dnf >/dev/null; then
-            dnf install -y git xorg-x11-server-Xvfb xauth
-          else
-            zypper --non-interactive install git xorg-x11-server-Xvfb xauth
-          fi
+          def --wrapped checked [program: string, ...arguments: string] {
+            ^$program ...$arguments
+            if $env.LAST_EXIT_CODE != 0 { error make {msg: $"($program) failed"} }
+          }
+          if not (which apt-get | is-empty) {
+            checked apt-get update
+            checked apt-get install -y --no-install-recommends ca-certificates git xvfb xauth
+          } else if not (which dnf | is-empty) {
+            checked dnf install -y git xorg-x11-server-Xvfb xauth
+          } else {
+            checked zypper --non-interactive install git xorg-x11-server-Xvfb xauth
+          }
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           persist-credentials: false
@@ -152,21 +162,30 @@ jobs:
           name: linux-packages
           path: packages
       - name: Install, upgrade, run and remove
-        shell: bash
+        shell: nu {0}
         env:
           FORMAT: ${{ matrix.format }}
-        run: tools/test-linux-package.sh "$FORMAT" packages
-
+        run: |
+          use tools/release.nu checked
+          let tool = ($env.PWD | path join packages diagnostics akyuu-release.AppImage)
+          checked chmod +x $tool
+          checked $tool --appimage-extract-and-run test-linux $env.FORMAT packages
   arch:
     needs: linux
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     container: archlinux:base-devel
     steps:
+      - uses: hustcer/setup-nu@9215c80adb545a85c419d5085b76eb6d082f49e7
+        with:
+          version: '0.116.0'
       - name: Install build dependencies
+        shell: nu {0}
         run: |
-          pacman -Syu --noconfirm git python cmake ninja qt6-base qt6-svg qt6-multimedia qt6-tools systemd-libs hicolor-icon-theme
-          useradd --create-home builder
+          ^pacman -Syu --noconfirm git cmake ninja qt6-base qt6-svg qt6-multimedia qt6-tools systemd-libs hicolor-icon-theme
+          if $env.LAST_EXIT_CODE != 0 { error make {msg: 'Installing Arch build dependencies failed.'} }
+          ^useradd --create-home builder
+          if $env.LAST_EXIT_CODE != 0 { error make {msg: 'Creating the build user failed.'} }
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           submodules: recursive
@@ -176,9 +195,14 @@ jobs:
           name: linux-packages
           path: packages
       - name: Build and test package
+        shell: nu {0}
         run: |
-          chown -R builder:builder .
-          runuser -u builder -- tools/package-arch.sh "$(find packages -maxdepth 1 -name '*-source.tar.xz')" packages
+          use tools/release.nu checked
+          checked cmake -S tools/release -B build/release-tools -G Ninja -DCMAKE_BUILD_TYPE=Release
+          checked cmake --build build/release-tools --parallel 2
+          checked chown -R builder:builder .
+          let archive = (glob packages/*-source.tar.xz | first | path expand)
+          checked runuser -u builder -- ($env.PWD | path join build release-tools bin akyuu-release) --root $env.PWD package-arch $archive packages
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: arch-packages
@@ -196,12 +220,20 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           persist-credentials: false
+      - uses: hustcer/setup-nu@9215c80adb545a85c419d5085b76eb6d082f49e7
+        with:
+          version: '0.116.0'
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
           pattern: '*-packages'
           path: packages
           merge-multiple: true
       - name: Prepare checked release draft
+        shell: nu {0}
         env:
           GH_TOKEN: ${{ github.token }}
-        run: tools/create-release-draft.sh "$GITHUB_REF_NAME" packages
+        run: |
+          use tools/release.nu checked
+          let tool = ($env.PWD | path join packages diagnostics akyuu-release.AppImage)
+          checked chmod +x $tool
+          checked $tool --appimage-extract-and-run create-release-draft $env.GITHUB_REF_NAME packages

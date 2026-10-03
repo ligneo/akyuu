@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
-project(AkyuuPackage LANGUAGES NONE)
+project(AkyuuPackage LANGUAGES CXX)
 
 foreach(name BUNDLE VERSION FORMAT OUTPUT)
 	if (NOT DEFINED AKYUU_${name})
@@ -19,7 +19,9 @@ if (NOT EXISTS "${AKYUU_BUNDLE}/usr/bin/akyuu" OR NOT EXISTS "${AKYUU_BUNDLE}/us
 endif()
 
 install(DIRECTORY "${AKYUU_BUNDLE}/usr/" DESTINATION opt/akyuu USE_SOURCE_PERMISSIONS)
-install(PROGRAMS launcher DESTINATION usr/bin RENAME akyuu)
+add_executable(akyuu-launcher launcher.cpp)
+set_target_properties(akyuu-launcher PROPERTIES OUTPUT_NAME akyuu)
+install(TARGETS akyuu-launcher RUNTIME DESTINATION usr/bin)
 install(FILES "${AKYUU_BUNDLE}/usr/share/applications/io.github.ligneo.Akyuu.desktop"
 	DESTINATION usr/share/applications)
 install(FILES "${AKYUU_BUNDLE}/usr/share/icons/hicolor/256x256/apps/io.github.ligneo.Akyuu.png"
