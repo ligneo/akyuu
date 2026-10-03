@@ -30,7 +30,9 @@ jobs:
         run: |
           # Qt 6.11 moved the Windows repository; use the merged upstream fix.
           python -m pip install git+https://github.com/miurahr/aqtinstall.git@8c3695d4a4e1ceabf6a74dc6c79681656dc6b74b
-          python -m aqt install-qt windows desktop 6.11.2 win64_msvc2022_64 --outputdir C:/Qt
+          $extractor = "${env:ProgramFiles}/7-Zip/7z.exe"
+          if (-not (Test-Path $extractor)) { throw 'The Windows build image requires 7-Zip.' }
+          python -m aqt install-qt windows desktop 6.11.2 win64_msvc2022_64 --outputdir C:/Qt --external $extractor
       - name: Build and test
         shell: pwsh
         run: |
