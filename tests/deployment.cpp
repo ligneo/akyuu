@@ -37,16 +37,27 @@ int main(int argc, char** argv) {
   }
   auto database = QSqlDatabase::addDatabase(QStringLiteral("QSQLITE"));
   database.setDatabaseName(QStringLiteral(":memory:"));
-  if (!database.open()) return 2;
+  if (!database.open()) {
+    std::cerr << "The deployed SQLite driver could not open an in-memory database.\n";
+    return 2;
+  }
   QSqlQuery query;
   if (!query.exec(QStringLiteral("SELECT 42")) || !query.next() || query.value(0).toInt() != 42)
     return 3;
-  if (!QSslSocket::supportsSsl()) return 4;
+  if (!QSslSocket::supportsSsl()) {
+    std::cerr << "The deployed runtime has no TLS backend.\n";
+    return 4;
+  }
   if (app.arguments().contains(QStringLiteral("--network"))) {
     QNetworkAccessManager network;
-    auto* reply = network.get(QNetworkRequest{QUrl{QStringLiteral("https://api.github.com/repos/ligneo/akyuu/releases?per_page=1")}});
+    auto* reply = network.get(QNetworkRequest{QUrl{QStringLiteral("https://github.com/ligneo/akyuu/releases")}});
     QTimer::singleShot(30000, &app, [&] { app.exit(5); });
     QObject::connect(reply, &QNetworkReply::finished, &app, [&] {
+      if (reply->error() != QNetworkReply::NoError) {
+        std::cerr << "HTTPS runtime check failed: " << reply->errorString().toStdString()
+                  << " (HTTP " << reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt()
+                  << ")\n";
+      }
       app.exit(reply->error() == QNetworkReply::NoError ? 0 : 6);
     });
     if (const auto result = app.exec()) return result;

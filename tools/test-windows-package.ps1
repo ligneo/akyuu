@@ -47,7 +47,7 @@ foreach ($attempt in 1..2) {
     Invoke-InstallerProcess $Installer @('/S', "/D=$install")
     Copy-Item $Probe "$install/akyuu-deployment-tests.exe"
     & "$install/akyuu-deployment-tests.exe" --network
-    if ($LASTEXITCODE) { throw 'Installed runtime verification failed.' }
+    if ($LASTEXITCODE) { throw "Installed runtime verification failed (exit $LASTEXITCODE)." }
     Remove-Item "$install/akyuu-deployment-tests.exe"
     $process = Start-Process -FilePath "$install/Akyuu.exe" -ArgumentList '--debug' -PassThru
     Start-Sleep -Seconds 8
