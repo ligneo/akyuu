@@ -21,7 +21,7 @@ New-Item -ItemType Directory -Force $stage, $Output | Out-Null
 $cache = Get-Content (Join-Path $Build 'CMakeCache.txt') -Raw
 if ($cache -notmatch '(?m)^AKYUU_PORTABLE:BOOL=OFF\r?$') { throw 'Installer builds must keep user data outside the application directory.' }
 Copy-Item (Join-Path $Build 'bin/Akyuu.exe') $stage
-& "$Qt/bin/windeployqt.exe" --release --no-compiler-runtime --dir $stage "$stage/Akyuu.exe"
+& "$Qt/bin/windeployqt.exe" --release --no-compiler-runtime --include-plugins qoffscreen --dir $stage "$stage/Akyuu.exe"
 if ($LASTEXITCODE) { throw 'Qt deployment failed.' }
 New-Item -ItemType Directory -Force "$stage/licenses" | Out-Null
 Copy-Item "$Licenses/*" "$stage/licenses" -Recurse -Force

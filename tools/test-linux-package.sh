@@ -19,7 +19,12 @@ install_package() {
 }
 install_package "${previous[0]}"
 work=$(mktemp -d)
-trap 'rm -rf "$work"' EXIT
+display_pid=
+cleanup() {
+    if [[ -n $display_pid ]]; then kill "$display_pid" 2>/dev/null || true; fi
+    rm -rf "$work"
+}
+trap cleanup EXIT
 export XDG_CONFIG_HOME="$work/config" XDG_DATA_HOME="$work/data"
 export TMPDIR="$work/tmp"
 mkdir -p "$TMPDIR"
@@ -33,8 +38,17 @@ chmod +x /opt/akyuu/bin/packaging-probe
 unset LD_LIBRARY_PATH QT_PLUGIN_PATH QML_IMPORT_PATH QML2_IMPORT_PATH
 QT_QPA_PLATFORM=offscreen /opt/akyuu/bin/packaging-probe --network
 rm /opt/akyuu/bin/packaging-probe
+Xvfb -displayfd 3 -screen 0 1280x720x24 -nolisten tcp 3>"$work/display" >"$work/xvfb.log" 2>&1 &
+display_pid=$!
+for ((attempt=0; attempt<100; ++attempt)); do
+    [[ -s $work/display ]] && break
+    kill -0 "$display_pid" || { cat "$work/xvfb.log"; exit 1; }
+    sleep 0.1
+done
+[[ -s $work/display ]] || { cat "$work/xvfb.log"; exit 1; }
+export DISPLAY=":$(cat "$work/display")"
 set +e
-xvfb-run -a timeout 10s /usr/bin/akyuu --debug
+timeout 10s /usr/bin/akyuu --debug
 result=$?
 set -e
 [[ $result == 124 ]] || { echo "Installed application exited early ($result)." >&2; exit 1; }

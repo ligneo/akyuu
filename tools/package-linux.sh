@@ -11,5 +11,8 @@ root=$(cd "$(dirname "$0")/.." && pwd)
 build=$(mktemp -d)
 trap 'rm -rf "$build"' EXIT
 cmake -S "$root/setup/linux" -B "$build" -G Ninja -DAKYUU_FORMAT="$format" \
-	-DAKYUU_BUNDLE="$bundle" -DAKYUU_VERSION="$version" -DAKYUU_OUTPUT="$output"
+	-DAKYUU_BUNDLE="$bundle" -DAKYUU_VERSION="$version" -DAKYUU_OUTPUT="$build/packages"
 (cd "$build" && cpack --config CPackConfig.cmake)
+
+mkdir -p "$output"
+cp "$build/packages/akyuu-$version-x86_64.${format,,}" "$output/"
