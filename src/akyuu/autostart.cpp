@@ -26,6 +26,7 @@
 
 #include "akyuu/config.h"
 #include "akyuu/settings.hpp"
+#include "akyuu/update_package.hpp"
 #include "base/log.hpp"
 
 namespace akyuu {
@@ -58,9 +59,13 @@ void applyAutoStart() {
     return;
   }
 
+  // Managed installations must follow the profile launcher across upgrades.
+  const auto executable = updateTarget().format == PackageFormat::Nix
+                              ? u"akyuu"_s
+                              : QCoreApplication::applicationFilePath();
   const auto entry =
       u"[Desktop Entry]\nType=Application\nName=%1\nExec=%2\nTerminal=false\n"_s.arg(AKYUU_APP_NAME)
-          .arg(QCoreApplication::applicationFilePath());
+          .arg(executable);
 
   file.write(entry.toUtf8());
 }

@@ -25,7 +25,7 @@
 namespace akyuu {
 
 enum class UpdatePlatform { Linux, Windows, MacOS, Unknown };
-enum class PackageFormat { AppImage, Arch, Deb, Rpm, WindowsInstaller, MacDiskImage };
+enum class PackageFormat { AppImage, Arch, Deb, Rpm, Nix, WindowsInstaller, MacDiskImage };
 
 struct UpdateTarget {
   UpdatePlatform platform = UpdatePlatform::Unknown;
@@ -44,6 +44,7 @@ struct ReleaseAsset {
 UpdateTarget updateTarget(const QString& kernel, const QString& architecture,
                           const QString& packageFormat);
 UpdateTarget updateTarget();
+QString updateInstructions(const UpdateTarget& target);
 std::optional<ReleaseAsset> selectPackage(const std::vector<ReleaseAsset>& assets,
                                           const UpdateTarget& target);
 bool validReleaseAsset(const ReleaseAsset& asset, const QString& tag);

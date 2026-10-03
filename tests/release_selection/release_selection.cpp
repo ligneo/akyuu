@@ -159,6 +159,7 @@ void testInstallationTargets() {
                 target.format == package, "installation target must follow the build contract");
   };
   check("linux", "x86_64", "arch", Platform::Linux, "x86_64", Format::Arch);
+  check("linux", "x86_64", "nix", Platform::Linux, "x86_64", Format::Nix);
   check("linux", "aarch64", "appimage", Platform::Linux, "arm64", Format::AppImage);
   check("linux", "x86_64", "source", Platform::Linux, "x86_64", Format::AppImage);
   check("winnt", "x86_64", "source", Platform::Windows, "x86_64", Format::WindowsInstaller);
@@ -201,6 +202,12 @@ void testPlatformPackages() {
       QStringLiteral("example.com"));
   item.insert(QStringLiteral("assets"), assets);
   const auto selected = akyuu::selectRelease(response({item}), semaver::Version{"0.1.0-beta.2"});
+  const auto nix = akyuu::updateTarget(QStringLiteral("linux"), QStringLiteral("x86_64"),
+                                       QStringLiteral("nix"));
+  require(!akyuu::selectPackage(selected.assets, nix),
+          "a Nix installation must not offer a standalone Linux download");
+  require(!akyuu::updateInstructions(nix).isEmpty(),
+          "managed installations should explain how to update");
   require(selected.assets.size() == 7,
           "source archives and untrusted assets must not become install packages");
   using Platform = akyuu::UpdatePlatform;

@@ -701,12 +701,15 @@ void MainWindow::checkForUpdates(bool silent) {
             const bool upToDate = selected.status == Status::UpToDate;
             if (upToDate && silent) return;
             const auto version = QString::fromStdString(akyuu::version().to_string());
-            const auto message =
+            auto message =
                 upToDate ? tr("You are up to date (%1).").arg(version)
                          : tr("Akyuu %1 is available. Installed version: %2.")
                                .arg(QString::fromStdString(selected.version.to_string()))
                                .arg(version);
-            const auto package = akyuu::selectPackage(selected.assets, akyuu::updateTarget());
+            const auto target = akyuu::updateTarget();
+            const auto instructions = akyuu::updateInstructions(target);
+            if (!instructions.isEmpty()) message += u"\n\n"_s + instructions;
+            const auto package = akyuu::selectPackage(selected.assets, target);
             QMessageBox dialog{QMessageBox::Information, tr("Check for Updates"), message,
                                QMessageBox::Close, this};
             const auto download =

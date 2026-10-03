@@ -21,8 +21,8 @@ if (AKYUU_BUILD_TESTS)
 endif()
 
 set(AKYUU_PACKAGE_FORMAT "source" CACHE STRING "Distribution package format")
-set_property(CACHE AKYUU_PACKAGE_FORMAT PROPERTY STRINGS source appimage arch deb rpm)
-if (NOT AKYUU_PACKAGE_FORMAT MATCHES "^(source|appimage|arch|deb|rpm)$")
+set_property(CACHE AKYUU_PACKAGE_FORMAT PROPERTY STRINGS source appimage arch deb rpm nix)
+if (NOT AKYUU_PACKAGE_FORMAT MATCHES "^(source|appimage|arch|deb|rpm|nix)$")
 	message(FATAL_ERROR "Unsupported AKYUU_PACKAGE_FORMAT")
 endif()
 

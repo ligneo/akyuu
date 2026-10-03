@@ -18,6 +18,7 @@
 
 #include "update_package.hpp"
 
+#include <QCoreApplication>
 #include <QSysInfo>
 
 namespace akyuu {
@@ -41,12 +42,21 @@ UpdateTarget updateTarget(const QString& kernel, const QString& architecture,
     target.format = PackageFormat::Deb;
   if (target.platform == UpdatePlatform::Linux && packageFormat == u"rpm")
     target.format = PackageFormat::Rpm;
+  if (target.platform == UpdatePlatform::Linux && packageFormat == u"nix")
+    target.format = PackageFormat::Nix;
   return target;
 }
 
 UpdateTarget updateTarget() {
   return updateTarget(QSysInfo::kernelType(), QSysInfo::currentCpuArchitecture(),
                       QString::fromLatin1(AKYUU_PACKAGE_FORMAT));
+}
+
+QString updateInstructions(const UpdateTarget& target) {
+  if (target.format == PackageFormat::Nix)
+    return QCoreApplication::translate("UpdatePackage",
+        "Update this installation through Nix. See the installation guide for commands.");
+  return {};
 }
 
 bool validReleaseAsset(const ReleaseAsset& asset, const QString& tag) {

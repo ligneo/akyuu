@@ -123,9 +123,9 @@ limits of desktop testing. Recheck downloaded release assets, not just local bui
 
 ## Automated packages
 
-The Packages workflow builds and tests Linux and Windows packages on development pushes,
-pull requests and manual runs. A named `vVERSION` tag also prepares a **draft** release after
-all build and installation checks pass. It does not publish automatically. Downloaded draft
+The Packages workflow builds and tests packages on version tags and manual runs.
+Ordinary branch pushes and pull requests do not start the package jobs. A named `vVERSION`
+tag also prepares a **draft** release after all build and installation checks pass. It does not publish automatically. Downloaded draft
 assets must pass their checksums before the maintainer publishes it. Existing releases are
 never overwritten.
 
@@ -156,3 +156,18 @@ An Arch package is built from the **same** full-source archive as the release; i
 and checksum are included. Publishing downloadable packages on GitHub requires no AUR,
 Debian, Fedora or openSUSE account. Distribution repository submission and maintenance are
 separate work. AUR publication remains deferred.
+
+## Nix
+
+The flake builds the recorded source and submodules with the locked Nixpkgs input.
+It exposes `packages.x86_64-linux.akyuu` (also the default) and an overlay. Use Nix 2.27
+or newer with `nix-command` and `flakes` enabled; the Git fetcher reads the submodules.
+The version comes from `src/akyuu/config.h`, and the package uses `AKYUU_PACKAGE_FORMAT=nix`.
+Nix installations use Nix for upgrades; the update dialog offers the guide instead of
+an AppImage download. Installation examples live in the existing wiki guide.
+
+`nix flake check` builds the package, runs CTest and checks the wrapped installed
+application's startup with isolated data. The package workflow includes this check for
+version tags and manual runs. A manual run can select only the Nix job; no package jobs
+run on ordinary branch pushes or pull requests. Development builds may retain the last
+release version; pin the Git revision when a fixed development build is required.

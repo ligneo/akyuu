@@ -3,13 +3,35 @@ on:
   push:
     tags: ['v*']
   workflow_dispatch:
+    inputs:
+      target:
+        description: Package jobs to run
+        type: choice
+        options: [all, nix]
+        default: all
 permissions:
   contents: read
 concurrency:
   group: packages-${{ github.ref }}
   cancel-in-progress: false
 jobs:
+  nix:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          submodules: recursive
+          persist-credentials: false
+      - uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24
+        with:
+          install_url: https://releases.nixos.org/nix/nix-2.35.2/install
+          github_access_token: ${{ github.token }}
+          enable_kvm: false
+      - name: Build and test Nix package
+        run: nix flake check --no-update-lock-file --max-jobs 1 --cores 2 -L
   windows:
+    if: github.event_name != 'workflow_dispatch' || inputs.target != 'nix'
     runs-on: windows-2022
     timeout-minutes: 45
     steps:
@@ -65,6 +87,7 @@ jobs:
           path: packages/*-setup.exe
           if-no-files-found: error
   linux:
+    if: github.event_name != 'workflow_dispatch' || inputs.target != 'nix'
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
@@ -165,7 +188,7 @@ jobs:
           if-no-files-found: error
   release:
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
-    needs: [windows, linux, install-linux, arch]
+    needs: [windows, linux, install-linux, arch, nix]
     runs-on: ubuntu-24.04
     permissions:
       contents: write
