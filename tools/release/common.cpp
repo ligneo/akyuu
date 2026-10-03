@@ -86,7 +86,7 @@ void validateVersion(const QString& value) {
             "Numeric prerelease identifiers must not have leading zeroes.");
 }
 QString version(const QString& root) {
-  const auto text = QString::fromUtf8(readFile(root + "/src/akyuu/config.h"));
+  const auto text = QString::fromUtf8(readFile(root + "/src/akyuu/config.h")).replace("\r\n", "\n");
   QStringList parts;
   for (const auto& name : {"MAJOR", "MINOR", "PATCH"}) {
     const auto match = QRegularExpression(QString("^#define AKYUU_VERSION_%1 +([0-9]+)$").arg(name),

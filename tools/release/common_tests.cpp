@@ -57,6 +57,12 @@ int commonTests() {
   };
   require(version(root) == "0.1.0-beta.5", "Incorrect fixture version.");
   ++checks;
+  const auto config = root + "/src/akyuu/config.h";
+  const auto contents = readFile(config);
+  writeFile(config, QByteArray(contents).replace("\n", "\r\n"));
+  require(version(root) == "0.1.0-beta.5", "Windows line endings changed the version.");
+  ++checks;
+  writeFile(config, contents);
   rejects([&] { bumpVersion(root, "0.1.0-beta.01"); });
   rejects([&] { bumpVersion(root, "01.1.0"); });
   rejects([&] { validateVersion("0.1.0-x/../../escape"); });
