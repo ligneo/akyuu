@@ -30,6 +30,7 @@
 #include "media/anime.hpp"
 #include "media/anime_db.hpp"
 #include "track/episode.hpp"
+#include "track/episode_compare.hpp"
 #include "track/media_candidates.hpp"
 #include "track/media_player.hpp"
 #include "track/media_stream.hpp"
@@ -193,7 +194,7 @@ void Detection::poll() {
     currentMedia_ = std::move(media);
     currentPlayerId_ = result->id;
 
-    if (hasEpisodeChanged(*episode) || previousFile != getCurrentFile()) {
+    if (hasEpisodeChanged(currentEpisode_, *episode) || previousFile != getCurrentFile()) {
       currentEpisode_ = episode;
       qDebug() << "Detected episode:" << animeId
                << QString::fromStdString(episode->element(anitomy::ElementKind::Episode));
@@ -241,19 +242,6 @@ void Detection::reset() {
     currentEpisode_.reset();
     emit currentEpisodeChanged(std::nullopt);
   }
-}
-
-bool Detection::hasEpisodeChanged(const Episode& episode) const {
-  if (!currentEpisode_) return true;
-  if (currentEpisode_->animeId() != episode.animeId()) return true;
-  if (episode.animeId() == anime::kUnknownId &&
-      currentEpisode_->elements(anitomy::ElementKind::Title) !=
-          episode.elements(anitomy::ElementKind::Title)) {
-    return true;
-  }
-
-  return currentEpisode_->elements(anitomy::ElementKind::Episode) !=
-         episode.elements(anitomy::ElementKind::Episode);
 }
 
 }  // namespace track::media

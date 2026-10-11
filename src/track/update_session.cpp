@@ -24,6 +24,7 @@
 #include "media/anime.hpp"
 #include "media/anime_db.hpp"
 #include "media/anime_list_utils.hpp"
+#include "track/episode_compare.hpp"
 #include "track/media.hpp"
 #include "track/scanner.hpp"
 #include "track/update_decision.hpp"
@@ -31,20 +32,6 @@
 namespace track {
 
 namespace {
-
-bool isSameMedia(const Episode& previous, const Episode& current) {
-  if (previous.animeId() != anime::kUnknownId) {
-    if (previous.animeId() != current.animeId()) return false;
-  } else if (previous.elements(anitomy::ElementKind::Title) !=
-             current.elements(anitomy::ElementKind::Title)) {
-    // Identifying the anime doesn't make it a new one, but another title with the same episode
-    // number does.
-    return false;
-  }
-
-  return previous.elements(anitomy::ElementKind::Episode) ==
-         current.elements(anitomy::ElementKind::Episode);
-}
 
 bool isOutsideLibrary() {
   if (!akyuu::settings.updateLibraryOnly()) return false;

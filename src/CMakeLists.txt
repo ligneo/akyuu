@@ -138,6 +138,8 @@ target_sources(akyuu PRIVATE
 	track/feed_filter_util.hpp
 	track/feed.hpp
 	track/episode.hpp
+	track/episode_compare.cpp
+	track/episode_compare.hpp
 	track/media.cpp
 	track/media.hpp
 	track/media_candidates.cpp
@@ -272,6 +274,18 @@ if (AKYUU_BUILD_TESTS AND BUILD_TESTING)
 	target_include_directories(akyuu-streaming-tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 	target_link_libraries(akyuu-streaming-tests PRIVATE Qt6::Core Qt6::Network anitomy)
 	add_test(NAME streaming COMMAND akyuu-streaming-tests)
+	add_executable(akyuu-episode-compare-tests
+		${CMAKE_SOURCE_DIR}/tests/episode_compare.cpp
+		track/episode.cpp
+		track/episode_compare.cpp
+		base/string.cpp
+	)
+	set_target_properties(akyuu-episode-compare-tests PROPERTIES
+		RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests
+	)
+	target_include_directories(akyuu-episode-compare-tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+	target_link_libraries(akyuu-episode-compare-tests PRIVATE Qt6::Core anitomy nstd)
+	add_test(NAME episode-compare COMMAND akyuu-episode-compare-tests)
 	add_executable(akyuu-media-candidates-tests
 		${CMAKE_SOURCE_DIR}/tests/media_candidates.cpp
 		track/media_candidates.cpp
