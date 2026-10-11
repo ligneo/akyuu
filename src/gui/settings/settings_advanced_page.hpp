@@ -44,11 +44,11 @@ private:
   void initSettingsTable();
 
   QComboBox* m_comboProxyType = nullptr;
-  QTreeWidget* m_treeSettings = nullptr;
   QLineEdit* m_editProxyHost = nullptr;
   QSpinBox* m_spinProxyPort = nullptr;
   QLineEdit* m_editProxyUsername = nullptr;
   QLineEdit* m_editProxyPassword = nullptr;
+  QTreeWidget* m_treeSettings = nullptr;
   QWidget* m_proxyPage = nullptr;
 };
 

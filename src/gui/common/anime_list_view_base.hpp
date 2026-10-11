@@ -66,9 +66,9 @@ private:
   void changeEpisode(const QModelIndex& index, const int step);
   QModelIndexList selectedIndexes();
 
+  QAbstractItemView* m_view = nullptr;
   AnimeListModel* m_model = nullptr;
   AnimeListProxyModel* m_proxyModel = nullptr;
-  QAbstractItemView* m_view = nullptr;
   const AnimeListContext m_context;
 };
 

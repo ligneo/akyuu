@@ -45,8 +45,8 @@ private:
   void removeFolder();
 
   QListWidget* m_listFolders = nullptr;
-  QCheckBox* m_checkWatch = nullptr;
   QPushButton* m_buttonRemove = nullptr;
+  QCheckBox* m_checkWatch = nullptr;
 };
 
 }  // namespace gui
