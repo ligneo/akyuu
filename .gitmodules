@@ -5,7 +5,7 @@
 [submodule "anisthesia"]
 	path = deps/anisthesia
 	url = https://github.com/ligneo/anisthesia.git
-	branch = linux
+	branch = main
 
 [submodule "anitomy"]
 	path = deps/anitomy
