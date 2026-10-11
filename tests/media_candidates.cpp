@@ -106,6 +106,16 @@ int main() {
 
   require(splitMedia(browser(4, {})).empty(), "no media should give no candidates");
 
+  // Sessions and single pieces in one result stay apart, the pieces merged where they first appear.
+  const auto mixedPieces =
+      splitMedia(browser(9, {piece(MediaInfoType::File, "/a/Frieren - 05.mkv"),
+                             session(MediaState::Playing, "Lecture", "https://b.test/x"),
+                             piece(MediaInfoType::Unknown, "Frieren - 05 - mpv")}));
+  require(mixedPieces.size() == 2 && mixedPieces[0].information.size() == 2 &&
+              value(mixedPieces[0], MediaInfoType::File) == "/a/Frieren - 05.mkv" &&
+              value(mixedPieces[1], MediaInfoType::Url) == "https://b.test/x",
+          "a session should not take in single pieces of the same result");
+
   // A paused session comes after a playing one, even in the player followed so far.
   const std::vector<Result> mixed{
       browser(5, {session(MediaState::Paused, "Paused - 01", "https://p.test")}),
