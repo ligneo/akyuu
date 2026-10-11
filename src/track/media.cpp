@@ -217,6 +217,10 @@ bool Detection::isPlayerFocused() const {
 #endif
 }
 
+bool Detection::isPlayerPaused() const {
+  return currentMedia_ && isPaused(*currentMedia_);
+}
+
 bool Detection::isMediaIdentified() const {
   return currentEpisode_.has_value() && currentEpisode_->animeId() != anime::kUnknownId;
 }

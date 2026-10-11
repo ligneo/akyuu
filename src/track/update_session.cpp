@@ -139,8 +139,10 @@ void UpdateSession::onMediaClosed() {
 
 void UpdateSession::tick() {
   // We count ticks instead of comparing timestamps, so that skipping a tick is enough to pause.
-  // Being out of focus is our best guess for the media player not playing.
-  paused_ = pauseWhenUnfocused_ && !media::detection()->isPlayerFocused();
+  // Players that report their state can tell us that they are paused. For others, being out of
+  // focus is our best guess for the media player not playing.
+  const auto* detection = media::detection();
+  paused_ = pauseWhenUnfocused_ && (detection->isPlayerPaused() || !detection->isPlayerFocused());
   if (!paused_) elapsed_ += std::chrono::seconds{1};
   evaluate();
 }

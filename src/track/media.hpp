@@ -52,6 +52,7 @@ public:
 
   bool isMediaIdentified() const;
   bool isPlayerFocused() const;
+  bool isPlayerPaused() const;
   void setCurrentEpisodeAnimeId(int animeId);
 
 signals:
