@@ -140,6 +140,8 @@ target_sources(akyuu PRIVATE
 	track/episode.hpp
 	track/media.cpp
 	track/media.hpp
+	track/media_candidates.cpp
+	track/media_candidates.hpp
 	track/media_player.cpp
 	track/media_player.hpp
 	track/media_stream.cpp
@@ -270,6 +272,16 @@ if (AKYUU_BUILD_TESTS AND BUILD_TESTING)
 	target_include_directories(akyuu-streaming-tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 	target_link_libraries(akyuu-streaming-tests PRIVATE Qt6::Core Qt6::Network anitomy)
 	add_test(NAME streaming COMMAND akyuu-streaming-tests)
+	add_executable(akyuu-media-candidates-tests
+		${CMAKE_SOURCE_DIR}/tests/media_candidates.cpp
+		track/media_candidates.cpp
+	)
+	set_target_properties(akyuu-media-candidates-tests PROPERTIES
+		RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests
+	)
+	target_include_directories(akyuu-media-candidates-tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+	target_link_libraries(akyuu-media-candidates-tests PRIVATE anisthesia)
+	add_test(NAME media-candidates COMMAND akyuu-media-candidates-tests)
 	add_executable(akyuu-update-service-tests
 		${CMAKE_SOURCE_DIR}/tests/update_service.cpp
 		akyuu/update_service.cpp

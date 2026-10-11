@@ -30,6 +30,7 @@
 #include "media/anime.hpp"
 #include "media/anime_db.hpp"
 #include "track/episode.hpp"
+#include "track/media_candidates.hpp"
 #include "track/media_player.hpp"
 #include "track/media_stream.hpp"
 #ifdef Q_OS_LINUX
@@ -46,23 +47,6 @@ struct MediaFields {
   std::string title;
   std::string url;
 };
-
-anisthesia::Media flattenMedia(const anisthesia::Result& result) {
-  anisthesia::Media media;
-
-  for (const auto& item : result.media) {
-    media.information.append_range(item.information);
-  }
-
-  return media;
-}
-
-// Only players that report their state (e.g. via MPRIS) can be told to be paused
-bool isPaused(const anisthesia::Result& result) {
-  return std::ranges::all_of(result.media, [](const anisthesia::Media& media) {
-    return media.state == anisthesia::MediaState::Paused;
-  });
-}
 
 bool isVideoFile(const std::string& path) {
   const auto fileName = QFileInfo{QString::fromStdString(path)}.fileName();
@@ -188,33 +172,26 @@ void Detection::poll() {
   if (!anisthesia::GetResults(players, media_proc, results)) {
     results.clear();
   }
-  // A paused player comes last, so that a tab left open does not hide an episode playing elsewhere.
-  // Otherwise the player followed so far comes first, so that another one does not take over while
-  // it is still playing. Results that cannot be an episode (e.g. a browser tab that is not on a
-  // streaming site) are passed over rather than hiding the ones behind them.
-  std::ranges::stable_sort(results, {}, [this](const anisthesia::Result& r) {
-    return std::pair{isPaused(r), r.id != currentPlayerId_};
-  });
-
-  for (const auto& result : results) {
-    auto media = flattenMedia(result);
+  // Results that cannot be an episode (e.g. a browser tab that is not on a streaming site) are
+  // passed over rather than hiding the ones behind them.
+  for (auto& [result, media] : orderCandidates(results, currentPlayerId_, currentMedia_)) {
     auto episode = resolveEpisode(extractMediaFields(media),
-                                  result.player.type == anisthesia::PlayerType::WebBrowser);
+                                  result->player.type == anisthesia::PlayerType::WebBrowser);
     if (!episode) continue;
 
     const auto animeId = track::recognition::identify(*episode);
     episode->setAnimeId(animeId);
 
-    if (result.player.type == anisthesia::PlayerType::WebBrowser &&
+    if (result->player.type == anisthesia::PlayerType::WebBrowser &&
         !episode->contains(anitomy::ElementKind::Episode)) {
       const auto* item = anime::db.item(animeId);
       if (!item || item->episode_count != 1) continue;
     }
 
     const auto previousFile = getCurrentFile();
-    currentPlayer_ = result.player;
+    currentPlayer_ = result->player;
     currentMedia_ = std::move(media);
-    currentPlayerId_ = result.id;
+    currentPlayerId_ = result->id;
 
     if (hasEpisodeChanged(*episode) || previousFile != getCurrentFile()) {
       currentEpisode_ = episode;
