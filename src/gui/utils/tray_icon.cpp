@@ -59,7 +59,9 @@ TrayIcon::TrayIcon(QObject* parent, QMenu* menu) {
 void TrayIcon::showMessage(const QString& title, const QString& text) const {
   if (!m_icon) return;
 
-  m_icon->showMessage(title, text, QSystemTrayIcon::Information);
+  // Qt's default of 10 seconds is sent as an explicit expiry, which servers such
+  // as HyprYou treat as "remove from history". -1 lets the server decide.
+  m_icon->showMessage(title, text, QSystemTrayIcon::Information, -1);
 }
 
 bool TrayIcon::isVisible() const {
