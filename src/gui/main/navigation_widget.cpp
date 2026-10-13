@@ -35,9 +35,17 @@
 
 namespace gui {
 
+namespace {
+
+constexpr int kWidth = 200;
+
+}  // namespace
+
 NavigationWidget::NavigationWidget(QWidget* parent) : QTreeWidget(parent) {
   setObjectName("navigation");
-  setFixedWidth(200);
+  // Tiling compositors can make the window narrower than its minimum size. A fixed width would
+  // then overlap the page, so the sidebar gives up its width once the page cannot shrink further.
+  setMaximumWidth(kWidth);
   setFrameShape(QFrame::Shape::NoFrame);
   setItemDelegate(new NavigationItemDelegate(this));
   setHeaderHidden(true);
@@ -116,6 +124,11 @@ void NavigationWidget::refresh() {
   setUpdatesEnabled(true);
 
   emit refreshed();
+}
+
+// The splitter lays the sidebar out by its size hint, which would leave a gap next to it
+QSize NavigationWidget::sizeHint() const {
+  return {kWidth, QTreeWidget::sizeHint().height()};
 }
 
 void NavigationWidget::mouseMoveEvent(QMouseEvent* event) {

@@ -1,6 +1,7 @@
 /**
  * Akyuu
  * Copyright (C) 2010-2026, Eren Okka
+ * Copyright (C) 2026, cenky <cenkkgl@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,6 +37,8 @@ class NavigationWidget final : public QTreeWidget {
 public:
   NavigationWidget(QWidget* parent);
   ~NavigationWidget() = default;
+
+  QSize sizeHint() const override;
 
   QTreeWidgetItem* findItemByPage(MainWindowPage page) const;
   QTreeWidgetItem* findListStatusItem(anime::list::Status status) const;

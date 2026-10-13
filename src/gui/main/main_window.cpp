@@ -310,6 +310,9 @@ void MainWindow::initNavigation() {
   }
 
   ui_->splitter->insertWidget(0, m_navigationWidget);
+  // The page takes up the extra width and is the first to give it back
+  ui_->splitter->setStretchFactor(0, 0);
+  ui_->splitter->setStretchFactor(1, 1);
 }
 
 void MainWindow::initNowPlaying() {
