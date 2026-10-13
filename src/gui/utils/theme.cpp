@@ -143,6 +143,32 @@ bool Theme::isAkyuuStyle() const {
              .compare(akyuu::Settings::kAppStyleAkyuu, Qt::CaseInsensitive) == 0;
 }
 
+bool Theme::isFusionStyle() const {
+  return QString::fromStdString(akyuu::settings.appStyle())
+             .compare("fusion", Qt::CaseInsensitive) == 0;
+}
+
+// Platform themes such as qt6ct ignore the requested color scheme and keep their own palette,
+// which turned "Light" into light text on a light background. When the platform palette does not
+// match the scheme picked for Fusion, it brings its own colors. Other styles draw their own.
+QPalette Theme::schemePalette(const QString& style) const {
+  if (style.compare("fusion", Qt::CaseInsensitive) != 0) return m_systemPalette;
+
+  const auto isDarkPalette = [](const QPalette& palette) {
+    return palette.color(QPalette::WindowText).lightness() >
+           palette.color(QPalette::Window).lightness();
+  };
+
+  switch (akyuu::settings.appColorScheme()) {
+    case Qt::ColorScheme::Light:
+      return isDarkPalette(m_systemPalette) ? lightPalette() : m_systemPalette;
+    case Qt::ColorScheme::Dark:
+      return isDarkPalette(m_systemPalette) ? m_systemPalette : darkPalette();
+    default:
+      return m_systemPalette;
+  }
+}
+
 void Theme::applyStyle() {
   // Remember the platform's style and palette, so that they can be restored later on.
   if (m_systemStyle.isEmpty()) m_systemStyle = qApp->style()->name();
@@ -167,14 +193,7 @@ void Theme::applyStyle() {
     qApp->setStyle(style);
   }
 
-  // Platform themes such as qt6ct ignore the requested color scheme and keep their own palette,
-  // which turned "Light" into light text on a light background. A scheme picked by the user
-  // brings its own colors instead.
-  const auto colorScheme = akyuu::settings.appColorScheme();
-  qApp->setPalette(akyuuStyle                              ? akyuuPalette()
-                   : colorScheme == Qt::ColorScheme::Light ? lightPalette()
-                   : colorScheme == Qt::ColorScheme::Dark  ? darkPalette()
-                                                           : m_systemPalette);
+  qApp->setPalette(akyuuStyle ? akyuuPalette() : schemePalette(style));
 
   // Our stylesheets are written for Fusion, other styles look better without them.
   if (style.compare("fusion", Qt::CaseInsensitive) == 0) {
@@ -198,13 +217,16 @@ void Theme::initStyle() {
 bool Theme::isDark() const {
   if (isAkyuuStyle()) return true;
 
-  switch (akyuu::settings.appColorScheme()) {
-    case Qt::ColorScheme::Light:
-      return false;
-    case Qt::ColorScheme::Dark:
-      return true;
-    default:
-      break;
+  // The palette follows a picked scheme only with Fusion, see `schemePalette`
+  if (isFusionStyle()) {
+    switch (akyuu::settings.appColorScheme()) {
+      case Qt::ColorScheme::Light:
+        return false;
+      case Qt::ColorScheme::Dark:
+        return true;
+      default:
+        break;
+    }
   }
 
   const auto colorScheme = qApp->styleHints()->colorScheme();

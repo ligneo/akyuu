@@ -46,6 +46,8 @@ public:
 
 private:
   bool isAkyuuStyle() const;
+  bool isFusionStyle() const;
+  QPalette schemePalette(const QString& style) const;
   QString readStylesheet(const QString& name) const;
 
   QHash<QString, QIcon> m_icons;
