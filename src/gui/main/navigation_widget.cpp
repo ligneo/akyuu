@@ -142,6 +142,13 @@ void NavigationWidget::mouseMoveEvent(QMouseEvent* event) {
 
   setCursor(cursor);
 
+  // Dragging with a button held would move the selection, and with it the page, to every item on
+  // the way. Pages change on a click instead, as in other sidebars.
+  if (event->buttons() != Qt::NoButton) {
+    event->accept();
+    return;
+  }
+
   QTreeView::mouseMoveEvent(event);
 }
 
