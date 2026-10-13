@@ -79,8 +79,8 @@ ApplicationPage::ApplicationPage(QWidget* parent)
     connect(m_comboStyle, &QComboBox::currentIndexChanged, this, updateColorScheme);
 
     // What the statistics page does when the window is too short for it
-    m_comboStatisticsFit->addItem(tr("Scroll"), false);
-    m_comboStatisticsFit->addItem(tr("Shrink text to fit"), true);
+    m_comboStatisticsFit->addItem(tr("Keep text size and scroll"), false);
+    m_comboStatisticsFit->addItem(tr("Shrink text to fit the window"), true);
     form->addRow(tr("Statistics page:"), m_comboStatisticsFit);
 
     layout->addWidget(group);
