@@ -29,6 +29,7 @@
 #include <optional>
 
 #include "base/string.hpp"
+#include "gui/common/page_widget.hpp"
 #include "gui/common/spinner_widget.hpp"
 #include "gui/history/history_widget.hpp"
 #include "gui/library/library_widget.hpp"
@@ -132,6 +133,7 @@ Ui::MainWindow* MainWindow::ui() const {
 
 void MainWindow::init() {
   initActions();
+  initZoomActions();
   initShortcuts();
   initShareMenu();
   initIcons();
@@ -185,6 +187,36 @@ void MainWindow::initShareMenu() {
     const auto episode = track::media::detection()->getCurrentEpisode();
     menu->setEnabled(episode && episode->animeId() != anime::kUnknownId);
   });
+}
+
+// Ctrl and Shift, because Ctrl alone with +, - and the digits edits the list, as in v1. What
+// arrives with Shift held depends on the keyboard layout, so both forms of each key are bound.
+void MainWindow::initZoomActions() {
+  m_actionZoomIn = new QAction(tr("Zoom In"), this);
+  m_actionZoomIn->setShortcuts({QKeySequence{Qt::CTRL | Qt::SHIFT | Qt::Key_Equal},
+                                QKeySequence{Qt::CTRL | Qt::SHIFT | Qt::Key_Plus}});
+  m_actionZoomOut = new QAction(tr("Zoom Out"), this);
+  m_actionZoomOut->setShortcuts({QKeySequence{Qt::CTRL | Qt::SHIFT | Qt::Key_Minus},
+                                 QKeySequence{Qt::CTRL | Qt::SHIFT | Qt::Key_Underscore}});
+  m_actionResetZoom = new QAction(tr("Reset Zoom"), this);
+  m_actionResetZoom->setShortcuts({QKeySequence{Qt::CTRL | Qt::SHIFT | Qt::Key_0},
+                                   QKeySequence{Qt::CTRL | Qt::SHIFT | Qt::Key_ParenRight}});
+
+  const auto route = [this](void (PageWidget::*zoom)()) {
+    return [this, zoom]() {
+      if (const auto page = currentPageWidget(); page && page->canZoom()) (page->*zoom)();
+    };
+  };
+  connect(m_actionZoomIn, &QAction::triggered, this, route(&PageWidget::zoomIn));
+  connect(m_actionZoomOut, &QAction::triggered, this, route(&PageWidget::zoomOut));
+  connect(m_actionResetZoom, &QAction::triggered, this, route(&PageWidget::resetZoom));
+
+  addActions({m_actionZoomIn, m_actionZoomOut, m_actionResetZoom});
+}
+
+PageWidget* MainWindow::currentPageWidget() const {
+  const auto page = ui_->stackedWidget->currentWidget();
+  return page ? page->findChild<PageWidget*>(Qt::FindDirectChildrenOnly) : nullptr;
 }
 
 void MainWindow::initActions() {
@@ -859,9 +891,9 @@ void MainWindow::initViewMenu() {
   ui_->menuView->addAction(ui_->actionForward);
   ui_->menuView->addSeparator();
 
-  // The page owns its zoom actions and their shortcuts; the menu lists them while it is shown
-  if (m_profileWidget && ui_->stackedWidget->currentWidget() == ui_->profilePage) {
-    ui_->menuView->addActions(m_profileWidget->zoomActions());
+  // Listed while the page can zoom. They stay enabled, so that their shortcuts keep working.
+  if (const auto page = currentPageWidget(); page && page->canZoom()) {
+    ui_->menuView->addActions({m_actionZoomIn, m_actionZoomOut, m_actionResetZoom});
     ui_->menuView->addSeparator();
   }
 

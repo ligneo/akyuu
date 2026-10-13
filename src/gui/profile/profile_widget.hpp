@@ -18,7 +18,6 @@
 
 #pragma once
 
-#include <QAction>
 #include <QLabel>
 #include <QList>
 #include <QProgressBar>
@@ -40,12 +39,12 @@ public:
   void refresh();
   void refreshLocalDatabase();
 
-  QList<QAction*> zoomActions() const;
-
-public slots:
-  void zoomIn();
-  void zoomOut();
-  void resetZoom();
+  bool canZoom() const override {
+    return true;
+  }
+  void zoomIn() override;
+  void zoomOut() override;
+  void resetZoom() override;
 
 protected:
   void changeEvent(QEvent* event) override;
@@ -63,9 +62,6 @@ private:
   QScrollArea* m_scrollArea = nullptr;
   QFont m_baseFont;
   int m_zoom = 100;
-  QAction* m_actionZoomIn = nullptr;
-  QAction* m_actionZoomOut = nullptr;
-  QAction* m_actionResetZoom = nullptr;
 
   QLabel* m_animeCount = nullptr;
   QLabel* m_episodeCount = nullptr;

@@ -1,6 +1,7 @@
 /**
  * Akyuu
  * Copyright (C) 2010-2024, Eren Okka
+ * Copyright (C) 2026, cenky <cenkkgl@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,6 +32,15 @@ class PageWidget : public QWidget {
 public:
   PageWidget(QWidget* parent);
   ~PageWidget() = default;
+
+  // Pages that can be zoomed override these. The main window owns the zoom actions and their
+  // shortcuts, and sends them to the page that is shown.
+  virtual bool canZoom() const {
+    return false;
+  }
+  virtual void zoomIn() {}
+  virtual void zoomOut() {}
+  virtual void resetZoom() {}
 
 protected:
   QHBoxLayout* m_toolbarLayout = nullptr;

@@ -22,7 +22,6 @@
 #include <QFormLayout>
 #include <QGridLayout>
 #include <QGroupBox>
-#include <QKeySequence>
 #include <QLocale>
 #include <QScrollArea>
 #include <QTimer>
@@ -173,29 +172,12 @@ ProfileWidget::ProfileWidget(QWidget* parent) : PageWidget(parent) {
 
   m_toolbar->hide();
 
-  // Zoom, as in KDE applications: Ctrl and +/-/0, or Ctrl and the mouse wheel
-  m_actionZoomIn = new QAction(tr("Zoom In"), this);
-  m_actionZoomIn->setShortcuts({QKeySequence::ZoomIn, QKeySequence{Qt::CTRL | Qt::Key_Equal}});
-  m_actionZoomOut = new QAction(tr("Zoom Out"), this);
-  m_actionZoomOut->setShortcuts(QKeySequence::ZoomOut);
-  m_actionResetZoom = new QAction(tr("Reset Zoom"), this);
-  m_actionResetZoom->setShortcut(QKeySequence{Qt::CTRL | Qt::Key_0});
-  connect(m_actionZoomIn, &QAction::triggered, this, &ProfileWidget::zoomIn);
-  connect(m_actionZoomOut, &QAction::triggered, this, &ProfileWidget::zoomOut);
-  connect(m_actionResetZoom, &QAction::triggered, this, &ProfileWidget::resetZoom);
-  for (const auto action : zoomActions()) {
-    action->setShortcutContext(Qt::WindowShortcut);
-    addAction(action);
-  }
+  // Ctrl and the mouse wheel zoom, see `eventFilter`
   m_scrollArea->viewport()->installEventFilter(this);
 
   m_baseFont = container->font();
   m_zoom = std::clamp(akyuu::settings.statisticsZoom(), kZoomMin, kZoomMax);
   updateScale();
-}
-
-QList<QAction*> ProfileWidget::zoomActions() const {
-  return {m_actionZoomIn, m_actionZoomOut, m_actionResetZoom};
 }
 
 void ProfileWidget::zoomIn() {
@@ -222,8 +204,6 @@ void ProfileWidget::setZoom(const int zoom) {
 // until the page fits the window.
 void ProfileWidget::updateScale() {
   const auto zoom = m_zoom / 100.0;
-  m_actionZoomIn->setEnabled(m_zoom < kZoomMax);
-  m_actionZoomOut->setEnabled(m_zoom > kZoomMin);
 
   if (!akyuu::settings.statisticsFitToWindow()) {
     applyScale(zoom);

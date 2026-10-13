@@ -142,6 +142,8 @@ bool ListViewBase::handleKeyPress(const QKeyEvent* event) {
   const auto current = m_view->currentIndex();
   const auto key = event->key();
   const bool control = event->modifiers() & Qt::ControlModifier;
+  // Ctrl and Shift with +, - and 0 zoom the page, so they must not edit the list
+  const bool shift = event->modifiers() & Qt::ShiftModifier;
 
   // Enter acts like a double click
   if ((key == Qt::Key_Return || key == Qt::Key_Enter) && !control) {
@@ -160,6 +162,17 @@ bool ListViewBase::handleKeyPress(const QKeyEvent* event) {
   }
 
   if (!control) return false;
+
+  if (shift) {
+    switch (key) {
+      case Qt::Key_Plus:
+      case Qt::Key_Equal:
+      case Qt::Key_Minus:
+      case Qt::Key_Underscore:
+        return false;
+    }
+    if (key >= Qt::Key_0 && key <= Qt::Key_9) return false;
+  }
 
   switch (key) {
     case Qt::Key_C:
