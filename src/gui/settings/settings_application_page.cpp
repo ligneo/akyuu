@@ -71,10 +71,11 @@ ApplicationPage::ApplicationPage(QWidget* parent)
     m_comboColorScheme->addItem(tr("Dark"), static_cast<int>(Qt::ColorScheme::Dark));
     form->addRow(tr("Color scheme:"), m_comboColorScheme);
 
-    // Akyuu's style is always dark, so the color scheme only applies to the others
+    // Akyuu's style is always dark, and the system's styles bring their own colors, so the color
+    // scheme only applies to Fusion
     const auto updateColorScheme = [this]() {
-      m_comboColorScheme->setEnabled(m_comboStyle->currentData().toString() !=
-                                     akyuu::Settings::kAppStyleAkyuu);
+      m_comboColorScheme->setEnabled(m_comboStyle->currentData().toString() ==
+                                     QLatin1StringView{"fusion"});
     };
     connect(m_comboStyle, &QComboBox::currentIndexChanged, this, updateColorScheme);
 
@@ -124,7 +125,7 @@ void ApplicationPage::load() {
 
   const auto scheme = static_cast<int>(akyuu::settings.appColorScheme());
   m_comboColorScheme->setCurrentIndex(m_comboColorScheme->findData(scheme));
-  m_comboColorScheme->setEnabled(style != akyuu::Settings::kAppStyleAkyuu);
+  m_comboColorScheme->setEnabled(style == QLatin1StringView{"fusion"});
   m_checkFitStatistics->setChecked(akyuu::settings.statisticsFitToWindow());
 
   m_checkAutoStart->setChecked(akyuu::settings.appAutoStart());
