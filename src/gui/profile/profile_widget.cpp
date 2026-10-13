@@ -259,6 +259,13 @@ void ProfileWidget::applyScale(const double scale) {
   m_container->layout()->invalidate();
 }
 
+// The settings dialog is modal, so the window becomes active again once it closes. Shrinking to fit
+// may have been turned on or off there.
+void ProfileWidget::changeEvent(QEvent* event) {
+  if (event->type() == QEvent::ActivationChange && isVisible()) updateScale();
+  PageWidget::changeEvent(event);
+}
+
 bool ProfileWidget::eventFilter(QObject* watched, QEvent* event) {
   // The scroll area would turn Ctrl and the wheel into scrolling by pages
   if (watched == m_scrollArea->viewport() && event->type() == QEvent::Wheel) {
