@@ -23,6 +23,7 @@
 #include <QGridLayout>
 #include <QGroupBox>
 #include <QLocale>
+#include <QScrollArea>
 #include <QTimer>
 #include <QVBoxLayout>
 #include <algorithm>
@@ -139,7 +140,17 @@ ProfileWidget::ProfileWidget(QWidget* parent) : PageWidget(parent) {
   connect(m_refreshTimer, &QTimer::timeout, this, &ProfileWidget::refresh);
 
   containerLayout->addStretch();
-  layout()->addWidget(container);
+
+  // The page is taller than a small window, so it scrolls instead of squeezing the groups
+  const auto scrollArea = new QScrollArea(this);
+  scrollArea->setFrameShape(QFrame::NoFrame);
+  scrollArea->setWidgetResizable(true);
+  // Themes give the scroll areas of pages the background of a list, which this page is not
+  scrollArea->setStyleSheet(u"QScrollArea { background: transparent; }"_s);
+  scrollArea->setWidget(container);
+  // `setWidget` fills the background of the container, which the window already paints
+  container->setAutoFillBackground(false);
+  layout()->addWidget(scrollArea);
 
   m_toolbar->hide();
 }
