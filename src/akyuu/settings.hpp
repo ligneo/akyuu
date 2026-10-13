@@ -83,6 +83,8 @@ public:
   std::string proxyUsername() const;
   std::string proxyPassword() const;
   bool sidebarVisible() const;
+  int statisticsZoom() const;
+  bool statisticsFitToWindow() const;
   bool appAutoStart() const;
   bool appCloseToTray() const;
   bool appMinimizeToTray() const;
@@ -168,6 +170,8 @@ public:
   void setProxyUsername(const std::string& username) const;
   void setProxyPassword(const std::string& password) const;
   void setSidebarVisible(const bool visible) const;
+  void setStatisticsZoom(const int zoom) const;
+  void setStatisticsFitToWindow(const bool enabled) const;
   void setAppAutoStart(const bool enabled) const;
   void setAppCloseToTray(const bool enabled) const;
   void setAppMinimizeToTray(const bool enabled) const;

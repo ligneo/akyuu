@@ -22,16 +22,19 @@
 #include <QFormLayout>
 #include <QGridLayout>
 #include <QGroupBox>
+#include <QKeySequence>
 #include <QLocale>
 #include <QScrollArea>
 #include <QTimer>
 #include <QVBoxLayout>
+#include <QWheelEvent>
 #include <algorithm>
 #include <chrono>
 
 #include "akyuu/application.hpp"
 #include "akyuu/path.hpp"
 #include "akyuu/session.hpp"
+#include "akyuu/settings.hpp"
 #include "base/chrono.hpp"
 #include "base/string.hpp"
 #include "gui/utils/format.hpp"
@@ -43,8 +46,23 @@ namespace gui {
 
 using namespace Qt::StringLiterals;
 
+namespace {
+
+// Zoom levels in percent, like the zoom of a document
+constexpr int kZoomMin = 70;
+constexpr int kZoomMax = 200;
+constexpr int kZoomStep = 10;
+
+// Shrinking to fit stops here; smaller text is hard to read, so the page scrolls instead
+constexpr double kFitMin = 0.8;
+
+constexpr int kBarHeight = 16;
+
+}  // namespace
+
 ProfileWidget::ProfileWidget(QWidget* parent) : PageWidget(parent) {
   const auto container = new QWidget(this);
+  m_container = container;
   const auto containerLayout = new QVBoxLayout(container);
   containerLayout->setContentsMargins(16, 8, 16, 16);
 
@@ -84,7 +102,7 @@ ProfileWidget::ProfileWidget(QWidget* parent) : PageWidget(parent) {
 
       const auto bar = new QProgressBar(group);
       bar->setTextVisible(false);
-      bar->setFixedHeight(16);
+      bar->setFixedHeight(kBarHeight);
 
       const auto count = new QLabel("0", group);
 
@@ -143,6 +161,7 @@ ProfileWidget::ProfileWidget(QWidget* parent) : PageWidget(parent) {
 
   // The page is taller than a small window, so it scrolls instead of squeezing the groups
   const auto scrollArea = new QScrollArea(this);
+  m_scrollArea = scrollArea;
   scrollArea->setFrameShape(QFrame::NoFrame);
   scrollArea->setWidgetResizable(true);
   // Themes give the scroll areas of pages the background of a list, which this page is not
@@ -153,6 +172,110 @@ ProfileWidget::ProfileWidget(QWidget* parent) : PageWidget(parent) {
   layout()->addWidget(scrollArea);
 
   m_toolbar->hide();
+
+  // Zoom, as in KDE applications: Ctrl and +/-/0, or Ctrl and the mouse wheel
+  m_actionZoomIn = new QAction(tr("Zoom In"), this);
+  m_actionZoomIn->setShortcuts({QKeySequence::ZoomIn, QKeySequence{Qt::CTRL | Qt::Key_Equal}});
+  m_actionZoomOut = new QAction(tr("Zoom Out"), this);
+  m_actionZoomOut->setShortcuts(QKeySequence::ZoomOut);
+  m_actionResetZoom = new QAction(tr("Reset Zoom"), this);
+  m_actionResetZoom->setShortcut(QKeySequence{Qt::CTRL | Qt::Key_0});
+  connect(m_actionZoomIn, &QAction::triggered, this, &ProfileWidget::zoomIn);
+  connect(m_actionZoomOut, &QAction::triggered, this, &ProfileWidget::zoomOut);
+  connect(m_actionResetZoom, &QAction::triggered, this, &ProfileWidget::resetZoom);
+  for (const auto action : zoomActions()) {
+    action->setShortcutContext(Qt::WindowShortcut);
+    addAction(action);
+  }
+  m_scrollArea->viewport()->installEventFilter(this);
+
+  m_baseFont = container->font();
+  m_zoom = std::clamp(akyuu::settings.statisticsZoom(), kZoomMin, kZoomMax);
+  updateScale();
+}
+
+QList<QAction*> ProfileWidget::zoomActions() const {
+  return {m_actionZoomIn, m_actionZoomOut, m_actionResetZoom};
+}
+
+void ProfileWidget::zoomIn() {
+  setZoom(m_zoom + kZoomStep);
+}
+
+void ProfileWidget::zoomOut() {
+  setZoom(m_zoom - kZoomStep);
+}
+
+void ProfileWidget::resetZoom() {
+  setZoom(100);
+}
+
+void ProfileWidget::setZoom(const int zoom) {
+  const auto clamped = std::clamp(zoom, kZoomMin, kZoomMax);
+  if (clamped == m_zoom) return;
+  m_zoom = clamped;
+  akyuu::settings.setStatisticsZoom(m_zoom);
+  updateScale();
+}
+
+// The zoom sets the size, and shrinking to fit, if it is turned on, takes it down from there
+// until the page fits the window.
+void ProfileWidget::updateScale() {
+  const auto zoom = m_zoom / 100.0;
+  m_actionZoomIn->setEnabled(m_zoom < kZoomMax);
+  m_actionZoomOut->setEnabled(m_zoom > kZoomMin);
+
+  if (!akyuu::settings.statisticsFitToWindow()) {
+    applyScale(zoom);
+    return;
+  }
+
+  const auto available = m_scrollArea->viewport()->height();
+  for (auto fit = 1.0; fit >= kFitMin; fit -= 0.05) {
+    applyScale(zoom * fit);
+    if (m_container->sizeHint().height() <= available) return;
+  }
+  applyScale(zoom * kFitMin);
+}
+
+void ProfileWidget::applyScale(const double scale) {
+  auto font = m_baseFont;
+  if (m_baseFont.pointSizeF() > 0) {
+    font.setPointSizeF(m_baseFont.pointSizeF() * scale);
+  } else {
+    font.setPixelSize(std::max(1, qRound(m_baseFont.pixelSize() * scale)));
+  }
+
+  // The application style sheet keeps fonts from reaching child widgets, so each gets its own
+  m_container->setFont(font);
+  for (const auto child : m_container->findChildren<QWidget*>()) {
+    child->setFont(font);
+  }
+  for (const auto bar : m_scoreBars) {
+    bar->setFixedHeight(qRound(kBarHeight * scale));
+  }
+  m_container->layout()->setContentsMargins(qRound(16 * scale), qRound(8 * scale),
+                                            qRound(16 * scale), qRound(16 * scale));
+  m_container->layout()->invalidate();
+}
+
+bool ProfileWidget::eventFilter(QObject* watched, QEvent* event) {
+  // The scroll area would turn Ctrl and the wheel into scrolling by pages
+  if (watched == m_scrollArea->viewport() && event->type() == QEvent::Wheel) {
+    const auto wheelEvent = static_cast<QWheelEvent*>(event);
+    if (wheelEvent->modifiers() & Qt::ControlModifier) {
+      const auto delta = wheelEvent->angleDelta().y();
+      if (delta > 0) zoomIn();
+      if (delta < 0) zoomOut();
+      return true;
+    }
+  }
+  return PageWidget::eventFilter(watched, event);
+}
+
+void ProfileWidget::resizeEvent(QResizeEvent* event) {
+  PageWidget::resizeEvent(event);
+  if (akyuu::settings.statisticsFitToWindow()) updateScale();
 }
 
 void ProfileWidget::refresh() {
@@ -206,6 +329,8 @@ void ProfileWidget::hideEvent(QHideEvent* event) {
 }
 
 void ProfileWidget::showEvent(QShowEvent* event) {
+  // Shrinking to fit may have been turned on or off in the settings
+  updateScale();
   refresh();
   refreshLocalDatabase();
   m_refreshTimer->start();

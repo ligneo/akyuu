@@ -18,9 +18,11 @@
 
 #pragma once
 
+#include <QAction>
 #include <QLabel>
 #include <QList>
 #include <QProgressBar>
+#include <QScrollArea>
 
 #include "gui/common/page_widget.hpp"
 #include "media/anime_stats.hpp"
@@ -38,11 +40,32 @@ public:
   void refresh();
   void refreshLocalDatabase();
 
+  QList<QAction*> zoomActions() const;
+
+public slots:
+  void zoomIn();
+  void zoomOut();
+  void resetZoom();
+
 protected:
+  bool eventFilter(QObject* watched, QEvent* event) override;
   void hideEvent(QHideEvent* event) override;
+  void resizeEvent(QResizeEvent* event) override;
   void showEvent(QShowEvent* event) override;
 
 private:
+  void applyScale(double scale);
+  void setZoom(int zoom);
+  void updateScale();
+
+  QWidget* m_container = nullptr;
+  QScrollArea* m_scrollArea = nullptr;
+  QFont m_baseFont;
+  int m_zoom = 100;
+  QAction* m_actionZoomIn = nullptr;
+  QAction* m_actionZoomOut = nullptr;
+  QAction* m_actionResetZoom = nullptr;
+
   QLabel* m_animeCount = nullptr;
   QLabel* m_episodeCount = nullptr;
   QLabel* m_timeSpentWatching = nullptr;

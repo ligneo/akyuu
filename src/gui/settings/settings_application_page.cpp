@@ -37,6 +37,7 @@ ApplicationPage::ApplicationPage(QWidget* parent)
     : SettingsPage(parent),
       m_comboStyle(new QComboBox(this)),
       m_comboColorScheme(new QComboBox(this)),
+      m_comboStatisticsFit(new QComboBox(this)),
       m_checkAutoStart(new QCheckBox(tr("Start automatically at login"), this)),
       m_checkStartMinimized(new QCheckBox(tr("Start minimized"), this)),
       m_checkScanOnStartup(new QCheckBox(tr("Scan library folders for available episodes"), this)),
@@ -76,6 +77,11 @@ ApplicationPage::ApplicationPage(QWidget* parent)
                                      akyuu::Settings::kAppStyleAkyuu);
     };
     connect(m_comboStyle, &QComboBox::currentIndexChanged, this, updateColorScheme);
+
+    // What the statistics page does when the window is too short for it
+    m_comboStatisticsFit->addItem(tr("Scroll"), false);
+    m_comboStatisticsFit->addItem(tr("Shrink text to fit"), true);
+    form->addRow(tr("Statistics page:"), m_comboStatisticsFit);
 
     layout->addWidget(group);
   }
@@ -121,6 +127,8 @@ void ApplicationPage::load() {
   const auto scheme = static_cast<int>(akyuu::settings.appColorScheme());
   m_comboColorScheme->setCurrentIndex(m_comboColorScheme->findData(scheme));
   m_comboColorScheme->setEnabled(style != akyuu::Settings::kAppStyleAkyuu);
+  m_comboStatisticsFit->setCurrentIndex(
+      m_comboStatisticsFit->findData(akyuu::settings.statisticsFitToWindow()));
 
   m_checkAutoStart->setChecked(akyuu::settings.appAutoStart());
   m_checkStartMinimized->setChecked(akyuu::settings.appStartMinimized());
@@ -149,6 +157,7 @@ void ApplicationPage::save() {
   akyuu::settings.setAppCloseToTray(m_checkCloseToTray->isChecked());
   akyuu::settings.setAppMinimizeToTray(m_checkMinimizeToTray->isChecked());
   akyuu::applyAutoStart();
+  akyuu::settings.setStatisticsFitToWindow(m_comboStatisticsFit->currentData().toBool());
 
   const auto style = m_comboStyle->currentData().toString().toStdString();
   const auto scheme = m_comboColorScheme->currentData().value<Qt::ColorScheme>();

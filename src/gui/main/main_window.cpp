@@ -859,6 +859,12 @@ void MainWindow::initViewMenu() {
   ui_->menuView->addAction(ui_->actionForward);
   ui_->menuView->addSeparator();
 
+  // The page owns its zoom actions and their shortcuts; the menu lists them while it is shown
+  if (m_profileWidget && ui_->stackedWidget->currentWidget() == ui_->profilePage) {
+    ui_->menuView->addActions(m_profileWidget->zoomActions());
+    ui_->menuView->addSeparator();
+  }
+
   const auto action = ui_->menuView->addAction(tr("Show sidebar"), this, [this](bool checked) {
     m_navigationWidget->setVisible(checked);
     akyuu::settings.setSidebarVisible(checked);

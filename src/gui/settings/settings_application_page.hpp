@@ -40,6 +40,7 @@ public:
 private:
   QComboBox* m_comboStyle = nullptr;
   QComboBox* m_comboColorScheme = nullptr;
+  QComboBox* m_comboStatisticsFit = nullptr;
   QCheckBox* m_checkAutoStart = nullptr;
   QCheckBox* m_checkStartMinimized = nullptr;
   QCheckBox* m_checkScanOnStartup = nullptr;
