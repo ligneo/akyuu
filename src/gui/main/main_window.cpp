@@ -448,6 +448,10 @@ void MainWindow::switchSearchText(MainWindowPage from, MainWindowPage to) {
     case MainWindowPage::Seasons:
       placeholder = tr("Filter list");
       break;
+    // v1 searches the service from the pages that have nothing to filter
+    case MainWindowPage::Home:
+    case MainWindowPage::History:
+    case MainWindowPage::Profile:
     case MainWindowPage::Search:
       placeholder = tr("Search %1 for anime").arg(service);
       break;
@@ -947,6 +951,21 @@ void MainWindow::initToolbar() {
     m_searchBox->setClearButtonEnabled(true);
     m_searchBox->setFixedWidth(320);
     m_searchBox->setPlaceholderText(tr("Search"));
+
+    // The search page runs the search itself; the other pages that search the service hand the
+    // text over to it, as in v1.
+    connect(m_searchBox, &QLineEdit::returnPressed, this, [this]() {
+      const auto page = static_cast<MainWindowPage>(ui_->stackedWidget->currentIndex());
+      if (page != MainWindowPage::Home && page != MainWindowPage::History &&
+          page != MainWindowPage::Profile) {
+        return;
+      }
+      const auto text = m_searchBox->text();
+      if (text.trimmed().isEmpty()) return;
+      navigateTo(MainWindowPage::Search);
+      m_searchBox->setText(text);
+      emit m_searchBox->returnPressed();
+    });
 
     const auto before = ui_->actionSettings;
     const auto insertSpacer = [this](QAction* before) {
