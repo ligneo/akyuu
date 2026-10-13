@@ -22,7 +22,9 @@
 #include <QApplication>
 #include <QPalette>
 #include <QStyle>
+#include <QStyleFactory>
 #include <QStyleHints>
+#include <memory>
 
 #include "akyuu/settings.hpp"
 #include "base/file.hpp"
@@ -90,6 +92,50 @@ QPalette akyuuPalette() {
   return palette;
 }
 
+// Fusion's own light colors
+QPalette lightPalette() {
+  const std::unique_ptr<QStyle> fusion{QStyleFactory::create(u"fusion"_s)};
+  return fusion->standardPalette();
+}
+
+// Neutral dark colors that match `styles/dark.qss`
+QPalette darkPalette() {
+  const QColor window{0x2b, 0x2b, 0x2b};
+  const QColor base{0x1c, 0x1c, 0x1c};
+  const QColor button{0x35, 0x35, 0x35};
+  const QColor text{0xe6, 0xe6, 0xe6};
+  const QColor highlight{0x3d, 0x7a, 0xc4};
+
+  QPalette palette;
+  palette.setColor(QPalette::Window, window);
+  palette.setColor(QPalette::WindowText, text);
+  palette.setColor(QPalette::Base, base);
+  palette.setColor(QPalette::AlternateBase, QColor{0x24, 0x24, 0x24});
+  palette.setColor(QPalette::Text, text);
+  palette.setColor(QPalette::PlaceholderText, QColor{0x8c, 0x8c, 0x8c});
+  palette.setColor(QPalette::Button, button);
+  palette.setColor(QPalette::ButtonText, text);
+  palette.setColor(QPalette::BrightText, Qt::white);
+  palette.setColor(QPalette::ToolTipBase, button);
+  palette.setColor(QPalette::ToolTipText, text);
+  palette.setColor(QPalette::Highlight, highlight);
+  palette.setColor(QPalette::HighlightedText, Qt::white);
+  palette.setColor(QPalette::Link, QColor{0x6c, 0xa8, 0xf0});
+  palette.setColor(QPalette::LinkVisited, QColor{0xa8, 0x8c, 0xf0});
+  palette.setColor(QPalette::Accent, highlight);
+  palette.setColor(QPalette::Light, QColor{0x4a, 0x4a, 0x4a});
+  palette.setColor(QPalette::Midlight, QColor{0x40, 0x40, 0x40});
+  palette.setColor(QPalette::Mid, QColor{0x24, 0x24, 0x24});
+  palette.setColor(QPalette::Dark, QColor{0x14, 0x14, 0x14});
+  palette.setColor(QPalette::Shadow, Qt::black);
+
+  for (const auto role : {QPalette::WindowText, QPalette::Text, QPalette::ButtonText}) {
+    palette.setColor(QPalette::Disabled, role, QColor{0x6e, 0x6e, 0x6e});
+  }
+
+  return palette;
+}
+
 }  // namespace
 
 bool Theme::isAkyuuStyle() const {
@@ -121,7 +167,14 @@ void Theme::applyStyle() {
     qApp->setStyle(style);
   }
 
-  qApp->setPalette(akyuuStyle ? akyuuPalette() : m_systemPalette);
+  // Platform themes such as qt6ct ignore the requested color scheme and keep their own palette,
+  // which turned "Light" into light text on a light background. A scheme picked by the user
+  // brings its own colors instead.
+  const auto colorScheme = akyuu::settings.appColorScheme();
+  qApp->setPalette(akyuuStyle                              ? akyuuPalette()
+                   : colorScheme == Qt::ColorScheme::Light ? lightPalette()
+                   : colorScheme == Qt::ColorScheme::Dark  ? darkPalette()
+                                                           : m_systemPalette);
 
   // Our stylesheets are written for Fusion, other styles look better without them.
   if (style.compare("fusion", Qt::CaseInsensitive) == 0) {
@@ -144,6 +197,15 @@ void Theme::initStyle() {
 
 bool Theme::isDark() const {
   if (isAkyuuStyle()) return true;
+
+  switch (akyuu::settings.appColorScheme()) {
+    case Qt::ColorScheme::Light:
+      return false;
+    case Qt::ColorScheme::Dark:
+      return true;
+    default:
+      break;
+  }
 
   const auto colorScheme = qApp->styleHints()->colorScheme();
 
