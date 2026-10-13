@@ -1,5 +1,6 @@
 <RCC>
   <qresource>
+    <file>styles/akyuu-light.qss</file>
     <file>styles/akyuu.qss</file>
     <file>styles/dark.qss</file>
     <file>styles/light.qss</file>
