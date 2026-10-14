@@ -49,6 +49,7 @@ class LibraryWidget;
 class ListWidget;
 class NavigationWidget;
 class NowPlayingWidget;
+class PageZoom;
 class ProfileWidget;
 class SearchWidget;
 class SeasonsWidget;
@@ -104,9 +105,12 @@ private slots:
 protected:
   void changeEvent(QEvent* event) override;
   void closeEvent(QCloseEvent* event) override;
+  bool eventFilter(QObject* watched, QEvent* event) override;
 
 private:
   void initActions();
+  void initZoomActions();
+  PageZoom* currentPageZoom() const;
   void saveSession();
   void initShortcuts();
   void initShareMenu();
@@ -135,6 +139,9 @@ private:
   NavigationWidget* m_navigationWidget = nullptr;
   NowPlayingWidget* m_nowPlayingWidget = nullptr;
   ProfileWidget* m_profileWidget = nullptr;
+  QAction* m_actionZoomIn = nullptr;
+  QAction* m_actionZoomOut = nullptr;
+  QAction* m_actionResetZoom = nullptr;
   QLineEdit* m_searchBox = nullptr;
   std::map<MainWindowPage, QString> m_searchTexts;
   SearchWidget* m_searchWidget = nullptr;

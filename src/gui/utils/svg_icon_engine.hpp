@@ -1,6 +1,7 @@
 /**
  * Akyuu
  * Copyright (C) 2010-2024, Eren Okka
+ * Copyright (C) 2026, cenky <cenkkgl@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,6 +42,7 @@ private:
   const QString m_iconName;
   QPixmap m_pixmap;
   quint64 m_cacheKey{};
+  qint64 m_paletteKey{};
 };
 
 }  // namespace gui

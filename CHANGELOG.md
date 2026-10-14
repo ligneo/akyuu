@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.1.0-beta.6
+
+- The statistics page no longer squeezes its groups in a short window (#1). Its text shrinks to
+  fit, down to 80%, and the page scrolls below that. The sidebar narrows instead of covering the
+  page on tiling window managers that ignore the minimum window size.
+- Every page zooms with Ctrl+Shift and +, - or 0, or with Ctrl and the mouse wheel, on any
+  keyboard layout. Each page keeps its own level; rows, cards, headers and posters grow with the
+  text. Ctrl with +/- still changes the episode in the anime list.
+- Add a light variant of the Akyuu style, picked with the Light color scheme. The color scheme
+  applies to every style, and icons repaint when the palette changes.
+- On Now Playing, History and Statistics, typing in the search box and pressing Enter searches
+  the service.
+- Sidebar pages change on a click, not while dragging over them.
+- Keep media sessions of the same player apart, pause the update delay while the player is
+  paused, and query media players in parallel.
+- Keep tray notifications in the notification history.
+- Build packages in GitHub Actions when a release is tagged, and build Akyuu with Nix.
+
 ## 0.1.0-beta.5
 
 - Supply Debian/Ubuntu and Fedora/openSUSE packages alongside the AppImage and Arch package.

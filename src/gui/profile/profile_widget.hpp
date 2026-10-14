@@ -21,6 +21,7 @@
 #include <QLabel>
 #include <QList>
 #include <QProgressBar>
+#include <QScrollArea>
 
 #include "gui/common/page_widget.hpp"
 #include "media/anime_stats.hpp"
@@ -40,9 +41,15 @@ public:
 
 protected:
   void hideEvent(QHideEvent* event) override;
+  void resizeEvent(QResizeEvent* event) override;
   void showEvent(QShowEvent* event) override;
 
 private:
+  void fitToWindow();
+
+  QWidget* m_container = nullptr;
+  QScrollArea* m_scrollArea = nullptr;
+
   QLabel* m_animeCount = nullptr;
   QLabel* m_episodeCount = nullptr;
   QLabel* m_timeSpentWatching = nullptr;

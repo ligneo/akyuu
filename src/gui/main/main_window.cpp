@@ -46,6 +46,7 @@
 #include "gui/settings/settings_dialog.hpp"
 #include "gui/torrents/torrents_widget.hpp"
 #include "gui/utils/format.hpp"
+#include "gui/utils/page_zoom.hpp"
 #include "gui/utils/theme.hpp"
 #include "gui/utils/tray_icon.hpp"
 #include "gui/utils/widgets.hpp"
@@ -132,6 +133,7 @@ Ui::MainWindow* MainWindow::ui() const {
 
 void MainWindow::init() {
   initActions();
+  initZoomActions();
   initShortcuts();
   initShareMenu();
   initIcons();
@@ -149,6 +151,7 @@ void MainWindow::init() {
     checkForUpdates(true);
     track::recognition::updateRelations();
   }
+
 }
 
 void MainWindow::initShortcuts() {
@@ -185,6 +188,61 @@ void MainWindow::initShareMenu() {
     const auto episode = track::media::detection()->getCurrentEpisode();
     menu->setEnabled(episode && episode->animeId() != anime::kUnknownId);
   });
+}
+
+// Ctrl and Shift, because Ctrl alone with +, - and the digits edits the list, as in v1.
+//
+// Qt matches a shortcut both by the key as it is without Shift, with Shift among the modifiers,
+// and by what Shift types on it, without Shift (`QXkbCommon::possibleKeyCombinations`). So where
+// + takes Shift (US on =, Turkish on 4), Ctrl+Shift on that key arrives as Ctrl++, and where it
+// does not (German), as Ctrl+Shift++. - and 0 take no Shift on these layouts. Ctrl+= must stay
+// unbound: Ctrl+Shift+0 arrives as Ctrl+= on the Turkish layout.
+void MainWindow::initZoomActions() {
+  m_actionZoomIn = new QAction(tr("Zoom In"), this);
+  m_actionZoomIn->setShortcuts({QKeySequence{Qt::CTRL | Qt::SHIFT | Qt::Key_Plus},
+                                QKeySequence{Qt::CTRL | Qt::Key_Plus}});
+  m_actionZoomOut = new QAction(tr("Zoom Out"), this);
+  m_actionZoomOut->setShortcut(QKeySequence{Qt::CTRL | Qt::SHIFT | Qt::Key_Minus});
+  m_actionResetZoom = new QAction(tr("Reset Zoom"), this);
+  m_actionResetZoom->setShortcut(QKeySequence{Qt::CTRL | Qt::SHIFT | Qt::Key_0});
+
+  const auto route = [this](void (PageZoom::*zoom)()) {
+    return [this, zoom]() {
+      if (const auto pageZoom = currentPageZoom()) (pageZoom->*zoom)();
+    };
+  };
+  connect(m_actionZoomIn, &QAction::triggered, this, route(&PageZoom::zoomIn));
+  connect(m_actionZoomOut, &QAction::triggered, this, route(&PageZoom::zoomOut));
+  connect(m_actionResetZoom, &QAction::triggered, this, route(&PageZoom::resetZoom));
+
+  addActions({m_actionZoomIn, m_actionZoomOut, m_actionResetZoom});
+
+  // Ctrl and the mouse wheel, anywhere on the page. Seen before the views, which would scroll by
+  // pages or zoom on their own.
+  qApp->installEventFilter(this);
+}
+
+PageZoom* MainWindow::currentPageZoom() const {
+  const auto page = ui_->stackedWidget->currentWidget();
+  return page ? page->findChild<PageZoom*>() : nullptr;
+}
+
+bool MainWindow::eventFilter(QObject* watched, QEvent* event) {
+  if (event->type() == QEvent::Wheel) {
+    const auto wheelEvent = static_cast<QWheelEvent*>(event);
+    const auto widget = qobject_cast<QWidget*>(watched);
+    const auto page = ui_->stackedWidget->currentWidget();
+    if (wheelEvent->modifiers() == Qt::ControlModifier && widget && page &&
+        page->isAncestorOf(widget)) {
+      if (const auto pageZoom = currentPageZoom()) {
+        const auto delta = wheelEvent->angleDelta().y();
+        if (delta > 0) pageZoom->zoomIn();
+        if (delta < 0) pageZoom->zoomOut();
+        return true;
+      }
+    }
+  }
+  return QMainWindow::eventFilter(watched, event);
 }
 
 void MainWindow::initActions() {
@@ -310,6 +368,9 @@ void MainWindow::initNavigation() {
   }
 
   ui_->splitter->insertWidget(0, m_navigationWidget);
+  // The page takes up the extra width and is the first to give it back
+  ui_->splitter->setStretchFactor(0, 0);
+  ui_->splitter->setStretchFactor(1, 1);
 }
 
 void MainWindow::initNowPlaying() {
@@ -413,6 +474,10 @@ void MainWindow::switchSearchText(MainWindowPage from, MainWindowPage to) {
     case MainWindowPage::Seasons:
       placeholder = tr("Filter list");
       break;
+    // v1 searches the service from the pages that have nothing to filter
+    case MainWindowPage::Home:
+    case MainWindowPage::History:
+    case MainWindowPage::Profile:
     case MainWindowPage::Search:
       placeholder = tr("Search %1 for anime").arg(service);
       break;
@@ -434,50 +499,52 @@ void MainWindow::initPage(MainWindowPage page) {
 
   if (initializedPages.contains(page)) return;
 
-  static const auto init_page = [](QWidget* page, QWidget* widget) {
+  // Every page zooms on its own; `name` keeps its level in the settings
+  static const auto init_page = [](QWidget* page, QWidget* widget, const QString& name) {
     const auto layout = new QHBoxLayout(page);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(widget);
+    new PageZoom(widget, name);
   };
 
   switch (page) {
     case MainWindowPage::Home:
-      init_page(ui_->homePage, new NowPlayingPage(ui_->homePage));
+      init_page(ui_->homePage, new NowPlayingPage(ui_->homePage), u"nowPlaying"_s);
       break;
 
     case MainWindowPage::Search:
       m_searchWidget = new SearchWidget(ui_->searchPage);
-      init_page(ui_->searchPage, m_searchWidget);
+      init_page(ui_->searchPage, m_searchWidget, u"search"_s);
       break;
 
     case MainWindowPage::List:
       m_listWidget = new ListWidget(ui_->listPage);
-      init_page(ui_->listPage, m_listWidget);
+      init_page(ui_->listPage, m_listWidget, u"list"_s);
       break;
 
     case MainWindowPage::History:
       m_historyWidget = new HistoryWidget(ui_->historyPage);
-      init_page(ui_->historyPage, m_historyWidget);
+      init_page(ui_->historyPage, m_historyWidget, u"history"_s);
       break;
 
     case MainWindowPage::Library:
       m_libraryWidget = new LibraryWidget(ui_->libraryPage);
-      init_page(ui_->libraryPage, m_libraryWidget);
+      init_page(ui_->libraryPage, m_libraryWidget, u"library"_s);
       break;
 
     case MainWindowPage::Seasons:
       m_seasonsWidget = new SeasonsWidget(ui_->seasonsPage);
-      init_page(ui_->seasonsPage, m_seasonsWidget);
+      init_page(ui_->seasonsPage, m_seasonsWidget, u"seasons"_s);
       break;
 
     case MainWindowPage::Torrents:
       m_torrentsWidget = new TorrentsWidget(ui_->torrentsPage);
-      init_page(ui_->torrentsPage, m_torrentsWidget);
+      init_page(ui_->torrentsPage, m_torrentsWidget, u"torrents"_s);
       break;
 
     case MainWindowPage::Profile:
       m_profileWidget = new ProfileWidget(ui_->profilePage);
-      init_page(ui_->profilePage, m_profileWidget);
+      init_page(ui_->profilePage, m_profileWidget, u"statistics"_s);
       break;
   }
 
@@ -856,6 +923,12 @@ void MainWindow::initViewMenu() {
   ui_->menuView->addAction(ui_->actionForward);
   ui_->menuView->addSeparator();
 
+  // Listed while the page can zoom. They stay enabled, so that their shortcuts keep working.
+  if (currentPageZoom()) {
+    ui_->menuView->addActions({m_actionZoomIn, m_actionZoomOut, m_actionResetZoom});
+    ui_->menuView->addSeparator();
+  }
+
   const auto action = ui_->menuView->addAction(tr("Show sidebar"), this, [this](bool checked) {
     m_navigationWidget->setVisible(checked);
     akyuu::settings.setSidebarVisible(checked);
@@ -906,6 +979,21 @@ void MainWindow::initToolbar() {
     m_searchBox->setClearButtonEnabled(true);
     m_searchBox->setFixedWidth(320);
     m_searchBox->setPlaceholderText(tr("Search"));
+
+    // The search page runs the search itself; the other pages that search the service hand the
+    // text over to it, as in v1.
+    connect(m_searchBox, &QLineEdit::returnPressed, this, [this]() {
+      const auto page = static_cast<MainWindowPage>(ui_->stackedWidget->currentIndex());
+      if (page != MainWindowPage::Home && page != MainWindowPage::History &&
+          page != MainWindowPage::Profile) {
+        return;
+      }
+      const auto text = m_searchBox->text();
+      if (text.trimmed().isEmpty()) return;
+      navigateTo(MainWindowPage::Search);
+      m_searchBox->setText(text);
+      emit m_searchBox->returnPressed();
+    });
 
     const auto before = ui_->actionSettings;
     const auto insertSpacer = [this](QAction* before) {

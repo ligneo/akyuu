@@ -23,6 +23,7 @@
 #include <QPainter>
 
 #include "gui/models/anime_list_model.hpp"
+#include "gui/utils/page_zoom.hpp"
 #include "gui/utils/painter_state_saver.hpp"
 #include "gui/utils/painters.hpp"
 #include "gui/utils/rating.hpp"
@@ -34,6 +35,8 @@ namespace gui {
 
 namespace {
 
+// At 100%; both grow with the zoom of the page, see `zoomed`
+constexpr int kRowHeight = 24;
 // The height of the band drawn above the first item of a group.
 constexpr int kGroupHeaderHeight = 28;
 
@@ -54,7 +57,7 @@ void paintGroupHeader(QPainter* painter, const QStyleOptionViewItem& option,
   const PainterStateSaver painterStateSaver(painter);
 
   QRect rect = option.rect;
-  rect.setHeight(kGroupHeaderHeight);
+  rect.setHeight(zoomed(kGroupHeaderHeight, option.widget));
 
   painter->setPen(Qt::NoPen);
   painter->setBrush(theme.isDark() ? QColor{255, 255, 255, 12} : QColor{0, 0, 0, 12});
@@ -114,7 +117,7 @@ void ListItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
   // group header; what is left is painted as an ordinary item.
   if (startsGroup(index)) {
     paintGroupHeader(painter, opt, index);
-    opt.rect.adjust(0, kGroupHeaderHeight, 0, 0);
+    opt.rect.adjust(0, zoomed(kGroupHeaderHeight, option.widget), 0, 0);
   }
 
   // Grid lines
@@ -145,7 +148,8 @@ void ListItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
 QSize ListItemDelegate::sizeHint(const QStyleOptionViewItem& option,
                                  const QModelIndex& index) const {
   if (index.isValid()) {
-    return QSize(0, startsGroup(index) ? 24 + kGroupHeaderHeight : 24);
+    const auto height = startsGroup(index) ? kRowHeight + kGroupHeaderHeight : kRowHeight;
+    return QSize(0, zoomed(height, option.widget));
   }
 
   return QStyledItemDelegate::sizeHint(option, index);

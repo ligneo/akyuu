@@ -23,6 +23,7 @@
 #include <QGridLayout>
 #include <QGroupBox>
 #include <QLocale>
+#include <QScrollArea>
 #include <QTimer>
 #include <QVBoxLayout>
 #include <algorithm>
@@ -35,12 +36,44 @@
 #include "base/string.hpp"
 #include "gui/utils/format.hpp"
 #include "gui/utils/image_provider.hpp"
+#include "gui/utils/page_zoom.hpp"
 #include "media/anime_db.hpp"
 #include "media/anime_list.hpp"
 
 namespace gui {
 
 using namespace Qt::StringLiterals;
+
+namespace {
+
+constexpr int kBarHeight = 16;
+// In percent of the zoom, as far as the page shrinks before it scrolls
+constexpr int kFitMin = 80;
+constexpr int kFitStep = 5;
+
+// The bars are not text, so they take their height from the font and grow with the zoom
+class ScoreBar final : public QProgressBar {
+public:
+  using QProgressBar::QProgressBar;
+
+  QSize sizeHint() const override {
+    return {QProgressBar::sizeHint().width(), zoomed(kBarHeight, this)};
+  }
+  QSize minimumSizeHint() const override {
+    return sizeHint();
+  }
+};
+
+// Some styles (e.g. Adwaita) align the labels of a form to the right, but the statistics read as
+// a table
+QFormLayout* createForm(QWidget* parent) {
+  const auto form = new QFormLayout(parent);
+  form->setLabelAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+  form->setFormAlignment(Qt::AlignLeft | Qt::AlignTop);
+  return form;
+}
+
+}  // namespace
 
 ProfileWidget::ProfileWidget(QWidget* parent) : PageWidget(parent) {
   const auto container = new QWidget(this);
@@ -50,7 +83,7 @@ ProfileWidget::ProfileWidget(QWidget* parent) : PageWidget(parent) {
   // Anime list
   {
     const auto group = new QGroupBox(tr("Anime list"), container);
-    const auto form = new QFormLayout(group);
+    const auto form = createForm(group);
 
     const auto add_row = [this, form](const QString& text) {
       const auto label = new QLabel("-", form->parentWidget());
@@ -81,9 +114,9 @@ ProfileWidget::ProfileWidget(QWidget* parent) : PageWidget(parent) {
       const auto label = new QLabel(QString::number(score), group);
       label->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
 
-      const auto bar = new QProgressBar(group);
+      const auto bar = new ScoreBar(group);
       bar->setTextVisible(false);
-      bar->setFixedHeight(16);
+      bar->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
       const auto count = new QLabel("0", group);
 
@@ -102,7 +135,7 @@ ProfileWidget::ProfileWidget(QWidget* parent) : PageWidget(parent) {
   // v1's `dlg_stats.cpp:220`: what the local database and the caches next to it hold.
   {
     const auto group = new QGroupBox(tr("Local database"), container);
-    const auto form = new QFormLayout(group);
+    const auto form = createForm(group);
 
     m_animeItems = new QLabel("-", group);
     m_imageFiles = new QLabel("-", group);
@@ -120,7 +153,7 @@ ProfileWidget::ProfileWidget(QWidget* parent) : PageWidget(parent) {
   // v2 keeps track of yet.
   {
     const auto group = new QGroupBox(tr("Akyuu"), container);
-    const auto form = new QFormLayout(group);
+    const auto form = createForm(group);
 
     m_uptime = new QLabel("-", group);
     m_owlsWoken = new QLabel("-", group);
@@ -139,7 +172,20 @@ ProfileWidget::ProfileWidget(QWidget* parent) : PageWidget(parent) {
   connect(m_refreshTimer, &QTimer::timeout, this, &ProfileWidget::refresh);
 
   containerLayout->addStretch();
-  layout()->addWidget(container);
+
+  // The page shrinks to fit a small window, see `fitToWindow`, and scrolls below that instead of
+  // squeezing the groups
+  const auto scrollArea = new QScrollArea(this);
+  m_container = container;
+  m_scrollArea = scrollArea;
+  scrollArea->setFrameShape(QFrame::NoFrame);
+  scrollArea->setWidgetResizable(true);
+  // Themes give the scroll areas of pages the background of a list, which this page is not
+  scrollArea->setStyleSheet(u"QScrollArea { background: transparent; }"_s);
+  scrollArea->setWidget(container);
+  // `setWidget` fills the background of the container, which the window already paints
+  container->setAutoFillBackground(false);
+  layout()->addWidget(scrollArea);
 
   m_toolbar->hide();
 }
@@ -189,6 +235,21 @@ void ProfileWidget::refreshLocalDatabase() {
       describeFolder(u"%1/torrents"_s.arg(QString::fromStdString(akyuu::get_data_path()))));
 }
 
+// The zoom sets the size, and the page shrinks from there until it fits the window
+void ProfileWidget::fitToWindow() {
+  // The main window gives the page its zoom once the page is built
+  const auto zoom = PageZoom::of(this);
+  if (!zoom) return;
+  connect(zoom, &PageZoom::changed, this, &ProfileWidget::fitToWindow, Qt::UniqueConnection);
+
+  const auto available = m_scrollArea->viewport()->height();
+  for (auto fit = 100; fit > kFitMin; fit -= kFitStep) {
+    zoom->setFit(fit);
+    if (m_container->sizeHint().height() <= available) return;
+  }
+  zoom->setFit(kFitMin);
+}
+
 void ProfileWidget::hideEvent(QHideEvent* event) {
   m_refreshTimer->stop();
   PageWidget::hideEvent(event);
@@ -199,6 +260,12 @@ void ProfileWidget::showEvent(QShowEvent* event) {
   refreshLocalDatabase();
   m_refreshTimer->start();
   PageWidget::showEvent(event);
+  fitToWindow();
+}
+
+void ProfileWidget::resizeEvent(QResizeEvent* event) {
+  PageWidget::resizeEvent(event);
+  fitToWindow();
 }
 
 }  // namespace gui

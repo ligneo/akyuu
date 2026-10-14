@@ -28,6 +28,7 @@
 #include "base/string.hpp"
 #include "gui/models/anime_list_model.hpp"
 #include "gui/utils/format.hpp"
+#include "gui/utils/page_zoom.hpp"
 #include "gui/utils/painter_state_saver.hpp"
 #include "gui/utils/painters.hpp"
 #include "gui/utils/theme.hpp"
@@ -35,6 +36,7 @@
 
 namespace gui {
 
+// Sizes are at 100%, and grow with the zoom of the page, see `zoomed`
 constexpr int itemHeight = 210;
 constexpr int posterWidth = itemHeight * 2 / 3;
 constexpr int kSpinnerSize = 24;
@@ -50,6 +52,8 @@ void ListItemDelegateCards::paint(QPainter* painter, const QStyleOptionViewItem&
   const PainterStateSaver painterStateSaver(painter);
 
   const auto font = painter->font();
+  const auto scale = zoomScale(option.widget);
+  const auto px = [scale](const int size) { return qRound(size * scale); };
 
   const auto item =
       index.data(static_cast<int>(AnimeListItemDataRole::Anime)).value<const Anime*>();
@@ -75,7 +79,7 @@ void ListItemDelegateCards::paint(QPainter* painter, const QStyleOptionViewItem&
   // Poster
   {
     QRect posterRect = rect;
-    posterRect.setWidth(posterWidth);
+    posterRect.setWidth(px(posterWidth));
 
     if (theme.isDark()) {
       painter->fillRect(posterRect, opt.palette.dark());
@@ -119,24 +123,24 @@ void ListItemDelegateCards::paint(QPainter* painter, const QStyleOptionViewItem&
   if (entry) {
     auto progressOptions = opt;
     progressOptions.rect = rect;
-    progressOptions.rect.setWidth(posterWidth);
-    progressOptions.rect.setTop(progressOptions.rect.bottom() - 28);
+    progressOptions.rect.setWidth(px(posterWidth));
+    progressOptions.rect.setTop(progressOptions.rect.bottom() - px(28));
     progressOptions.rect.adjust(4, 4, -4, -4);
     paintProgressBar(painter, progressOptions, item, entry);
   }
 
-  rect.adjust(posterWidth, 0, 0, 0);
+  rect.adjust(px(posterWidth), 0, 0, 0);
 
   // Title
   {
     QRect titleRect = rect;
-    titleRect.setHeight(32);
+    titleRect.setHeight(px(32));
 
     painter->fillRect(titleRect, opt.palette.dark());
-    titleRect.adjust(12, 0, -12, 0);
+    titleRect.adjust(px(12), 0, -px(12), 0);
 
     auto titleFont = font;
-    titleFont.setPointSize(10);
+    titleFont.setPointSizeF(10 * scale);
     titleFont.setWeight(QFont::Weight::DemiBold);
     painter->setFont(titleFont);
 
@@ -146,13 +150,13 @@ void ListItemDelegateCards::paint(QPainter* painter, const QStyleOptionViewItem&
 
     painter->drawText(titleRect, Qt::AlignVCenter | Qt::TextSingleLine, elidedTitle);
 
-    rect.adjust(12, 32 + 8, -12, -12);
+    rect.adjust(px(12), px(32 + 8), -px(12), -px(12));
   }
 
   // Details, one labelled row each as in v1's season tiles
   {
     auto detailsFont = font;
-    detailsFont.setPointSize(9);
+    detailsFont.setPointSizeF(9 * scale);
     painter->setFont(detailsFont);
     const QFontMetrics metrics(painter->font());
 
@@ -173,7 +177,7 @@ void ListItemDelegateCards::paint(QPainter* painter, const QStyleOptionViewItem&
     for (const auto& row : rows) {
       labelWidth = std::max(labelWidth, metrics.horizontalAdvance(row.first));
     }
-    labelWidth += 8;
+    labelWidth += px(8);
 
     QRect rowRect = rect;
     rowRect.setHeight(metrics.height());
@@ -190,7 +194,7 @@ void ListItemDelegateCards::paint(QPainter* painter, const QStyleOptionViewItem&
       rowRect.translate(0, metrics.height());
     }
 
-    rect.adjust(0, (metrics.height() * rows.size()) + 6, 0, 0);
+    rect.adjust(0, (metrics.height() * rows.size()) + px(6), 0, 0);
   }
 
   // Synopsis
@@ -203,7 +207,7 @@ void ListItemDelegateCards::paint(QPainter* painter, const QStyleOptionViewItem&
     painter->setPen(opt.palette.placeholderText().color());
 
     auto synopsisFont = painter->font();
-    synopsisFont.setPointSize(8);
+    synopsisFont.setPointSizeF(8 * scale);
     painter->setFont(synopsisFont);
     const QFontMetrics metrics(painter->font());
 
@@ -258,13 +262,14 @@ QSize ListItemDelegateCards::itemSize() const {
 
   const auto parent = reinterpret_cast<QListView*>(this->parent());
   const int spacing = parent->spacing();
+  const auto scale = zoomScale(parent);
 
   const int availableWidth =
       parent->geometry().width() - ((2 * spacing) + parent->verticalScrollBar()->width());
 
   const int columns = [&]() {
     for (int i = maxColumns; i >= 1; --i) {
-      if (availableWidth - (i * spacing) > i * maxItemWidth) return i;
+      if (availableWidth - (i * spacing) > i * maxItemWidth * scale) return i;
     }
     return 1;
   }();
@@ -272,7 +277,7 @@ QSize ListItemDelegateCards::itemSize() const {
   const int columnsWidth = availableWidth - (columns * spacing);
   const float itemWidth = columnsWidth / static_cast<float>(columns);
 
-  return QSize(std::floor(itemWidth), itemHeight);
+  return QSize(std::floor(itemWidth), qRound(itemHeight * scale));
 }
 
 }  // namespace gui

@@ -1,6 +1,7 @@
 /**
  * Akyuu
  * Copyright (C) 2010-2024, Eren Okka
+ * Copyright (C) 2026, cenky <cenkkgl@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +19,7 @@
 
 #include "svg_icon_engine.hpp"
 
-#include <QGuiApplication>
+#include <QApplication>
 #include <QPainter>
 #include <QPalette>
 
@@ -54,7 +55,11 @@ QPixmap SvgIconEngine::scaledPixmap(const QSize& size, QIcon::Mode mode, QIcon::
                                     qreal scale) {
   const quint64 cacheKey = (static_cast<quint64>(mode) << 32) | state;
 
-  if (cacheKey != m_cacheKey || m_pixmap.size() != size || m_pixmap.devicePixelRatio() != scale) {
+  // The color comes from the palette, so a new theme needs new pixmaps
+  const qint64 paletteKey = QApplication::palette().cacheKey();
+
+  if (cacheKey != m_cacheKey || paletteKey != m_paletteKey || m_pixmap.size() != size ||
+      m_pixmap.devicePixelRatio() != scale) {
     const QRect rect({0, 0}, size);
 
     const QColor color = [mode]() {
@@ -68,11 +73,16 @@ QPixmap SvgIconEngine::scaledPixmap(const QSize& size, QIcon::Mode mode, QIcon::
         case QIcon::Active:
           return palette.color(QPalette::Active, QPalette::Text);
         case QIcon::Selected:
-          return palette.color(QPalette::Active, QPalette::HighlightedText);
+          // Our style sheets tint selected items rather than filling them with the highlight, so
+          // the text color is what stays readable on them
+          return palette.color(QPalette::Active, qApp->styleSheet().isEmpty()
+                                                     ? QPalette::HighlightedText
+                                                     : QPalette::Text);
       }
     }();
 
     m_cacheKey = cacheKey;
+    m_paletteKey = paletteKey;
     m_pixmap = QPixmap(size * scale);
     m_pixmap.fill(Qt::transparent);
     m_pixmap.setDevicePixelRatio(scale);

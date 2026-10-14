@@ -36,6 +36,7 @@
 #include "gui/models/anime_list_model.hpp"
 #include "gui/utils/format.hpp"
 #include "gui/utils/image_provider.hpp"
+#include "gui/utils/page_zoom.hpp"
 #include "media/anime_db.hpp"
 #include "media/anime_history.hpp"
 #include "media/anime_list_utils.hpp"
@@ -85,7 +86,6 @@ NowPlayingPage::NowPlayingPage(QWidget* parent)
   layout->setContentsMargins(16, 16, 16, 16);
   layout->setSpacing(16);
 
-  m_poster->setFixedSize(200, 285);
   m_poster->setCornerRadius(4);
   layout->addWidget(m_poster, 0, Qt::AlignTop);
 
@@ -93,6 +93,8 @@ NowPlayingPage::NowPlayingPage(QWidget* parent)
   m_browser->setOpenLinks(false);
   m_browser->viewport()->setAutoFillBackground(false);
   layout->addWidget(m_browser, 1);
+
+  resizePoster();
 
   connect(m_browser, &QTextBrowser::anchorClicked, this, &NowPlayingPage::openLink);
   connect(m_poster, &PosterWidget::clicked, this, [this]() {
@@ -107,6 +109,16 @@ NowPlayingPage::NowPlayingPage(QWidget* parent)
   connect(&imageProvider, &ImageProvider::posterChanged, this, [this](const int id) {
     if (id == m_animeId) refresh();
   });
+}
+
+// The poster grows with the text when the page is zoomed
+void NowPlayingPage::changeEvent(QEvent* event) {
+  if (event->type() == QEvent::FontChange) resizePoster();
+  QWidget::changeEvent(event);
+}
+
+void NowPlayingPage::resizePoster() {
+  m_poster->setFixedSize(zoomed(200, this), zoomed(285, this));
 }
 
 void NowPlayingPage::showEvent(QShowEvent* event) {
