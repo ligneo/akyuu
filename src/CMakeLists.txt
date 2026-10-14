@@ -294,7 +294,9 @@ if (AKYUU_BUILD_TESTS AND BUILD_TESTING)
 		RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests
 	)
 	target_include_directories(akyuu-media-candidates-tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-	target_link_libraries(akyuu-media-candidates-tests PRIVATE anisthesia)
+	# Anisthesia leaves its Windows sources to the program that uses them, so the test needs the
+	# same definitions as Akyuu (UNICODE and the rest)
+	target_link_libraries(akyuu-media-candidates-tests PRIVATE anisthesia akyuu-config)
 	add_test(NAME media-candidates COMMAND akyuu-media-candidates-tests)
 	add_executable(akyuu-update-service-tests
 		${CMAKE_SOURCE_DIR}/tests/update_service.cpp
