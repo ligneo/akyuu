@@ -151,6 +151,7 @@ void MainWindow::init() {
     checkForUpdates(true);
     track::recognition::updateRelations();
   }
+
 }
 
 void MainWindow::initShortcuts() {
@@ -189,18 +190,21 @@ void MainWindow::initShareMenu() {
   });
 }
 
-// Ctrl and Shift, because Ctrl alone with +, - and the digits edits the list, as in v1. What
-// arrives with Shift held depends on the keyboard layout, so both forms of each key are bound.
+// Ctrl and Shift, because Ctrl alone with +, - and the digits edits the list, as in v1.
+//
+// Qt matches a shortcut both by the key as it is without Shift, with Shift among the modifiers,
+// and by what Shift types on it, without Shift (`QXkbCommon::possibleKeyCombinations`). So where
+// + takes Shift (US on =, Turkish on 4), Ctrl+Shift on that key arrives as Ctrl++, and where it
+// does not (German), as Ctrl+Shift++. - and 0 take no Shift on these layouts. Ctrl+= must stay
+// unbound: Ctrl+Shift+0 arrives as Ctrl+= on the Turkish layout.
 void MainWindow::initZoomActions() {
   m_actionZoomIn = new QAction(tr("Zoom In"), this);
-  m_actionZoomIn->setShortcuts({QKeySequence{Qt::CTRL | Qt::SHIFT | Qt::Key_Equal},
-                                QKeySequence{Qt::CTRL | Qt::SHIFT | Qt::Key_Plus}});
+  m_actionZoomIn->setShortcuts({QKeySequence{Qt::CTRL | Qt::SHIFT | Qt::Key_Plus},
+                                QKeySequence{Qt::CTRL | Qt::Key_Plus}});
   m_actionZoomOut = new QAction(tr("Zoom Out"), this);
-  m_actionZoomOut->setShortcuts({QKeySequence{Qt::CTRL | Qt::SHIFT | Qt::Key_Minus},
-                                 QKeySequence{Qt::CTRL | Qt::SHIFT | Qt::Key_Underscore}});
+  m_actionZoomOut->setShortcut(QKeySequence{Qt::CTRL | Qt::SHIFT | Qt::Key_Minus});
   m_actionResetZoom = new QAction(tr("Reset Zoom"), this);
-  m_actionResetZoom->setShortcuts({QKeySequence{Qt::CTRL | Qt::SHIFT | Qt::Key_0},
-                                   QKeySequence{Qt::CTRL | Qt::SHIFT | Qt::Key_ParenRight}});
+  m_actionResetZoom->setShortcut(QKeySequence{Qt::CTRL | Qt::SHIFT | Qt::Key_0});
 
   const auto route = [this](void (PageZoom::*zoom)()) {
     return [this, zoom]() {

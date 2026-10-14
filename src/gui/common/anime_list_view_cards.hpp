@@ -1,6 +1,7 @@
 /**
  * Akyuu
  * Copyright (C) 2010-2026, Eren Okka
+ * Copyright (C) 2026, cenky <cenkkgl@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,6 +43,7 @@ public:
   }
 
 protected:
+  bool event(QEvent* event) override;
   void keyPressEvent(QKeyEvent* event) override;
   void mousePressEvent(QMouseEvent* event) override;
   void paintEvent(QPaintEvent* event) override;

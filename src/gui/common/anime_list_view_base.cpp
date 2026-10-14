@@ -196,6 +196,10 @@ bool ListViewBase::handleKeyPress(const QKeyEvent* event) {
   return false;
 }
 
+bool ListViewBase::keepsShortcut(const QKeyEvent* event) {
+  return event->modifiers() == Qt::ControlModifier && event->key() == Qt::Key_Plus;
+}
+
 // v1's `IncrementEpisode` and `DecrementEpisode`, for the item that has the focus
 void ListViewBase::changeEpisode(const QModelIndex& index, const int step) {
   if (!index.isValid() || m_context != AnimeListContext::List) return;

@@ -51,6 +51,9 @@ public:
   }
 
   bool handleKeyPress(const QKeyEvent* event);
+  // Ctrl++ zooms the page, but on layouts that type + without Shift (German) it is v1's key for
+  // the next episode, which the list keeps
+  static bool keepsShortcut(const QKeyEvent* event);
 
 public slots:
   void filterByText(const QString& text);

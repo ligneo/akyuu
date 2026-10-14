@@ -137,6 +137,15 @@ ListView::ListView(QWidget* parent, AnimeListModel* model, AnimeListProxyModel* 
           qOverload<const QModelIndex&>(&QAbstractItemView::edit));
 }
 
+bool ListView::event(QEvent* event) {
+  if (event->type() == QEvent::ShortcutOverride &&
+      ListViewBase::keepsShortcut(static_cast<QKeyEvent*>(event))) {
+    event->accept();
+    return true;
+  }
+  return QTreeView::event(event);
+}
+
 void ListView::keyPressEvent(QKeyEvent* event) {
   if (m_base->handleKeyPress(event)) return;
 
