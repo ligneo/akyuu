@@ -40,9 +40,11 @@ public slots:
   void refresh();
 
 protected:
+  void changeEvent(QEvent* event) override;
   void showEvent(QShowEvent* event) override;
 
 private:
+  void resizePoster();
   QString playingHtml() const;
   QString idleHtml() const;
   void openLink(const QUrl& url);

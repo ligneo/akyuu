@@ -29,7 +29,6 @@
 #include <optional>
 
 #include "base/string.hpp"
-#include "gui/common/page_widget.hpp"
 #include "gui/common/spinner_widget.hpp"
 #include "gui/history/history_widget.hpp"
 #include "gui/library/library_widget.hpp"
@@ -47,6 +46,7 @@
 #include "gui/settings/settings_dialog.hpp"
 #include "gui/torrents/torrents_widget.hpp"
 #include "gui/utils/format.hpp"
+#include "gui/utils/page_zoom.hpp"
 #include "gui/utils/theme.hpp"
 #include "gui/utils/tray_icon.hpp"
 #include "gui/utils/widgets.hpp"
@@ -202,21 +202,43 @@ void MainWindow::initZoomActions() {
   m_actionResetZoom->setShortcuts({QKeySequence{Qt::CTRL | Qt::SHIFT | Qt::Key_0},
                                    QKeySequence{Qt::CTRL | Qt::SHIFT | Qt::Key_ParenRight}});
 
-  const auto route = [this](void (PageWidget::*zoom)()) {
+  const auto route = [this](void (PageZoom::*zoom)()) {
     return [this, zoom]() {
-      if (const auto page = currentPageWidget(); page && page->canZoom()) (page->*zoom)();
+      if (const auto pageZoom = currentPageZoom()) (pageZoom->*zoom)();
     };
   };
-  connect(m_actionZoomIn, &QAction::triggered, this, route(&PageWidget::zoomIn));
-  connect(m_actionZoomOut, &QAction::triggered, this, route(&PageWidget::zoomOut));
-  connect(m_actionResetZoom, &QAction::triggered, this, route(&PageWidget::resetZoom));
+  connect(m_actionZoomIn, &QAction::triggered, this, route(&PageZoom::zoomIn));
+  connect(m_actionZoomOut, &QAction::triggered, this, route(&PageZoom::zoomOut));
+  connect(m_actionResetZoom, &QAction::triggered, this, route(&PageZoom::resetZoom));
 
   addActions({m_actionZoomIn, m_actionZoomOut, m_actionResetZoom});
+
+  // Ctrl and the mouse wheel, anywhere on the page. Seen before the views, which would scroll by
+  // pages or zoom on their own.
+  qApp->installEventFilter(this);
 }
 
-PageWidget* MainWindow::currentPageWidget() const {
+PageZoom* MainWindow::currentPageZoom() const {
   const auto page = ui_->stackedWidget->currentWidget();
-  return page ? page->findChild<PageWidget*>(Qt::FindDirectChildrenOnly) : nullptr;
+  return page ? page->findChild<PageZoom*>() : nullptr;
+}
+
+bool MainWindow::eventFilter(QObject* watched, QEvent* event) {
+  if (event->type() == QEvent::Wheel) {
+    const auto wheelEvent = static_cast<QWheelEvent*>(event);
+    const auto widget = qobject_cast<QWidget*>(watched);
+    const auto page = ui_->stackedWidget->currentWidget();
+    if (wheelEvent->modifiers() == Qt::ControlModifier && widget && page &&
+        page->isAncestorOf(widget)) {
+      if (const auto pageZoom = currentPageZoom()) {
+        const auto delta = wheelEvent->angleDelta().y();
+        if (delta > 0) pageZoom->zoomIn();
+        if (delta < 0) pageZoom->zoomOut();
+        return true;
+      }
+    }
+  }
+  return QMainWindow::eventFilter(watched, event);
 }
 
 void MainWindow::initActions() {
@@ -473,50 +495,52 @@ void MainWindow::initPage(MainWindowPage page) {
 
   if (initializedPages.contains(page)) return;
 
-  static const auto init_page = [](QWidget* page, QWidget* widget) {
+  // Every page zooms on its own; `name` keeps its level in the settings
+  static const auto init_page = [](QWidget* page, QWidget* widget, const QString& name) {
     const auto layout = new QHBoxLayout(page);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(widget);
+    new PageZoom(widget, name);
   };
 
   switch (page) {
     case MainWindowPage::Home:
-      init_page(ui_->homePage, new NowPlayingPage(ui_->homePage));
+      init_page(ui_->homePage, new NowPlayingPage(ui_->homePage), u"nowPlaying"_s);
       break;
 
     case MainWindowPage::Search:
       m_searchWidget = new SearchWidget(ui_->searchPage);
-      init_page(ui_->searchPage, m_searchWidget);
+      init_page(ui_->searchPage, m_searchWidget, u"search"_s);
       break;
 
     case MainWindowPage::List:
       m_listWidget = new ListWidget(ui_->listPage);
-      init_page(ui_->listPage, m_listWidget);
+      init_page(ui_->listPage, m_listWidget, u"list"_s);
       break;
 
     case MainWindowPage::History:
       m_historyWidget = new HistoryWidget(ui_->historyPage);
-      init_page(ui_->historyPage, m_historyWidget);
+      init_page(ui_->historyPage, m_historyWidget, u"history"_s);
       break;
 
     case MainWindowPage::Library:
       m_libraryWidget = new LibraryWidget(ui_->libraryPage);
-      init_page(ui_->libraryPage, m_libraryWidget);
+      init_page(ui_->libraryPage, m_libraryWidget, u"library"_s);
       break;
 
     case MainWindowPage::Seasons:
       m_seasonsWidget = new SeasonsWidget(ui_->seasonsPage);
-      init_page(ui_->seasonsPage, m_seasonsWidget);
+      init_page(ui_->seasonsPage, m_seasonsWidget, u"seasons"_s);
       break;
 
     case MainWindowPage::Torrents:
       m_torrentsWidget = new TorrentsWidget(ui_->torrentsPage);
-      init_page(ui_->torrentsPage, m_torrentsWidget);
+      init_page(ui_->torrentsPage, m_torrentsWidget, u"torrents"_s);
       break;
 
     case MainWindowPage::Profile:
       m_profileWidget = new ProfileWidget(ui_->profilePage);
-      init_page(ui_->profilePage, m_profileWidget);
+      init_page(ui_->profilePage, m_profileWidget, u"statistics"_s);
       break;
   }
 
@@ -896,7 +920,7 @@ void MainWindow::initViewMenu() {
   ui_->menuView->addSeparator();
 
   // Listed while the page can zoom. They stay enabled, so that their shortcuts keep working.
-  if (const auto page = currentPageWidget(); page && page->canZoom()) {
+  if (currentPageZoom()) {
     ui_->menuView->addActions({m_actionZoomIn, m_actionZoomOut, m_actionResetZoom});
     ui_->menuView->addSeparator();
   }

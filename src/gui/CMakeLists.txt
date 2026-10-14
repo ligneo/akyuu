@@ -132,6 +132,8 @@ target_sources(akyuu-gui PRIVATE
 	utils/format.hpp
 	utils/image_provider.cpp
 	utils/image_provider.hpp
+	utils/page_zoom.cpp
+	utils/page_zoom.hpp
 	utils/painter_state_saver.hpp
 	utils/painters.cpp
 	utils/painters.hpp

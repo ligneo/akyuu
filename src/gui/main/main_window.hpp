@@ -49,7 +49,7 @@ class LibraryWidget;
 class ListWidget;
 class NavigationWidget;
 class NowPlayingWidget;
-class PageWidget;
+class PageZoom;
 class ProfileWidget;
 class SearchWidget;
 class SeasonsWidget;
@@ -105,11 +105,12 @@ private slots:
 protected:
   void changeEvent(QEvent* event) override;
   void closeEvent(QCloseEvent* event) override;
+  bool eventFilter(QObject* watched, QEvent* event) override;
 
 private:
   void initActions();
   void initZoomActions();
-  PageWidget* currentPageWidget() const;
+  PageZoom* currentPageZoom() const;
   void saveSession();
   void initShortcuts();
   void initShareMenu();

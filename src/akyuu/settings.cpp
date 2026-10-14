@@ -137,9 +137,9 @@ bool Settings::sidebarVisible() const {
   return value("app.sidebarVisible", true).toBool();
 }
 
-// In percent, as the zoom of the statistics page
-int Settings::statisticsZoom() const {
-  return value("statistics.zoom", 100).toInt();
+// In percent, for each page on its own. `statistics.zoom` was the first of them.
+int Settings::pageZoom(const QString& page) const {
+  return value(u"%1.zoom"_s.arg(page), 100).toInt();
 }
 
 // v1's `program/list/progress/showaired` and `showavailable`, both on by default there.
@@ -675,8 +675,8 @@ void Settings::setSidebarVisible(const bool visible) const {
   setValue("app.sidebarVisible", visible);
 }
 
-void Settings::setStatisticsZoom(const int zoom) const {
-  setValue("statistics.zoom", zoom);
+void Settings::setPageZoom(const QString& page, const int zoom) const {
+  setValue(u"%1.zoom"_s.arg(page), zoom);
 }
 
 void Settings::setAppAutoStart(const bool enabled) const {

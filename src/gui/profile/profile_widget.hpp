@@ -39,28 +39,16 @@ public:
   void refresh();
   void refreshLocalDatabase();
 
-  bool canZoom() const override {
-    return true;
-  }
-  void zoomIn() override;
-  void zoomOut() override;
-  void resetZoom() override;
-
 protected:
-  bool eventFilter(QObject* watched, QEvent* event) override;
   void hideEvent(QHideEvent* event) override;
   void resizeEvent(QResizeEvent* event) override;
   void showEvent(QShowEvent* event) override;
 
 private:
-  void applyScale(double scale);
-  void setZoom(int zoom);
-  void updateScale();
+  void fitToWindow();
 
   QWidget* m_container = nullptr;
   QScrollArea* m_scrollArea = nullptr;
-  QFont m_baseFont;
-  int m_zoom = 100;
 
   QLabel* m_animeCount = nullptr;
   QLabel* m_episodeCount = nullptr;
