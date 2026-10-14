@@ -142,10 +142,6 @@ int Settings::statisticsZoom() const {
   return value("statistics.zoom", 100).toInt();
 }
 
-bool Settings::statisticsFitToWindow() const {
-  return value("statistics.fitToWindow", false).toBool();
-}
-
 // v1's `program/list/progress/showaired` and `showavailable`, both on by default there.
 // v1's `anime/folders/watch/enabled`, on by default there as well.
 // v1's `program/general/autostart`, `close`, `minimize` and `program/startup/minimize`.
@@ -681,10 +677,6 @@ void Settings::setSidebarVisible(const bool visible) const {
 
 void Settings::setStatisticsZoom(const int zoom) const {
   setValue("statistics.zoom", zoom);
-}
-
-void Settings::setStatisticsFitToWindow(const bool enabled) const {
-  setValue("statistics.fitToWindow", enabled);
 }
 
 void Settings::setAppAutoStart(const bool enabled) const {

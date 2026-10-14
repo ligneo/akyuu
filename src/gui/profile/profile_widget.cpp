@@ -200,16 +200,10 @@ void ProfileWidget::setZoom(const int zoom) {
   updateScale();
 }
 
-// The zoom sets the size, and shrinking to fit, if it is turned on, takes it down from there
-// until the page fits the window.
+// The zoom sets the size, and the page shrinks from there until it fits the window. Below the
+// smallest size it scrolls instead.
 void ProfileWidget::updateScale() {
   const auto zoom = m_zoom / 100.0;
-
-  if (!akyuu::settings.statisticsFitToWindow()) {
-    applyScale(zoom);
-    return;
-  }
-
   const auto available = m_scrollArea->viewport()->height();
   for (auto fit = 1.0; fit >= kFitMin; fit -= 0.05) {
     applyScale(zoom * fit);
@@ -239,13 +233,6 @@ void ProfileWidget::applyScale(const double scale) {
   m_container->layout()->invalidate();
 }
 
-// The settings dialog is modal, so the window becomes active again once it closes. Shrinking to fit
-// may have been turned on or off there.
-void ProfileWidget::changeEvent(QEvent* event) {
-  if (event->type() == QEvent::ActivationChange && isVisible()) updateScale();
-  PageWidget::changeEvent(event);
-}
-
 bool ProfileWidget::eventFilter(QObject* watched, QEvent* event) {
   // The scroll area would turn Ctrl and the wheel into scrolling by pages
   if (watched == m_scrollArea->viewport() && event->type() == QEvent::Wheel) {
@@ -262,7 +249,7 @@ bool ProfileWidget::eventFilter(QObject* watched, QEvent* event) {
 
 void ProfileWidget::resizeEvent(QResizeEvent* event) {
   PageWidget::resizeEvent(event);
-  if (akyuu::settings.statisticsFitToWindow()) updateScale();
+  updateScale();
 }
 
 void ProfileWidget::refresh() {

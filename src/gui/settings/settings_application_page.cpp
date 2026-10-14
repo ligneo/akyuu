@@ -42,8 +42,7 @@ ApplicationPage::ApplicationPage(QWidget* parent)
       m_checkScanOnStartup(new QCheckBox(tr("Scan library folders for available episodes"), this)),
       m_checkCheckForUpdates(new QCheckBox(tr("Check for updates"), this)),
       m_checkCloseToTray(new QCheckBox(tr("Close to tray"), this)),
-      m_checkMinimizeToTray(new QCheckBox(tr("Minimize to tray"), this)),
-      m_checkFitStatistics(new QCheckBox(tr("Fit statistics to window"), this)) {
+      m_checkMinimizeToTray(new QCheckBox(tr("Minimize to tray"), this)) {
   const auto layout = new QVBoxLayout(this);
 
   // Interface
@@ -70,10 +69,6 @@ ApplicationPage::ApplicationPage(QWidget* parent)
     m_comboColorScheme->addItem(tr("Light"), static_cast<int>(Qt::ColorScheme::Light));
     m_comboColorScheme->addItem(tr("Dark"), static_cast<int>(Qt::ColorScheme::Dark));
     form->addRow(tr("Color scheme:"), m_comboColorScheme);
-
-
-    // Otherwise the statistics page scrolls when the window is too short for it
-    form->addRow(m_checkFitStatistics);
 
     layout->addWidget(group);
   }
@@ -118,7 +113,6 @@ void ApplicationPage::load() {
 
   const auto scheme = static_cast<int>(akyuu::settings.appColorScheme());
   m_comboColorScheme->setCurrentIndex(m_comboColorScheme->findData(scheme));
-  m_checkFitStatistics->setChecked(akyuu::settings.statisticsFitToWindow());
 
   m_checkAutoStart->setChecked(akyuu::settings.appAutoStart());
   m_checkStartMinimized->setChecked(akyuu::settings.appStartMinimized());
@@ -147,7 +141,6 @@ void ApplicationPage::save() {
   akyuu::settings.setAppCloseToTray(m_checkCloseToTray->isChecked());
   akyuu::settings.setAppMinimizeToTray(m_checkMinimizeToTray->isChecked());
   akyuu::applyAutoStart();
-  akyuu::settings.setStatisticsFitToWindow(m_checkFitStatistics->isChecked());
 
   const auto style = m_comboStyle->currentData().toString().toStdString();
   const auto scheme = m_comboColorScheme->currentData().value<Qt::ColorScheme>();

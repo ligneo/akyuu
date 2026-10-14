@@ -47,7 +47,6 @@ private:
   QPlainTextEdit* m_editExternalLinks = nullptr;
   QCheckBox* m_checkCloseToTray = nullptr;
   QCheckBox* m_checkMinimizeToTray = nullptr;
-  QCheckBox* m_checkFitStatistics = nullptr;
 };
 
 }  // namespace gui
