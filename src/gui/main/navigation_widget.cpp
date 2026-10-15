@@ -69,15 +69,15 @@ NavigationWidget::NavigationWidget(QWidget* parent) : QTreeWidget(parent) {
     emit currentListStatusChanged(status);
   });
 
-  connect(&sync::queue, &sync::Queue::changed, this, &NavigationWidget::refresh);
+  connect(&services::queue, &services::Queue::changed, this, &NavigationWidget::refresh);
 
-  const QList<sync::Service*> services{
-      sync::anilist::Service::instance(),
-      sync::kitsu::Service::instance(),
-      sync::myanimelist::Service::instance(),
+  const QList<services::Service*> services{
+      services::anilist::Service::instance(),
+      services::kitsu::Service::instance(),
+      services::myanimelist::Service::instance(),
   };
   for (auto* service : services) {
-    connect(service, &sync::Service::listEntriesFetched, this, &NavigationWidget::refresh);
+    connect(service, &services::Service::listEntriesFetched, this, &NavigationWidget::refresh);
   }
 }
 
@@ -112,7 +112,7 @@ void NavigationWidget::refresh() {
   }
 
   auto historyItem = addItem("History", "history", MainWindowPage::History);
-  setItemData(historyItem, NavigationItemDataRole::Counter, sync::queue.count());
+  setItemData(historyItem, NavigationItemDataRole::Counter, services::queue.count());
   addItem("Statistics", "bar_chart", MainWindowPage::Profile);
 
   addSeparator();

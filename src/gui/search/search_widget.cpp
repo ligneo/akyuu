@@ -42,14 +42,14 @@
 
 namespace {
 
-std::optional<sync::SearchSort> toSearchSort(gui::AnimeListModel::Column column) {
+std::optional<services::SearchSort> toSearchSort(gui::AnimeListModel::Column column) {
   // clang-format off
   switch (column) {
-    case gui::AnimeListModel::COLUMN_TITLE: return sync::SearchSort::Title;
-    case gui::AnimeListModel::COLUMN_DURATION: return sync::SearchSort::Duration;
-    case gui::AnimeListModel::COLUMN_AVERAGE: return sync::SearchSort::Score;
-    case gui::AnimeListModel::COLUMN_TYPE: return sync::SearchSort::Type;
-    case gui::AnimeListModel::COLUMN_SEASON: return sync::SearchSort::StartDate;
+    case gui::AnimeListModel::COLUMN_TITLE: return services::SearchSort::Title;
+    case gui::AnimeListModel::COLUMN_DURATION: return services::SearchSort::Duration;
+    case gui::AnimeListModel::COLUMN_AVERAGE: return services::SearchSort::Score;
+    case gui::AnimeListModel::COLUMN_TYPE: return services::SearchSort::Type;
+    case gui::AnimeListModel::COLUMN_SEASON: return services::SearchSort::StartDate;
     default: return std::nullopt;
   }
   // clang-format on
@@ -195,14 +195,14 @@ SearchWidget::SearchWidget(QWidget* parent)
     if (isVisible()) performSearch();  // Enter on another page is not a search
   });
 
-  const QList<sync::Service*> services{
-      sync::anilist::Service::instance(),
-      sync::kitsu::Service::instance(),
-      sync::myanimelist::Service::instance(),
+  const QList<services::Service*> services{
+      services::anilist::Service::instance(),
+      services::kitsu::Service::instance(),
+      services::myanimelist::Service::instance(),
   };
   for (auto* service : services) {
-    connect(service, &sync::Service::searchCompleted, this,
-            [this](const sync::SearchParams& params, const QList<int>& ids) {
+    connect(service, &services::Service::searchCompleted, this,
+            [this](const services::SearchParams& params, const QList<int>& ids) {
               if (params != currentSearchParams()) return;
               m_model->addIds(ids);
             });
@@ -303,7 +303,7 @@ void SearchWidget::setViewMode(ListViewMode mode) {
   }
 }
 
-sync::SearchParams SearchWidget::currentSearchParams() const {
+services::SearchParams SearchWidget::currentSearchParams() const {
   const auto& filters = m_proxyModel->filters();
 
   return {
@@ -329,7 +329,7 @@ void SearchWidget::performSearch() {
     return;
   }
 
-  sync::search(params);
+  services::search(params);
 }
 
 }  // namespace gui

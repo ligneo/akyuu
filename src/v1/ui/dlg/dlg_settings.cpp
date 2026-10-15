@@ -1,6 +1,7 @@
 /*
 ** Taiga
 ** Copyright (C) 2010-2021, Eren Okka
+** Copyright (C) 2026, cenky <cenkkgl@gmail.com>
 **
 ** This program is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -179,7 +180,7 @@ void SettingsDialog::OnOK() {
   page = &pages[kSettingsPageServicesMain];
   if (page->IsWindow()) {
     win::ComboBox combo(page->GetDlgItem(IDC_COMBO_SERVICE));
-    auto service_id = static_cast<sync::ServiceId>(combo.GetItemData(combo.GetCurSel()));
+    auto service_id = static_cast<services::ServiceId>(combo.GetItemData(combo.GetCurSel()));
     taiga::settings.SetSyncActiveService(service_id);
     taiga::settings.SetSyncAutoOnStart(page->IsDlgButtonChecked(IDC_CHECK_START_LOGIN));
     combo.SetWindowHandle(nullptr);

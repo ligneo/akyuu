@@ -1,6 +1,7 @@
 /*
 ** Taiga
 ** Copyright (C) 2010-2021, Eren Okka
+** Copyright (C) 2026, cenky <cenkkgl@gmail.com>
 **
 ** This program is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -35,7 +36,7 @@ int Item::GetId() const {
   return series_.id;
 }
 
-const std::wstring& Item::GetId(sync::ServiceId service) const {
+const std::wstring& Item::GetId(services::ServiceId service) const {
   const auto it = series_.uids.find(service);
   return it != series_.uids.end() ? it->second : EmptyString();
 }
@@ -44,7 +45,7 @@ const std::wstring& Item::GetSlug() const {
   return series_.slug;
 }
 
-sync::ServiceId Item::GetSource() const {
+services::ServiceId Item::GetSource() const {
   return series_.source;
 }
 
@@ -148,10 +149,10 @@ time_t Item::GetNextEpisodeTime() const {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void Item::SetId(const std::wstring& id, sync::ServiceId service) {
+void Item::SetId(const std::wstring& id, services::ServiceId service) {
   series_.uids[service] = id;
 
-  if (service == sync::GetCurrentServiceId()) {
+  if (service == services::GetCurrentServiceId()) {
     series_.id = ToInt(id);
   }
 }
@@ -160,7 +161,7 @@ void Item::SetSlug(const std::wstring& slug) {
   series_.slug = slug;
 }
 
-void Item::SetSource(sync::ServiceId source) {
+void Item::SetSource(services::ServiceId source) {
   series_.source = source;
 }
 

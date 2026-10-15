@@ -1,6 +1,7 @@
 /*
 ** Taiga
 ** Copyright (C) 2010-2021, Eren Okka
+** Copyright (C) 2026, cenky <cenkkgl@gmail.com>
 **
 ** This program is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -179,8 +180,8 @@ void Queue::Check(bool automatic) {
     return;
   }
 
-  if (!sync::IsUserAuthenticated()) {
-    sync::AuthenticateUser();
+  if (!services::IsUserAuthenticated()) {
+    services::AuthenticateUser();
     return;
   }
 
@@ -188,13 +189,13 @@ void Queue::Check(bool automatic) {
 
   switch (queue_item.mode) {
     case QueueItemMode::Add:
-      sync::AddLibraryEntry(queue_item);
+      services::AddLibraryEntry(queue_item);
       break;
     case QueueItemMode::Delete:
-      sync::DeleteLibraryEntry(queue_item.anime_id);
+      services::DeleteLibraryEntry(queue_item.anime_id);
       break;
     case QueueItemMode::Update:
-      sync::UpdateLibraryEntry(queue_item);
+      services::UpdateLibraryEntry(queue_item);
       break;
   }
 }

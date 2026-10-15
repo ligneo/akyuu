@@ -1,6 +1,7 @@
 /*
 ** Taiga
 ** Copyright (C) 2010-2021, Eren Okka
+** Copyright (C) 2026, cenky <cenkkgl@gmail.com>
 **
 ** This program is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -48,7 +49,7 @@ void ImageDatabase::Load(const int anime_id, const bool download) {
     if (const auto anime_item = anime::db.Find(anime_id)) {
       if (!anime::IsValidId(static_cast<int>(items_[anime_id].data)) ||
           is_old_image(*anime_item)) {
-        sync::DownloadImage(anime_id, anime_item->GetImageUrl());
+        services::DownloadImage(anime_id, anime_item->GetImageUrl());
       }
     }
   }

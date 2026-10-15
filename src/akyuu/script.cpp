@@ -92,7 +92,7 @@ QString replaceVariables(const QString& format, const track::Episode& episode,
   }
 
   if (item) {
-    fields[u"animeurl"_s] = sync::animePageUrl(item->id);
+    fields[u"animeurl"_s] = services::animePageUrl(item->id);
     fields[u"id"_s] = QString::number(item->id);
     fields[u"image"_s] = QString::fromStdString(item->image_url);
     fields[u"season"_s] = gui::formatSeason(anime::Season{item->date_started}, {});
@@ -124,7 +124,7 @@ QString replaceVariables(const QString& format, const track::Episode& episode,
   fields[u"playstatus"_s] = playStatus();
 
   if (const auto user = akyuu::accounts.serviceUsername(
-          sync::serviceSlug(sync::currentServiceId()).toStdString());
+          services::serviceSlug(services::currentServiceId()).toStdString());
       !user.empty()) {
     fields[u"user"_s] = QString::fromStdString(user);
   }

@@ -20,11 +20,11 @@
 
 #include "track/episode.hpp"
 
-namespace link::http {
+namespace share::http {
 
 // v1 posts what is playing to an address of the user's choosing, with a format string that names
 // the fields. The same variables and functions are understood here.
 // `force` shares even when the channel is turned off: v1 does that when asked from the menu.
 void announce(const track::Episode& episode, const bool force = false);
 
-}  // namespace link::http
+}  // namespace share::http

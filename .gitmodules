@@ -9,7 +9,8 @@
 
 [submodule "anitomy"]
 	path = deps/anitomy
-	url = https://github.com/erengy/anitomy.git
+	url = https://github.com/ligneo/anitomy.git
+	branch = main
 
 [submodule "nstd"]
 	path = deps/nstd

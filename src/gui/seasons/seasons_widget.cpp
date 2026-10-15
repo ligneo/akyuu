@@ -51,7 +51,7 @@ using namespace Qt::StringLiterals;
 // simply generated, because the service is asked for the season either way.
 constexpr int kFirstYear = 1960;
 
-sync::SearchParams seasonParams(const anime::Season season) {
+services::SearchParams seasonParams(const anime::Season season) {
   return {
       .year = static_cast<int>(season.year),
       .season = season.name,
@@ -126,14 +126,14 @@ SeasonsWidget::SeasonsWidget(QWidget* parent)
   setGroupBy(akyuu::session.seasonsGroupBy());
   setViewMode(akyuu::session.seasonsViewMode());
 
-  const QList<sync::Service*> services{
-      sync::anilist::Service::instance(),
-      sync::kitsu::Service::instance(),
-      sync::myanimelist::Service::instance(),
+  const QList<services::Service*> services{
+      services::anilist::Service::instance(),
+      services::kitsu::Service::instance(),
+      services::myanimelist::Service::instance(),
   };
   for (auto* service : services) {
-    connect(service, &sync::Service::searchCompleted, this,
-            [this](const sync::SearchParams& params, const QList<int>& ids) {
+    connect(service, &services::Service::searchCompleted, this,
+            [this](const services::SearchParams& params, const QList<int>& ids) {
               // A season arrives one page at a time, so the ids are added as they come.
               if (params != seasonParams(m_season)) return;
               m_model->addIds(ids);
@@ -165,7 +165,7 @@ void SeasonsWidget::setSeason(const anime::Season season) {
 }
 
 void SeasonsWidget::refresh() {
-  sync::search(seasonParams(m_season));
+  services::search(seasonParams(m_season));
 }
 
 void SeasonsWidget::updateStatus() {

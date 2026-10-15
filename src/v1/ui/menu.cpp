@@ -1,6 +1,7 @@
 /*
 ** Taiga
 ** Copyright (C) 2010-2021, Eren Okka
+** Copyright (C) 2026, cenky <cenkkgl@gmail.com>
 **
 ** This program is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -203,9 +204,9 @@ void MenuList::UpdateExport() {
   if (menu) {
     for (auto& item : menu->items) {
       if (item.action == L"ExportAsMalXml") {
-        switch (sync::GetCurrentServiceId()) {
-          case sync::ServiceId::MyAnimeList:
-          case sync::ServiceId::AniList:
+        switch (services::GetCurrentServiceId()) {
+          case services::ServiceId::MyAnimeList:
+          case services::ServiceId::AniList:
             item.enabled = true;
             break;
           default:
@@ -284,26 +285,26 @@ void MenuList::UpdateScore(const anime::Item* anime_item) {
   if (menu) {
     menu->items.clear();
 
-    std::vector<sync::Rating> ratings;
+    std::vector<services::Rating> ratings;
     std::wstring current_rating;
 
-    switch (sync::GetCurrentServiceId()) {
-      case sync::ServiceId::MyAnimeList:
-        ratings = sync::myanimelist::GetMyRatings();
-        current_rating = sync::myanimelist::TranslateMyRating(
+    switch (services::GetCurrentServiceId()) {
+      case services::ServiceId::MyAnimeList:
+        ratings = services::myanimelist::GetMyRatings();
+        current_rating = services::myanimelist::TranslateMyRating(
             anime_item->GetMyScore(), true);
         break;
-      case sync::ServiceId::Kitsu: {
-        const auto rating_system = sync::kitsu::GetRatingSystem();
-        ratings = sync::kitsu::GetMyRatings(rating_system);
-        current_rating = sync::kitsu::TranslateMyRating(
+      case services::ServiceId::Kitsu: {
+        const auto rating_system = services::kitsu::GetRatingSystem();
+        ratings = services::kitsu::GetMyRatings(rating_system);
+        current_rating = services::kitsu::TranslateMyRating(
             anime_item->GetMyScore(), rating_system);
         break;
       }
-      case sync::ServiceId::AniList: {
-        const auto rating_system = sync::anilist::GetRatingSystem();
-        ratings = sync::anilist::GetMyRatings(rating_system);
-        current_rating = sync::anilist::TranslateMyRating(
+      case services::ServiceId::AniList: {
+        const auto rating_system = services::anilist::GetRatingSystem();
+        ratings = services::anilist::GetMyRatings(rating_system);
+        current_rating = services::anilist::TranslateMyRating(
             anime_item->GetMyScore(), rating_system);
         break;
       }

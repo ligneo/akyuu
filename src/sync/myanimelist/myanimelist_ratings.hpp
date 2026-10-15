@@ -1,6 +1,7 @@
 /**
  * Akyuu
  * Copyright (C) 2010-2026, Eren Okka
+ * Copyright (C) 2026, cenky <cenkkgl@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,13 +22,13 @@
 #include <QList>
 #include <QString>
 
-namespace sync {
+namespace services {
 struct Rating;
 }
 
-namespace sync::myanimelist {
+namespace services::myanimelist {
 
-QList<sync::Rating> ratingList();
+QList<services::Rating> ratingList();
 QString formatRating(const int value);
 
-}  // namespace sync::myanimelist
+}  // namespace services::myanimelist

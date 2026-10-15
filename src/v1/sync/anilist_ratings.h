@@ -1,6 +1,7 @@
 /*
 ** Taiga
 ** Copyright (C) 2010-2021, Eren Okka
+** Copyright (C) 2026, cenky <cenkkgl@gmail.com>
 **
 ** This program is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -20,11 +21,11 @@
 
 #include <vector>
 
-namespace sync {
+namespace services {
 struct Rating;
 }
 
-namespace sync::anilist {
+namespace services::anilist {
 
 enum class RatingSystem {
   Point_100,
@@ -37,6 +38,6 @@ enum class RatingSystem {
 constexpr auto kDefaultRatingSystem = RatingSystem::Point_10;
 
 RatingSystem GetRatingSystem();
-std::vector<sync::Rating> GetMyRatings(const RatingSystem rating_system);
+std::vector<services::Rating> GetMyRatings(const RatingSystem rating_system);
 
-}  // namespace sync::anilist
+}  // namespace services::anilist

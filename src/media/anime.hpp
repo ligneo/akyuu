@@ -1,6 +1,7 @@
 /**
  * Akyuu
  * Copyright (C) 2010-2024, Eren Okka
+ * Copyright (C) 2026, cenky <cenkkgl@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -88,8 +89,8 @@ struct Titles {
 
 struct Details {
   int id = kUnknownId;
-  // std::map<sync::ServiceId, std::string> uids;
-  // sync::ServiceId source = sync::ServiceId::Unknown;
+  // std::map<services::ServiceId, std::string> uids;
+  // services::ServiceId source = services::ServiceId::Unknown;
   std::time_t last_modified = 0;
   int episode_count = kUnknownEpisodeCount;
   int episode_length = kUnknownEpisodeLength;

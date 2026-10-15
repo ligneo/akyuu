@@ -1,6 +1,7 @@
 /**
  * Akyuu
  * Copyright (C) 2010-2026, Eren Okka
+ * Copyright (C) 2026, cenky <cenkkgl@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,7 +41,7 @@ enum class Status;
 struct Entry;
 }  // namespace anime::list
 
-namespace sync::myanimelist {
+namespace services::myanimelist {
 
 anime::AgeRating parseAgeRating(const QString& value);
 base::FuzzyDate parseFuzzyDate(const QString& value);
@@ -54,4 +55,4 @@ anime::list::Status parseListStatus(const QString& value);
 std::optional<anime::Details> parseAnime(const QJsonValue& json);
 std::optional<anime::list::Entry> parseListEntry(const QJsonValue& json, const int animeId);
 
-}  // namespace sync::myanimelist
+}  // namespace services::myanimelist

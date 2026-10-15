@@ -1,6 +1,7 @@
 /*
 ** Taiga
 ** Copyright (C) 2010-2021, Eren Okka
+** Copyright (C) 2026, cenky <cenkkgl@gmail.com>
 **
 ** This program is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -112,8 +113,8 @@ struct Titles {
 
 struct SeriesInformation {
   int id = AnimeId::ID_UNKNOWN;
-  std::map<sync::ServiceId, std::wstring> uids;
-  sync::ServiceId source = sync::ServiceId::Unknown;
+  std::map<services::ServiceId, std::wstring> uids;
+  services::ServiceId source = services::ServiceId::Unknown;
   std::time_t last_modified = 0;
   int episode_count = kUnknownEpisodeCount;
   int episode_length = kUnknownEpisodeLength;

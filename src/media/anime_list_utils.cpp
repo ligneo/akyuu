@@ -91,7 +91,7 @@ void save(Entry entry) {
     history.add(entry.anime_id, entry.watched_episodes, entry.last_updated);
   }
 
-  sync::queue.push(entry.anime_id, dirty);
+  services::queue.push(entry.anime_id, dirty);
 }
 
 void remove(const int animeId) {
@@ -104,7 +104,7 @@ void remove(const int animeId) {
 
   db.updateEntry(updated);
 
-  sync::queue.pushDelete(animeId);
+  services::queue.pushDelete(animeId);
 }
 
 }  // namespace anime::list

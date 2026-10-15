@@ -1,6 +1,7 @@
 /*
 ** Taiga
 ** Copyright (C) 2010-2021, Eren Okka
+** Copyright (C) 2026, cenky <cenkkgl@gmail.com>
 **
 ** This program is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -22,7 +23,7 @@
 
 #include "taiga/settings.h"
 
-namespace sync {
+namespace services {
 
 ServiceId GetCurrentServiceId() {
   return taiga::settings.GetSyncActiveService();
@@ -65,4 +66,4 @@ std::wstring GetServiceSlugById(const ServiceId service_id) {
   }
 }
 
-}  // namespace sync
+}  // namespace services

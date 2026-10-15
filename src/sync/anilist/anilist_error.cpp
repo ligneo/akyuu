@@ -1,6 +1,7 @@
 /**
  * Akyuu
  * Copyright (C) 2010-2026, Eren Okka
+ * Copyright (C) 2026, cenky <cenkkgl@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,7 +30,7 @@
 #include "base/string.hpp"
 #include "sync/service.hpp"
 
-namespace sync::anilist {
+namespace services::anilist {
 
 namespace {
 
@@ -67,7 +68,7 @@ bool isError(const QRestReply& reply) {
   return !reply.isHttpStatusSuccess() || reply.hasError();
 }
 
-void handleError(sync::Service& service, QRestReply& reply, const QString& message) {
+void handleError(services::Service& service, QRestReply& reply, const QString& message) {
   if (akyuu::isDdosProtectionActive(reply)) {
     const auto server = QString::fromUtf8(reply.networkReply()->rawHeader("Server"));
     const auto description =
@@ -91,4 +92,4 @@ void handleError(sync::Service& service, QRestReply& reply, const QString& messa
   }
 }
 
-}  // namespace sync::anilist
+}  // namespace services::anilist

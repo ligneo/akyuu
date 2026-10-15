@@ -78,7 +78,7 @@ void ListViewBase::openAnimePage(const QModelIndex& index) {
   const auto mappedIndex = m_proxyModel->mapToSource(index);
   const auto anime = m_model->getAnime(mappedIndex);
   if (!anime) return;
-  QDesktopServices::openUrl(QUrl{sync::animePageUrl(anime->id)});
+  QDesktopServices::openUrl(QUrl{services::animePageUrl(anime->id)});
 }
 
 void ListViewBase::playNextEpisode(const QModelIndex& index) {

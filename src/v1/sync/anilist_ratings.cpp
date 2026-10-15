@@ -1,6 +1,7 @@
 /*
 ** Taiga
 ** Copyright (C) 2010-2021, Eren Okka
+** Copyright (C) 2026, cenky <cenkkgl@gmail.com>
 **
 ** This program is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -23,7 +24,7 @@
 #include "sync/anilist_util.h"
 #include "taiga/settings.h"
 
-namespace sync::anilist {
+namespace services::anilist {
 
 RatingSystem GetRatingSystem() {
   return TranslateRatingSystemFrom(
@@ -117,4 +118,4 @@ std::vector<Rating> GetMyRatings(const RatingSystem rating_system) {
   return {};
 }
 
-}  // namespace sync::anilist
+}  // namespace services::anilist

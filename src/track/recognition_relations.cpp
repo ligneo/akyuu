@@ -68,13 +68,13 @@ Relations& relationsFor(const int column) {
   return it->second;
 }
 
-std::optional<int> serviceIdColumn(const sync::ServiceId serviceId) {
+std::optional<int> serviceIdColumn(const services::ServiceId serviceId) {
   switch (serviceId) {
-    case sync::ServiceId::MyAnimeList:
+    case services::ServiceId::MyAnimeList:
       return 0;
-    case sync::ServiceId::Kitsu:
+    case services::ServiceId::Kitsu:
       return 1;
-    case sync::ServiceId::AniList:
+    case services::ServiceId::AniList:
       return 2;
     default:
       return std::nullopt;
@@ -183,7 +183,7 @@ std::optional<Redirection> Relations::find(const int id, const int episode_numbe
 }
 
 std::optional<Redirection> findRedirection(const int id, const std::pair<int, int>& episode_range) {
-  const auto column = serviceIdColumn(sync::currentServiceId());
+  const auto column = serviceIdColumn(services::currentServiceId());
   if (!column) return std::nullopt;
 
   const auto& relations = relationsFor(*column);

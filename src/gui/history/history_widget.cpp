@@ -1,6 +1,7 @@
 /**
  * Akyuu
  * Copyright (C) 2010-2026, Eren Okka
+ * Copyright (C) 2026, cenky <cenkkgl@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -133,10 +134,10 @@ void HistoryWidget::clearHistory() const {
 
 void HistoryWidget::clearQueue() const {
   const auto informativeText = tr("Any changes not yet synchronized with %1 will be discarded.")
-                                   .arg(sync::serviceName(sync::currentServiceId()));
+                                   .arg(services::serviceName(services::currentServiceId()));
 
   if (confirm(nullptr, tr("Do you want to clear the sync queue?"), informativeText, tr("Clear"))) {
-    sync::queue.clear();
+    services::queue.clear();
   }
 }
 

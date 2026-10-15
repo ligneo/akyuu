@@ -1,6 +1,7 @@
 /*
 ** Taiga
 ** Copyright (C) 2010-2021, Eren Okka
+** Copyright (C) 2026, cenky <cenkkgl@gmail.com>
 **
 ** This program is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -93,12 +94,12 @@ static bool ParseRule(const std::wstring& rule) {
   auto get_id = [&](size_t index) {
     std::vector<std::wstring> ids;
     Split(match_results[index].str(), L"|", ids);
-    switch (sync::GetCurrentServiceId()) {
-      case sync::ServiceId::MyAnimeList:
+    switch (services::GetCurrentServiceId()) {
+      case services::ServiceId::MyAnimeList:
         return ids.size() > 0 ? ToInt(ids.at(0)) : 0;
-      case sync::ServiceId::Kitsu:
+      case services::ServiceId::Kitsu:
         return ids.size() > 1 ? ToInt(ids.at(1)) : 0;
-      case sync::ServiceId::AniList:
+      case services::ServiceId::AniList:
         return ids.size() > 2 ? ToInt(ids.at(2)) : 0;
       default:
         return 0;

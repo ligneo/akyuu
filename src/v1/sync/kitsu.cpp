@@ -1,6 +1,7 @@
 /*
 ** Taiga
 ** Copyright (C) 2010-2021, Eren Okka
+** Copyright (C) 2026, cenky <cenkkgl@gmail.com>
 **
 ** This program is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -41,7 +42,7 @@
 #include "ui/translate.h"
 #include "ui/ui.h"
 
-namespace sync::kitsu {
+namespace services::kitsu {
 
 // API documentation:
 // https://kitsu.docs.apiary.io
@@ -575,7 +576,7 @@ void AuthenticateUser() {
   const auto on_response = [](const taiga::http::Response& response) {
     if (HasError(response)) {
       account.set_authenticated(false);
-      sync::OnError(RequestType::AuthenticateUser);
+      services::OnError(RequestType::AuthenticateUser);
       return;
     }
 
@@ -584,14 +585,14 @@ void AuthenticateUser() {
     if (!JsonParseString(response.body(), root)) {
       account.set_authenticated(false);
       ui::ChangeStatusText(L"Kitsu: Could not parse authentication data.");
-      sync::OnError(RequestType::AuthenticateUser);
+      services::OnError(RequestType::AuthenticateUser);
       return;
     }
 
     account.set_access_token(JsonReadStr(root, "access_token"));
     account.set_authenticated(true);
 
-    sync::OnResponse(RequestType::AuthenticateUser);
+    services::OnResponse(RequestType::AuthenticateUser);
 
     GetUser();  // We need to make an additional request to get the user ID
   };
@@ -619,7 +620,7 @@ void GetUser() {
 
   const auto on_response = [](const taiga::http::Response& response) {
     if (HasError(response)) {
-      sync::OnError(RequestType::GetUser);
+      services::OnError(RequestType::GetUser);
       return;
     }
 
@@ -627,13 +628,13 @@ void GetUser() {
 
     if (!JsonParseString(response.body(), root)) {
       ui::ChangeStatusText(L"Kitsu: Could not parse user data.");
-      sync::OnError(RequestType::GetUser);
+      services::OnError(RequestType::GetUser);
       return;
     }
 
     if (root["data"].empty()) {
       ui::ChangeStatusText(L"Kitsu: Invalid username");
-      sync::OnError(RequestType::GetUser);
+      services::OnError(RequestType::GetUser);
       return;
     }
 
@@ -649,10 +650,10 @@ void GetUser() {
     Account::set_username(JsonReadStr(user["attributes"], "slug"));
     account.set_id(JsonReadStr(user, "id"));
 
-    sync::OnResponse(RequestType::GetUser);
+    services::OnResponse(RequestType::GetUser);
 
     if (account.authenticated()) {
-      sync::Synchronize();
+      services::Synchronize();
     } else {
       GetLibraryEntries();
     }
@@ -665,14 +666,14 @@ void GetLibraryEntries(const int page) {
   if (account.id().empty()) {
     ui::ChangeStatusText(
         L"Kitsu: Cannot get anime list. User ID is unavailable.");
-    sync::OnError(RequestType::GetLibraryEntries);
+    services::OnError(RequestType::GetLibraryEntries);
     return;
   }
   if (Account::username().empty()) {
     ui::ChangeStatusText(
         L"Kitsu: Cannot get anime list. "
         L"Please set the profile URL for your account.");
-    sync::OnError(RequestType::GetLibraryEntries);
+    services::OnError(RequestType::GetLibraryEntries);
     return;
   }
 
@@ -719,7 +720,7 @@ void GetLibraryEntries(const int page) {
 
   const auto on_response = [](const taiga::http::Response& response) {
     if (HasError(response)) {
-      sync::OnError(RequestType::GetLibraryEntries);
+      services::OnError(RequestType::GetLibraryEntries);
       return;
     }
 
@@ -727,7 +728,7 @@ void GetLibraryEntries(const int page) {
 
     if (!JsonParseString(response.body(), root)) {
       ui::ChangeStatusText(L"Kitsu: Could not parse anime list.");
-      sync::OnError(RequestType::GetLibraryEntries);
+      services::OnError(RequestType::GetLibraryEntries);
       return;
     }
 
@@ -749,7 +750,7 @@ void GetLibraryEntries(const int page) {
       GetLibraryEntries(*next_page);
     } else {
       account.set_last_synchronized(time(nullptr));  // current time
-      sync::OnResponse(RequestType::GetLibraryEntries);
+      services::OnResponse(RequestType::GetLibraryEntries);
     }
   };
 
@@ -776,11 +777,11 @@ void GetMetadataById(const int id) {
   const auto on_response = [id](const taiga::http::Response& response) {
     if (HasError(response)) {
       if (response.status_code() == 404) {
-        sync::OnInvalidAnimeId(id);
+        services::OnInvalidAnimeId(id);
       } else {
         ui::OnLibraryEntryChangeFailure(id);
       }
-      sync::OnError(RequestType::GetMetadataById);
+      services::OnError(RequestType::GetMetadataById);
       return;
     }
 
@@ -789,7 +790,7 @@ void GetMetadataById(const int id) {
     if (!JsonParseString(response.body(), root))  {
       ui::ChangeStatusText(L"Kitsu: Could not parse anime data.");
       ui::OnLibraryEntryChangeFailure(id);
-      sync::OnError(RequestType::GetMetadataById);
+      services::OnError(RequestType::GetMetadataById);
       return;
     }
 
@@ -798,7 +799,7 @@ void GetMetadataById(const int id) {
     ParseProducers(root["included"], anime_id);
 
     ui::OnLibraryEntryChange(anime_id);
-    sync::OnResponse(RequestType::GetMetadataById);
+    services::OnResponse(RequestType::GetMetadataById);
   };
 
   taiga::http::Send(request, on_transfer, on_response);
@@ -833,7 +834,7 @@ void GetSeason(const anime::Season season, const int page) {
 
   const auto on_response = [season](const taiga::http::Response& response) {
     if (HasError(response)) {
-      sync::OnError(RequestType::GetSeason);
+      services::OnError(RequestType::GetSeason);
       return;
     }
 
@@ -841,7 +842,7 @@ void GetSeason(const anime::Season season, const int page) {
 
     if (!JsonParseString(response.body(), root)) {
       ui::ChangeStatusText(L"Kitsu: Could not parse season data.");
-      sync::OnError(RequestType::GetSeason);
+      services::OnError(RequestType::GetSeason);
       return;
     }
 
@@ -861,7 +862,7 @@ void GetSeason(const anime::Season season, const int page) {
     if (next_page && *next_page > 0) {
       GetSeason(season, *next_page);
     } else {
-      sync::OnResponse(RequestType::GetSeason);
+      services::OnResponse(RequestType::GetSeason);
     }
   };
 
@@ -887,7 +888,7 @@ void SearchTitle(const std::wstring& title) {
 
   const auto on_response = [](const taiga::http::Response& response) {
     if (HasError(response)) {
-      sync::OnError(RequestType::SearchTitle);
+      services::OnError(RequestType::SearchTitle);
       return;
     }
 
@@ -895,7 +896,7 @@ void SearchTitle(const std::wstring& title) {
 
     if (!JsonParseString(response.body(), root)) {
       ui::ChangeStatusText(L"Kitsu: Could not parse search results.");
-      sync::OnError(RequestType::SearchTitle);
+      services::OnError(RequestType::SearchTitle);
       return;
     }
 
@@ -906,7 +907,7 @@ void SearchTitle(const std::wstring& title) {
     }
 
     ui::OnLibrarySearchTitle(ids);
-    sync::OnResponse(RequestType::SearchTitle);
+    services::OnResponse(RequestType::SearchTitle);
   };
 
   taiga::http::Send(request, on_transfer, on_response);
@@ -944,10 +945,10 @@ void AddLibraryEntry(const library::QueueItem& queue_item) {
         // a "422 Unprocessable Entity" response with "animeId - has already
         // been taken" error message. Here we ignore this error and assume that
         // our request succeeded.
-        sync::OnResponse(RequestType::AddLibraryEntry);
+        services::OnResponse(RequestType::AddLibraryEntry);
       } else {
         ui::OnLibraryUpdateFailure(id, StrToWstr(response.error().str()), false);
-        sync::OnError(RequestType::AddLibraryEntry);
+        services::OnError(RequestType::AddLibraryEntry);
       }
       return;
     }
@@ -956,7 +957,7 @@ void AddLibraryEntry(const library::QueueItem& queue_item) {
 
     if (!JsonParseString(response.body(), root)) {
       ui::ChangeStatusText(L"Kitsu: Could not parse anime list entry.");
-      sync::OnError(RequestType::AddLibraryEntry);
+      services::OnError(RequestType::AddLibraryEntry);
       return;
     }
 
@@ -967,7 +968,7 @@ void AddLibraryEntry(const library::QueueItem& queue_item) {
     ParseCategories(root["included"], anime_id);
     ParseProducers(root["included"], anime_id);
 
-    sync::OnResponse(RequestType::AddLibraryEntry);
+    services::OnResponse(RequestType::AddLibraryEntry);
   };
 
   taiga::http::Send(request, on_transfer, on_response);
@@ -994,14 +995,14 @@ void DeleteLibraryEntry(const int id) {
       } else {
         ui::OnLibraryUpdateFailure(id, StrToWstr(response.error().str()),
                                    false);
-        sync::OnError(RequestType::DeleteLibraryEntry);
+        services::OnError(RequestType::DeleteLibraryEntry);
         return;
       }
     }
 
     // Returns "204 No Content" status and empty response body.
 
-    sync::OnResponse(RequestType::DeleteLibraryEntry);
+    services::OnResponse(RequestType::DeleteLibraryEntry);
   };
 
   taiga::http::Send(request, on_transfer, on_response);
@@ -1041,7 +1042,7 @@ void UpdateLibraryEntry(const library::QueueItem& queue_item) {
         error_description = L"Kitsu: Anime list entry does not exist.";
       }
       ui::OnLibraryUpdateFailure(id, error_description, false);
-      sync::OnError(RequestType::UpdateLibraryEntry);
+      services::OnError(RequestType::UpdateLibraryEntry);
       return;
     }
 
@@ -1049,7 +1050,7 @@ void UpdateLibraryEntry(const library::QueueItem& queue_item) {
 
     if (!JsonParseString(response.body(), root)) {
       ui::ChangeStatusText(L"Kitsu: Could not parse anime list entry.");
-      sync::OnError(RequestType::UpdateLibraryEntry);
+      services::OnError(RequestType::UpdateLibraryEntry);
       return;
     }
 
@@ -1060,10 +1061,10 @@ void UpdateLibraryEntry(const library::QueueItem& queue_item) {
     ParseCategories(root["included"], anime_id);
     ParseProducers(root["included"], anime_id);
 
-    sync::OnResponse(RequestType::UpdateLibraryEntry);
+    services::OnResponse(RequestType::UpdateLibraryEntry);
   };
 
   taiga::http::Send(request, on_transfer, on_response);
 }
 
-}  // namespace sync::kitsu
+}  // namespace services::kitsu

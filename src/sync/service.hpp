@@ -1,6 +1,7 @@
 /**
  * Akyuu
  * Copyright (C) 2010-2026, Eren Okka
+ * Copyright (C) 2026, cenky <cenkkgl@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +28,7 @@
 #include "media/anime_list.hpp"
 #include "sync/search_params.hpp"
 
-namespace sync {
+namespace services {
 
 enum class ServiceId {
   Unknown,
@@ -94,4 +95,4 @@ QString animePageUrl(const int id);
 void invalidateAnime(const int id);
 void pruneMissingEntries(const QSet<int>& fetchedIds);
 
-}  // namespace sync
+}  // namespace services

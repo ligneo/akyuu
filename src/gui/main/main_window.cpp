@@ -248,7 +248,7 @@ bool MainWindow::eventFilter(QObject* watched, QEvent* event) {
 void MainWindow::initActions() {
   ui_->actionProfile->setToolTip(tr("Profile"));
   ui_->actionSynchronize->setToolTip(
-      tr("Synchronize with %1").arg(sync::serviceName(sync::currentServiceId())));
+      tr("Synchronize with %1").arg(services::serviceName(services::currentServiceId())));
 
   connect(ui_->actionAddNewFolder, &QAction::triggered, this, &MainWindow::addNewFolder);
   connect(ui_->actionExit, &QAction::triggered, this, &QApplication::quit, Qt::QueuedConnection);
@@ -320,7 +320,7 @@ void MainWindow::initActions() {
   connect(ui_->actionToggleSharing, &QAction::toggled, this, [](const bool checked) {
     akyuu::settings.setSharingEnabled(checked);
     // Like v1, turning it back on does not repeat the current episode; the next one is shared.
-    if (!checked) link::discord()->clearPresence();
+    if (!checked) share::discord()->clearPresence();
   });
 
   connect(ui_->actionCheckForUpdates, &QAction::triggered, this, [this]() { checkForUpdates(); });
@@ -388,7 +388,7 @@ void MainWindow::initNowPlaying() {
 
 void MainWindow::shareEpisode(const std::optional<track::Episode>& episode) const {
   if (!episode) {
-    link::discord()->clearPresence();
+    share::discord()->clearPresence();
     return;
   }
 
@@ -397,21 +397,21 @@ void MainWindow::shareEpisode(const std::optional<track::Episode>& episode) cons
   // same.
   const auto entry = anime::db.entry(episode->animeId());
   if ((entry && entry->is_private) || !akyuu::settings.sharingEnabled()) {
-    link::discord()->clearPresence();
+    share::discord()->clearPresence();
     return;
   }
 
-  link::http::announce(*episode);
+  share::http::announce(*episode);
 
   // As in v1, only HTTP hears about episodes that are not recognized. IRC and Discord are public,
   // and the raw file name could be anything.
   if (episode->animeId() == anime::kUnknownId) {
-    link::discord()->clearPresence();
+    share::discord()->clearPresence();
     return;
   }
 
 #ifdef Q_OS_LINUX
-  link::irc::announce(*episode);
+  share::irc::announce(*episode);
 #endif
   updateDiscordPresence(*episode, false);
 }
@@ -426,9 +426,9 @@ void MainWindow::updateDiscordPresence(const track::Episode& episode, const bool
   if (akyuu::settings.discordGroupEnabled()) state += u"$if(%group%,by %group%)"_s;
 
   // v1 shares what is playing over Discord's rich presence.
-  link::discord()->updatePresence(title, akyuu::replaceVariables(state, episode),
-                                  item ? QString::fromStdString(item->image_url) : QString{},
-                                  std::time(nullptr), force);
+  share::discord()->updatePresence(title, akyuu::replaceVariables(state, episode),
+                                   item ? QString::fromStdString(item->image_url) : QString{},
+                                   std::time(nullptr), force);
 }
 
 // v1's "Announce current episode" menu: shares on one channel on request, even when that channel
@@ -451,11 +451,11 @@ void MainWindow::announceCurrentEpisode(const ShareChannel channel) {
       updateDiscordPresence(*episode, true);
       break;
     case ShareChannel::Http:
-      link::http::announce(*episode, true);
+      share::http::announce(*episode, true);
       break;
     case ShareChannel::Irc:
 #ifdef Q_OS_LINUX
-      link::irc::announce(*episode, true);
+      share::irc::announce(*episode, true);
 #endif
       break;
   }
@@ -467,7 +467,7 @@ void MainWindow::switchSearchText(MainWindowPage from, MainWindowPage to) {
 
   m_searchTexts[from] = m_searchBox->text();
 
-  const auto service = sync::serviceName(sync::currentServiceId());
+  const auto service = services::serviceName(services::currentServiceId());
   QString placeholder;
   switch (to) {
     case MainWindowPage::List:
@@ -566,18 +566,18 @@ void MainWindow::initStatusbar() {
 
   m_statusBarController = new StatusBarController(this, statusbar, spinner);
 
-  const QList<sync::Service*> services{
-      sync::anilist::Service::instance(),
-      sync::kitsu::Service::instance(),
-      sync::myanimelist::Service::instance(),
+  const QList<services::Service*> services{
+      services::anilist::Service::instance(),
+      services::kitsu::Service::instance(),
+      services::myanimelist::Service::instance(),
   };
   for (auto* service : services) {
-    connect(service, &sync::Service::authenticationCompleted, this,
+    connect(service, &services::Service::authenticationCompleted, this,
             [this](const bool authenticated) {
               if (!authenticated) return;
 
-              const auto sender_service = qobject_cast<sync::Service*>(sender());
-              const auto slug = sync::serviceSlug(sender_service->id()).toStdString();
+              const auto sender_service = qobject_cast<services::Service*>(sender());
+              const auto slug = services::serviceSlug(sender_service->id()).toStdString();
               const auto username = akyuu::accounts.serviceUsername(slug);
 
               m_statusBarController->showMessage({
@@ -586,38 +586,38 @@ void MainWindow::initStatusbar() {
                   .spin = false,
               });
             });
-    connect(service, &sync::Service::listEntriesFetched, this, [this]() {
+    connect(service, &services::Service::listEntriesFetched, this, [this]() {
       m_statusBarController->clearMessage(StatusBarController::Source::Sync);
       setEnabled(true);
     });
-    connect(service, &sync::Service::errorOccurred, this, [this](const QString& message) {
-      const auto sender_service = qobject_cast<sync::Service*>(sender());
+    connect(service, &services::Service::errorOccurred, this, [this](const QString& message) {
+      const auto sender_service = qobject_cast<services::Service*>(sender());
       m_statusBarController->showMessage({
           .source = StatusBarController::Source::Sync,
-          .text = sync::tagMessage(sender_service->id(), message),
+          .text = services::tagMessage(sender_service->id(), message),
           .spin = false,
       });
       setEnabled(true);
     });
-    connect(service, &sync::Service::transferProgress, this,
+    connect(service, &services::Service::transferProgress, this,
             [this](const qint64 current, const qint64 total) {
               m_statusBarController->showMessage({
                   .source = StatusBarController::Source::Sync,
                   .text = tr("Synchronizing with %1... (%2)")
-                              .arg(sync::serviceName(sync::currentServiceId()))
+                              .arg(services::serviceName(services::currentServiceId()))
                               .arg(gui::formatTransferProgress(current, total)),
               });
             });
   }
 
-  connect(&sync::queue, &sync::Queue::changed, this, [this]() {
-    if (sync::queue.count() == 0) {
+  connect(&services::queue, &services::Queue::changed, this, [this]() {
+    if (services::queue.count() == 0) {
       m_statusBarController->clearMessage(StatusBarController::Source::Sync);
       setEnabled(true);
     }
   });
 
-  connect(&sync::queue, &sync::Queue::processing, this, [this](const int animeId) {
+  connect(&services::queue, &services::Queue::processing, this, [this](const int animeId) {
     const auto item = anime::db.item(animeId);
     const auto entry = anime::db.entry(animeId);
     if (!item || !entry) return;
@@ -639,16 +639,17 @@ void MainWindow::initStatusbar() {
     });
   });
 
-  connect(&sync::queue, &sync::Queue::queuedWhileUnauthenticated, this, [this](const int animeId) {
-    const auto item = anime::db.item(animeId);
-    if (!item) return;
+  connect(&services::queue, &services::Queue::queuedWhileUnauthenticated, this,
+          [this](const int animeId) {
+            const auto item = anime::db.item(animeId);
+            if (!item) return;
 
-    m_statusBarController->showMessage({
-        .source = StatusBarController::Source::Sync,
-        .text = tr("%1 is queued for update.").arg(anime::preferredTitle(*item)),
-        .spin = false,
-    });
-  });
+            m_statusBarController->showMessage({
+                .source = StatusBarController::Source::Sync,
+                .text = tr("%1 is queued for update.").arg(anime::preferredTitle(*item)),
+                .spin = false,
+            });
+          });
 
   connect(&anime::db, &anime::Database::itemDeleted, this, [this](const int, const QString& title) {
     if (title.isEmpty()) return;
@@ -690,15 +691,15 @@ void MainWindow::exportList(const ExportFormat format) {
     return;
   }
 
-  const auto service = sync::currentServiceId();
+  const auto service = services::currentServiceId();
 
   // An AniList list knows its MyAnimeList IDs only by asking AniList, so they are looked up first.
-  if (service == sync::ServiceId::AniList) {
+  if (service == services::ServiceId::AniList) {
     report(tr("Looking up MyAnimeList IDs..."), true);
     const auto ids = anime::db.entries() |
                      std::views::transform([](const auto& entry) { return entry.anime_id; }) |
                      std::ranges::to<QList>();
-    sync::anilist::Service::instance()->fetchMalIds(
+    services::anilist::Service::instance()->fetchMalIds(
         ids, [report, path](const std::optional<QMap<int, int>>& malIds) {
           if (!malIds) {
             report(tr("Could not look up MyAnimeList IDs, so the list was not exported."));
@@ -725,8 +726,9 @@ void MainWindow::exportList(const ExportFormat format) {
 
   // Kitsu's IDs would end up in a MyAnimeList field. Saying so beats handing over a file that looks
   // importable.
-  if (exported && service != sync::ServiceId::MyAnimeList) {
-    text += u" "_s + tr("(anime IDs are %1's, not MyAnimeList's)").arg(sync::serviceName(service));
+  if (exported && service != services::ServiceId::MyAnimeList) {
+    text +=
+        u" "_s + tr("(anime IDs are %1's, not MyAnimeList's)").arg(services::serviceName(service));
   }
 
   report(text);
@@ -871,17 +873,17 @@ void MainWindow::initServicesMenu() {
     ui_->menuServices->addAction(text, this, [url]() { QDesktopServices::openUrl(QUrl{url}); });
   };
 
-  const auto service = sync::currentServiceId();
+  const auto service = services::currentServiceId();
 
   switch (service) {
-    case sync::ServiceId::AniList: {
+    case services::ServiceId::AniList: {
       const auto user = QString::fromStdString(akyuu::accounts.anilistUsername());
       if (user.isEmpty()) break;
       addLink(tr("Go to my profile"), u"https://anilist.co/user/%1"_s.arg(user));
       addLink(tr("Go to my stats"), u"https://anilist.co/user/%1/stats"_s.arg(user));
       break;
     }
-    case sync::ServiceId::Kitsu: {
+    case services::ServiceId::Kitsu: {
       const auto user = QString::fromStdString(akyuu::accounts.kitsuUsername());
       if (user.isEmpty()) break;
       addLink(tr("Go to my feed"), u"https://kitsu.app"_s);
@@ -889,7 +891,7 @@ void MainWindow::initServicesMenu() {
       addLink(tr("Go to my profile"), u"https://kitsu.app/users/%1"_s.arg(user));
       break;
     }
-    case sync::ServiceId::MyAnimeList: {
+    case services::ServiceId::MyAnimeList: {
       const auto user = QString::fromStdString(akyuu::accounts.myanimelistUsername());
       if (user.isEmpty()) break;
       addLink(tr("Go to my panel"), u"https://myanimelist.net/panel.php"_s);
@@ -1160,16 +1162,16 @@ void MainWindow::notifyEpisodeDetected(std::optional<track::Episode> episode) {
 void MainWindow::synchronize() {
   setEnabled(false);
 
-  const auto serviceName = sync::serviceName(sync::currentServiceId());
-  const auto text = sync::willAuthenticate() ? tr("Authenticating with %1...").arg(serviceName)
-                                             : tr("Synchronizing with %1...").arg(serviceName);
+  const auto serviceName = services::serviceName(services::currentServiceId());
+  const auto text = services::willAuthenticate() ? tr("Authenticating with %1...").arg(serviceName)
+                                                 : tr("Synchronizing with %1...").arg(serviceName);
 
   m_statusBarController->showMessage({
       .source = StatusBarController::Source::Sync,
       .text = text,
   });
 
-  if (!sync::synchronize()) {
+  if (!services::synchronize()) {
     m_statusBarController->clearMessage(StatusBarController::Source::Sync);
     setEnabled(true);
   }

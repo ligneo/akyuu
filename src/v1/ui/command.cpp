@@ -1,6 +1,7 @@
 /*
 ** Taiga
 ** Copyright (C) 2010-2021, Eren Okka
+** Copyright (C) 2026, cenky <cenkkgl@gmail.com>
 **
 ** This program is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -131,7 +132,7 @@ void ExecuteCommand(const std::wstring& str, WPARAM wParam, LPARAM lParam) {
   // Synchronize()
   //   Synchronizes local and remote lists.
   } else if (command == L"Synchronize") {
-    sync::Synchronize();
+    services::Synchronize();
 
   // SearchAnime()
   //   wParam is a BOOL value that defines local search.
@@ -149,15 +150,15 @@ void ExecuteCommand(const std::wstring& str, WPARAM wParam, LPARAM lParam) {
   //   lParam is an anime ID, or a pointer to a vector of anime IDs.
   } else if (command == L"ViewAnimePage") {
     const auto view_anime_page = [](const int anime_id) {
-      switch (sync::GetCurrentServiceId()) {
-        case sync::ServiceId::MyAnimeList:
-          sync::myanimelist::ViewAnimePage(anime_id);
+      switch (services::GetCurrentServiceId()) {
+        case services::ServiceId::MyAnimeList:
+          services::myanimelist::ViewAnimePage(anime_id);
           break;
-        case sync::ServiceId::Kitsu:
-          sync::kitsu::ViewAnimePage(anime_id);
+        case services::ServiceId::Kitsu:
+          services::kitsu::ViewAnimePage(anime_id);
           break;
-        case sync::ServiceId::AniList:
-          sync::anilist::ViewAnimePage(anime_id);
+        case services::ServiceId::AniList:
+          services::anilist::ViewAnimePage(anime_id);
           break;
       }
     };
@@ -196,9 +197,9 @@ void ExecuteCommand(const std::wstring& str, WPARAM wParam, LPARAM lParam) {
   // ViewUpcomingAnime
   //   Opens up upcoming anime page on MAL.
   } else if (command == L"ViewUpcomingAnime") {
-    switch (sync::GetCurrentServiceId()) {
-      case sync::ServiceId::MyAnimeList:
-        sync::myanimelist::ViewUpcomingAnime();
+    switch (services::GetCurrentServiceId()) {
+      case services::ServiceId::MyAnimeList:
+        services::myanimelist::ViewUpcomingAnime();
         break;
     }
 
@@ -207,30 +208,30 @@ void ExecuteCommand(const std::wstring& str, WPARAM wParam, LPARAM lParam) {
   // MalViewHistory()
   //   Opens up MyAnimeList user pages.
   } else if (command == L"MalViewPanel") {
-    sync::myanimelist::ViewPanel();
+    services::myanimelist::ViewPanel();
   } else if (command == L"MalViewProfile") {
-    sync::myanimelist::ViewProfile();
+    services::myanimelist::ViewProfile();
   } else if (command == L"MalViewHistory") {
-    sync::myanimelist::ViewHistory();
+    services::myanimelist::ViewHistory();
 
   // KitsuViewFeed()
   // KitsuViewLibrary()
   // KitsuViewProfile()
   //   Opens up Kitsu user pages.
   } else if (command == L"KitsuViewFeed") {
-    sync::kitsu::ViewFeed();
+    services::kitsu::ViewFeed();
   } else if (command == L"KitsuViewLibrary") {
-    sync::kitsu::ViewLibrary();
+    services::kitsu::ViewLibrary();
   } else if (command == L"KitsuViewProfile") {
-    sync::kitsu::ViewProfile();
+    services::kitsu::ViewProfile();
 
   // AniListViewProfile()
   // AniListViewStats()
   //   Opens up AniList user pages.
   } else if (command == L"AniListViewProfile") {
-    sync::anilist::ViewProfile();
+    services::anilist::ViewProfile();
   } else if (command == L"AniListViewStats") {
-    sync::anilist::ViewStats();
+    services::anilist::ViewStats();
 
   //////////////////////////////////////////////////////////////////////////////
 
@@ -700,7 +701,7 @@ void ExecuteCommand(const std::wstring& str, WPARAM wParam, LPARAM lParam) {
     taiga::settings.SetAppSeasonsLastSeason(
         ui::TranslateSeason(anime::season_db.current_season));
     if (anime::season_db.items.empty()) {
-      sync::GetSeason(anime::season_db.current_season);
+      services::GetSeason(anime::season_db.current_season);
     } else {
       ui::OnLibraryGetSeason();
     }

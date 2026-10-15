@@ -1,6 +1,7 @@
 /*
 ** Taiga
 ** Copyright (C) 2010-2021, Eren Okka
+** Copyright (C) 2026, cenky <cenkkgl@gmail.com>
 **
 ** This program is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -277,7 +278,7 @@ void Settings::ApplyChanges() {
     library::history.Load();
     CurrentEpisode.Set(anime::ID_UNKNOWN);
     taiga::stats.CalculateAll();
-    sync::InvalidateUserAuthentication();
+    services::InvalidateUserAuthentication();
     ui::OnSettingsUserChange();
     ui::OnSettingsServiceChange();
     changed_account_or_service_ = false;
@@ -298,8 +299,8 @@ void Settings::SetModified() {
 ////////////////////////////////////////////////////////////////////////////////
 
 std::wstring GetCurrentUserDisplayName() {
-  switch (sync::GetCurrentServiceId()) {
-    case sync::ServiceId::Kitsu: {
+  switch (services::GetCurrentServiceId()) {
+    case services::ServiceId::Kitsu: {
       const auto display_name = settings.GetSyncServiceKitsuDisplayName();
       if (!display_name.empty())
         return display_name;
@@ -311,12 +312,12 @@ std::wstring GetCurrentUserDisplayName() {
 }
 
 std::wstring GetCurrentUsername() {
-  switch (sync::GetCurrentServiceId()) {
-    case sync::ServiceId::MyAnimeList:
+  switch (services::GetCurrentServiceId()) {
+    case services::ServiceId::MyAnimeList:
       return settings.GetSyncServiceMalUsername();
-    case sync::ServiceId::Kitsu:
+    case services::ServiceId::Kitsu:
       return settings.GetSyncServiceKitsuUsername();
-    case sync::ServiceId::AniList:
+    case services::ServiceId::AniList:
       return settings.GetSyncServiceAniListUsername();
     default:
       return {};

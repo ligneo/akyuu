@@ -1,6 +1,7 @@
 /*
 ** Taiga
 ** Copyright (C) 2010-2021, Eren Okka
+** Copyright (C) 2026, cenky <cenkkgl@gmail.com>
 **
 ** This program is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -32,7 +33,7 @@ enum class SeriesType;
 class Item;
 }
 
-namespace sync::anilist {
+namespace services::anilist {
 
 enum class RatingSystem;
 
@@ -54,4 +55,4 @@ void ViewAnimePage(int anime_id);
 void ViewProfile();
 void ViewStats();
 
-}  // namespace sync::anilist
+}  // namespace services::anilist

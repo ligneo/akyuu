@@ -1,6 +1,7 @@
 /*
 ** Taiga
 ** Copyright (C) 2010-2021, Eren Okka
+** Copyright (C) 2026, cenky <cenkkgl@gmail.com>
 **
 ** This program is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -313,8 +314,8 @@ BOOL AnimeDialog::PreTranslateMessage(MSG* pMsg) {
           UpdateTitle(true);
           auto anime_item = anime::db.Find(anime_id_);
           if (anime_item) {
-            sync::GetMetadataById(anime_id_);
-            sync::DownloadImage(anime_id_, anime_item->GetImageUrl());
+            services::GetMetadataById(anime_id_);
+            services::DownloadImage(anime_id_, anime_item->GetImageUrl());
           }
         }
         return TRUE;
@@ -697,7 +698,7 @@ void AnimeDialog::Refresh(bool image, bool series_info, bool my_info, bool conne
       add_info_lines(upcoming);
       content += L"\n\n";
     } else {
-      if (sync::GetCurrentServiceId() == sync::ServiceId::MyAnimeList)
+      if (services::GetCurrentServiceId() == services::ServiceId::MyAnimeList)
         content += L"<a href=\"ViewUpcomingAnime()\">View upcoming anime</a>";
     }
 

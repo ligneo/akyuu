@@ -1,6 +1,7 @@
 /*
 ** Taiga
 ** Copyright (C) 2010-2021, Eren Okka
+** Copyright (C) 2026, cenky <cenkkgl@gmail.com>
 **
 ** This program is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -180,7 +181,7 @@ void Settings::InitKeyMap() const {
       {AppSettingKey::StreamYoutube, {"recognition/streaming/providers/youtube", true}},
 
       // Sharing
-      {AppSettingKey::ShareDiscordApplicationId, {"announce/discord/applicationid", std::wstring{link::discord::kApplicationId}}},
+      {AppSettingKey::ShareDiscordApplicationId, {"announce/discord/applicationid", std::wstring{share::discord::kApplicationId}}},
       {AppSettingKey::ShareDiscordEnabled, {"announce/discord/enabled", false}},
       {AppSettingKey::ShareDiscordGroupEnabled, {"announce/discord/groupenabled", true}},
       {AppSettingKey::ShareDiscordTimeEnabled, {"announce/discord/timeenabled", true}},
@@ -191,7 +192,7 @@ void Settings::InitKeyMap() const {
       {AppSettingKey::ShareMircEnabled, {"announce/mirc/enabled", false}},
       {AppSettingKey::ShareMircMultiServer, {"announce/mirc/multiserver", false}},
       {AppSettingKey::ShareMircUseMeAction, {"announce/mirc/useaction", true}},
-      {AppSettingKey::ShareMircMode, {"announce/mirc/mode", link::mirc::kChannelModeActive}},
+      {AppSettingKey::ShareMircMode, {"announce/mirc/mode", share::mirc::kChannelModeActive}},
       {AppSettingKey::ShareMircChannels, {"announce/mirc/channels", std::wstring{L"#kitsu, #myanimelist, #taiga"}}},
       {AppSettingKey::ShareMircFormat, {"announce/mirc/format", std::wstring{kDefaultFormatMirc}}},
       {AppSettingKey::ShareMircService, {"announce/mirc/service", std::wstring{L"mIRC"}}},
@@ -293,12 +294,12 @@ semaver::Version Settings::GetMetaVersion() const {
 
 // Services
 
-sync::ServiceId Settings::GetSyncActiveService() const {
+services::ServiceId Settings::GetSyncActiveService() const {
   const auto slug = value<std::wstring>(AppSettingKey::SyncActiveService);
-  return sync::GetServiceIdBySlug(slug);
+  return services::GetServiceIdBySlug(slug);
 }
 
-void Settings::SetSyncActiveService(const sync::ServiceId service_id) {
+void Settings::SetSyncActiveService(const services::ServiceId service_id) {
   const auto previous_service_id = GetSyncActiveService();
 
   if (service_id != previous_service_id) {
@@ -310,8 +311,8 @@ void Settings::SetSyncActiveService(const sync::ServiceId service_id) {
     if (!anime::db.items.empty()) {
       if (ui::OnSettingsServiceChangeConfirm(previous_service_id, service_id)) {
         LOGW(L"Changing the active service from {} to {}.",
-             sync::GetServiceNameById(previous_service_id),
-             sync::GetServiceNameById(service_id));
+             services::GetServiceNameById(previous_service_id),
+             services::GetServiceNameById(service_id));
         anime::db.SaveList(true);
         anime::db.items.clear();
         anime::db.SaveDatabase();
@@ -323,7 +324,7 @@ void Settings::SetSyncActiveService(const sync::ServiceId service_id) {
     }
   }
 
-  const auto slug = sync::GetServiceSlugById(service_id);
+  const auto slug = services::GetServiceSlugById(service_id);
   if (set_value(AppSettingKey::SyncActiveService, slug)) {
     changed_account_or_service_ = true;
   }
@@ -343,7 +344,7 @@ std::wstring Settings::GetSyncServiceMalUsername() const {
 
 void Settings::SetSyncServiceMalUsername(const std::wstring& username) {
   if (set_value(AppSettingKey::SyncServiceMalUsername, username)) {
-    if (sync::GetCurrentServiceId() == sync::ServiceId::MyAnimeList) {
+    if (services::GetCurrentServiceId() == services::ServiceId::MyAnimeList) {
       changed_account_or_service_ = true;
     }
   }
@@ -382,7 +383,7 @@ void Settings::SetSyncServiceKitsuEmail(const std::wstring& email) {
     set_value(AppSettingKey::SyncServiceKitsuDisplayName, std::wstring{});
     set_value(AppSettingKey::SyncServiceKitsuUsername, std::wstring{});
 
-    if (sync::GetCurrentServiceId() == sync::ServiceId::Kitsu) {
+    if (services::GetCurrentServiceId() == services::ServiceId::Kitsu) {
       changed_account_or_service_ = true;
     }
   }
@@ -426,7 +427,7 @@ std::wstring Settings::GetSyncServiceAniListUsername() const {
 
 void Settings::SetSyncServiceAniListUsername(const std::wstring& username) {
   if (set_value(AppSettingKey::SyncServiceAniListUsername, username)) {
-    if (sync::GetCurrentServiceId() == sync::ServiceId::AniList) {
+    if (services::GetCurrentServiceId() == services::ServiceId::AniList) {
       changed_account_or_service_ = true;
     }
   }
@@ -998,10 +999,10 @@ bool Settings::GetShareDiscordEnabled() const {
 void Settings::SetShareDiscordEnabled(const bool enabled) {
   if (set_value(AppSettingKey::ShareDiscordEnabled, enabled)) {
     if (enabled) {
-      link::discord::Initialize();
+      share::discord::Initialize();
       taiga::announcer.Do(kAnnounceToDiscord);
     } else {
-      link::discord::Shutdown();
+      share::discord::Shutdown();
     }
   }
 }

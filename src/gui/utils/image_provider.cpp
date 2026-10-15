@@ -138,7 +138,7 @@ void ImageProvider::reloadPoster(const int id) {
 
 QString ImageProvider::cachePath() const {
   const auto path = QString::fromStdString(akyuu::get_data_path());
-  const auto service = sync::serviceSlug(sync::currentServiceId());
+  const auto service = services::serviceSlug(services::currentServiceId());
   return u"%1/cache/%2/media"_s.arg(path).arg(service);
 }
 

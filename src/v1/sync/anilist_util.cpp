@@ -1,6 +1,7 @@
 /*
 ** Taiga
 ** Copyright (C) 2010-2021, Eren Okka
+** Copyright (C) 2026, cenky <cenkkgl@gmail.com>
 **
 ** This program is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -31,7 +32,7 @@
 #include "sync/anilist_ratings.h"
 #include "taiga/settings.h"
 
-namespace sync::anilist {
+namespace services::anilist {
 
 Date TranslateFuzzyDateFrom(const Json& json) {
   return Date{
@@ -216,4 +217,4 @@ void ViewStats() {
       taiga::settings.GetSyncServiceAniListUsername()));
 }
 
-}  // namespace sync::anilist
+}  // namespace services::anilist

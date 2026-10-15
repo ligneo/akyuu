@@ -38,9 +38,9 @@
 // AniList API documentation:
 // https://docs.anilist.co/
 
-namespace sync::anilist {
+namespace services::anilist {
 
-Service::Service() : sync::Service{ServiceId::AniList} {
+Service::Service() : services::Service{ServiceId::AniList} {
   api_.setBaseUrl(QUrl{"https://graphql.anilist.co"});
 
   if (const auto token = akyuu::accounts.anilistToken(); !token.empty()) {
@@ -64,7 +64,7 @@ void Service::fetchAnime(const int id) {
   const auto callback = [this, id](QRestReply& reply) {
     if (isError(reply)) {
       if (reply.httpStatus() == 404) {
-        sync::invalidateAnime(id);
+        services::invalidateAnime(id);
       } else {
         handleError(*this, reply);
       }
@@ -89,8 +89,9 @@ void Service::fetchAnime(const int id) {
 // to MyAnimeList's format needs it. A page holds 50, so the IDs go in batches, one after another.
 void Service::fetchMalIds(const QList<int>& ids,
                           const std::function<void(std::optional<QMap<int, int>>)>& done) {
-  const auto next = [this, done](this auto const& next, QList<int> remaining,
-                                 QMap<int, int> found) -> void {
+  // GCC 15 rejects `this` inside a lambda with an explicit object parameter.
+  const auto next = [service = this, done](this auto const& next, QList<int> remaining,
+                                           QMap<int, int> found) -> void {
     if (remaining.isEmpty()) {
       done(found);
       return;
@@ -107,26 +108,26 @@ void Service::fetchMalIds(const QList<int>& ids,
         {"variables", QJsonObject{{"ids", variables}}},
     }};
 
-    manager_.post(api_.createRequest(), data, this,
-                  [this, next, remaining, found, done](QRestReply& reply) mutable {
-                    if (isError(reply)) {
-                      handleError(*this, reply);
-                      done(std::nullopt);
-                      return;
-                    }
-                    const auto json = reply.readJson();
-                    if (!json) {
-                      handleError(*this, reply, "Could not parse media IDs.");
-                      done(std::nullopt);
-                      return;
-                    }
-                    for (const auto& value : (*json)["data"]["Page"]["media"].toArray()) {
-                      const auto media = value.toObject();
-                      const auto malId = media["idMal"].toInt();
-                      if (malId > 0) found[media["id"].toInt()] = malId;
-                    }
-                    next(remaining, found);
-                  });
+    service->manager_.post(service->api_.createRequest(), data, service,
+                           [service, next, remaining, found, done](QRestReply& reply) mutable {
+                             if (isError(reply)) {
+                               handleError(*service, reply);
+                               done(std::nullopt);
+                               return;
+                             }
+                             const auto json = reply.readJson();
+                             if (!json) {
+                               handleError(*service, reply, "Could not parse media IDs.");
+                               done(std::nullopt);
+                               return;
+                             }
+                             for (const auto& value : (*json)["data"]["Page"]["media"].toArray()) {
+                               const auto media = value.toObject();
+                               const auto malId = media["idMal"].toInt();
+                               if (malId > 0) found[media["id"].toInt()] = malId;
+                             }
+                             next(remaining, found);
+                           });
   };
 
   next(ids, {});
@@ -236,7 +237,7 @@ void Service::fetchListEntries() {
     anime::db.updateItems(items);
     anime::db.updateEntries(entries);
 
-    sync::pruneMissingEntries(fetchedIds);
+    services::pruneMissingEntries(fetchedIds);
     emit listEntriesFetched();
   };
 
@@ -262,11 +263,11 @@ void Service::deleteListEntry(const int id) {
   const auto callback = [this](QRestReply& reply) {
     if (isError(reply) && reply.httpStatus() != 404) {
       handleError(*this, reply);
-      sync::queue.complete(false, "Failed to delete list entry.");
+      services::queue.complete(false, "Failed to delete list entry.");
       return;
     }
 
-    sync::queue.complete(true);
+    services::queue.complete(true);
   };
 
   manager_.post(api_.createRequest(), data, this, callback);
@@ -308,7 +309,7 @@ void Service::updateListEntry(const int id, const anime::list::Fields dirty) {
   const auto callback = [this](QRestReply& reply) {
     if (isError(reply)) {
       handleError(*this, reply);
-      sync::queue.complete(false, "Failed to update list entry.");
+      services::queue.complete(false, "Failed to update list entry.");
       return;
     }
 
@@ -318,7 +319,7 @@ void Service::updateListEntry(const int id, const anime::list::Fields dirty) {
 
     if (!entry) {
       handleError(*this, reply, "Could not parse list entry.");
-      sync::queue.complete(false, "Could not parse list entry.");
+      services::queue.complete(false, "Could not parse list entry.");
       return;
     }
 
@@ -326,13 +327,13 @@ void Service::updateListEntry(const int id, const anime::list::Fields dirty) {
       anime::db.updateItem(*item);
     }
     if (const auto listEntry = parseListEntry(*entry)) {
-      sync::queue.complete(*listEntry);
+      services::queue.complete(*listEntry);
     } else {
-      sync::queue.complete(true);
+      services::queue.complete(true);
     }
   };
 
   manager_.post(api_.createRequest(), data, this, callback);
 }
 
-}  // namespace sync::anilist
+}  // namespace services::anilist

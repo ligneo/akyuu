@@ -1,6 +1,7 @@
 /*
 ** Taiga
 ** Copyright (C) 2010-2021, Eren Okka
+** Copyright (C) 2026, cenky <cenkkgl@gmail.com>
 **
 ** This program is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -35,7 +36,7 @@
 #include "sync/service.h"
 #include "taiga/settings.h"
 
-namespace sync::myanimelist {
+namespace services::myanimelist {
 
 std::vector<Rating> GetMyRatings() {
   constexpr int k = anime::kUserScoreMax / 10;
@@ -263,4 +264,4 @@ void ViewUpcomingAnime() {
               L"&em=0&ed=0&ey=0&o=2&w=&c[]=a&c[]=d&cv=1");
 }
 
-}  // namespace sync::myanimelist
+}  // namespace services::myanimelist

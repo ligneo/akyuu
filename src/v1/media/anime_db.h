@@ -1,6 +1,7 @@
 /*
 ** Taiga
 ** Copyright (C) 2010-2021, Eren Okka
+** Copyright (C) 2026, cenky <cenkkgl@gmail.com>
 **
 ** This program is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -31,7 +32,7 @@ namespace pugi {
 class xml_document;
 class xml_node;
 }
-namespace sync {
+namespace services {
 enum class ServiceId;
 }
 
@@ -43,7 +44,7 @@ public:
   bool SaveDatabase() const;
 
   Item* Find(int id, bool log_error = true);
-  Item* Find(const std::wstring& id, sync::ServiceId service,
+  Item* Find(const std::wstring& id, services::ServiceId service,
              bool log_error = true);
 
   void ClearInvalidItems();

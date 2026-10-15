@@ -1,6 +1,7 @@
 /*
 ** Taiga
 ** Copyright (C) 2010-2021, Eren Okka
+** Copyright (C) 2026, cenky <cenkkgl@gmail.com>
 **
 ** This program is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -341,7 +342,7 @@ void OnHistoryAddItem(const library::QueueItem& queue_item) {
       DlgAnimeList.listview.SortFromSettings();
   }
 
-  if (!sync::IsUserAuthenticated()) {
+  if (!services::IsUserAuthenticated()) {
     auto anime_item = anime::db.Find(queue_item.anime_id);
     if (anime_item) {
       ChangeStatusText(L"\"{}\" is queued for update."_format(
@@ -382,7 +383,7 @@ int OnHistoryQueueClear() {
   win::TaskDialog dlg(L"Clear Queue", TD_ICON_INFORMATION);
   dlg.SetMainInstruction(L"Do you want to clear your update queue?");
   const std::wstring content = L"Queued updates will not be sent to {}."_format(
-      sync::GetCurrentServiceName());
+      services::GetCurrentServiceName());
   dlg.SetContent(content.c_str());
 
   dlg.UseCommandLinks(true);
@@ -631,17 +632,17 @@ void OnSettingsServiceChange() {
   DlgMain.navigation.RefreshSearchText(current_page);
 
   const std::wstring tooltip =
-      L"Synchronize list with " + sync::GetCurrentServiceName();
+      L"Synchronize list with " + services::GetCurrentServiceName();
   DlgMain.toolbar_main.SetButtonTooltip(0, tooltip.c_str());
 }
 
-bool OnSettingsServiceChangeConfirm(const sync::ServiceId current_service,
-                                    const sync::ServiceId new_service) {
+bool OnSettingsServiceChangeConfirm(const services::ServiceId current_service,
+                                    const services::ServiceId new_service) {
   win::TaskDialog dlg(TAIGA_APP_NAME, TD_ICON_WARNING);
   std::wstring instruction =
       L"Do you want to change the active service from {} to {}?"_format(
-      sync::GetServiceNameById(current_service),
-      sync::GetServiceNameById(new_service));
+      services::GetServiceNameById(current_service),
+      services::GetServiceNameById(new_service));
   dlg.SetMainInstruction(instruction.c_str());
   dlg.SetContent(L"Note that:\n"
                  L"- Taiga cannot move your list from one service to another. "

@@ -1,6 +1,7 @@
 /**
  * Akyuu
  * Copyright (C) 2010-2026, Eren Okka
+ * Copyright (C) 2026, cenky <cenkkgl@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,7 +34,7 @@
 #include "media/anime_list_utils.hpp"
 #include "sync/service.hpp"
 
-namespace sync {
+namespace services {
 
 Queue::Queue() : QObject{} {}
 
@@ -361,4 +362,4 @@ void Queue::migrateFromV1() {
   }
 }
 
-}  // namespace sync
+}  // namespace services

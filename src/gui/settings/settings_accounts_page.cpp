@@ -169,9 +169,9 @@ AccountsPage::AccountsPage(QWidget* parent)
     const auto group = new QGroupBox(tr("Synchronization"), this);
     const auto groupLayout = new QVBoxLayout(group);
 
-    for (const auto id :
-         {sync::ServiceId::AniList, sync::ServiceId::Kitsu, sync::ServiceId::MyAnimeList}) {
-      m_comboService->addItem(sync::serviceName(id), sync::serviceSlug(id));
+    for (const auto id : {services::ServiceId::AniList, services::ServiceId::Kitsu,
+                          services::ServiceId::MyAnimeList}) {
+      m_comboService->addItem(services::serviceName(id), services::serviceSlug(id));
     }
     groupLayout->addWidget(new QLabel(tr("Active service and metadata provider:"), group));
     groupLayout->addWidget(m_comboService);
@@ -260,17 +260,17 @@ void AccountsPage::save() {
   akyuu::accounts.setKitsuEmail(email);
   akyuu::accounts.setKitsuPassword(password);
 
-  if (sync::currentServiceId() == sync::ServiceId::Kitsu && kitsuChanged && !email.empty() &&
-      !password.empty()) {
+  if (services::currentServiceId() == services::ServiceId::Kitsu && kitsuChanged &&
+      !email.empty() && !password.empty()) {
     akyuu::accounts.setKitsuAuthenticated(false);
-    sync::authenticateUser();
+    services::authenticateUser();
   } else if (service != previousService) {
     mainWindow()->ui()->actionSynchronize->trigger();
   }
 }
 
 void AccountsPage::authorizeAnilist() {
-  QDesktopServices::openUrl(QUrl{QString::fromStdString(sync::anilist::requestTokenUrl())});
+  QDesktopServices::openUrl(QUrl{QString::fromStdString(services::anilist::requestTokenUrl())});
 
   QString pin;
   if (!enterAuthorizationPin(this, u"AniList"_s, pin)) return;
@@ -278,10 +278,10 @@ void AccountsPage::authorizeAnilist() {
   const auto token = extractToken(pin, "access_token");
   if (token.isEmpty()) return;
 
-  sync::anilist::Service::instance()->setAccessToken(token);
+  services::anilist::Service::instance()->setAccessToken(token);
   akyuu::accounts.setAnilistAuthenticated(false);
 
-  if (sync::currentServiceId() == sync::ServiceId::AniList) {
+  if (services::currentServiceId() == services::ServiceId::AniList) {
     mainWindow()->ui()->actionSynchronize->trigger();
   }
 }
@@ -290,7 +290,7 @@ void AccountsPage::authorizeMyanimelist() {
   if (!acceptMyAnimeListPrivacyNotice(this)) return;
 
   std::string codeVerifier;
-  const auto url = sync::myanimelist::authorizationCodeUrl(codeVerifier);
+  const auto url = services::myanimelist::authorizationCodeUrl(codeVerifier);
   if (!QDesktopServices::openUrl(QUrl{QString::fromStdString(url)})) {
     QMessageBox::critical(this, tr("MyAnimeList sign-in"),
                           tr("Could not open MyAnimeList in your web browser. "
@@ -304,8 +304,8 @@ void AccountsPage::authorizeMyanimelist() {
   const auto code = extractToken(pin, "code");
   if (code.isEmpty()) return;
 
-  sync::myanimelist::Service::instance()->requestAccessToken(code,
-                                                             QString::fromStdString(codeVerifier));
+  services::myanimelist::Service::instance()->requestAccessToken(
+      code, QString::fromStdString(codeVerifier));
 }
 
 void AccountsPage::updateStatus() {

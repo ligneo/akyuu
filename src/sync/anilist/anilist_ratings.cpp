@@ -1,6 +1,7 @@
 /**
  * Akyuu
  * Copyright (C) 2010-2026, Eren Okka
+ * Copyright (C) 2026, cenky <cenkkgl@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +26,7 @@
 #include "media/anime_list.hpp"
 #include "sync/service.hpp"
 
-namespace sync::anilist {
+namespace services::anilist {
 
 QList<Rating> ratingList(const RatingSystem ratingSystem) {
   constexpr int k = anime::list::kScoreMax / 100;
@@ -175,4 +176,4 @@ RatingSystem parseRatingSystem(const QString& value) {
   return table.value(value, kDefaultRatingSystem);
 }
 
-}  // namespace sync::anilist
+}  // namespace services::anilist

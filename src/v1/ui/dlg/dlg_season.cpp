@@ -1,6 +1,7 @@
 /*
 ** Taiga
 ** Copyright (C) 2010-2021, Eren Okka
+** Copyright (C) 2026, cenky <cenkkgl@gmail.com>
 **
 ** This program is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -143,7 +144,7 @@ BOOL SeasonDialog::OnCommand(WPARAM wParam, LPARAM lParam) {
 
     // Refresh data
     case kCommandRefreshSeason:
-      sync::GetSeason(anime::season_db.current_season);
+      services::GetSeason(anime::season_db.current_season);
       return TRUE;
   }
 
@@ -277,11 +278,11 @@ LRESULT SeasonDialog::OnListNotify(LPARAM lParam) {
         text += ui::TranslateType(anime_item->GetType()) + separator +
                 ui::TranslateNumber(anime_item->GetEpisodeCount(), L"?") + L" eps." + separator +
                 ui::TranslateScore(anime_item->GetScore()) + separator;
-        switch (sync::GetCurrentServiceId()) {
+        switch (services::GetCurrentServiceId()) {
           default:
             text += L"#" + ToWstr(anime_item->GetPopularity());
             break;
-          case sync::ServiceId::AniList:
+          case services::ServiceId::AniList:
             text += ToWstr(anime_item->GetPopularity()) + L" users";
             break;
         }
@@ -358,7 +359,7 @@ LRESULT SeasonDialog::OnListCustomDraw(LPARAM lParam) {
       if (!anime_item)
         break;
 
-      const auto current_service = sync::GetCurrentServiceId();
+      const auto current_service = services::GetCurrentServiceId();
 
       // Draw border
       rect.Inflate(-4, -4);
@@ -455,7 +456,7 @@ LRESULT SeasonDialog::OnListCustomDraw(LPARAM lParam) {
               default:
                 text = L"#" + ToWstr(anime_item->GetPopularity());
                 break;
-              case sync::ServiceId::AniList:
+              case services::ServiceId::AniList:
                 text = ToWstr(anime_item->GetPopularity()) + L" users";
                 break;
             }
@@ -488,17 +489,17 @@ LRESULT SeasonDialog::OnListCustomDraw(LPARAM lParam) {
       DRAWLINE(L"Aired:");
       DRAWLINE(L"Episodes:");
       switch (current_service) {
-        case sync::ServiceId::MyAnimeList:
-        case sync::ServiceId::AniList:
+        case services::ServiceId::MyAnimeList:
+        case services::ServiceId::AniList:
           DRAWLINE(L"Genres:");
           break;
-        case sync::ServiceId::Kitsu:
+        case services::ServiceId::Kitsu:
           DRAWLINE(L"Categories:");
           break;
       }
       switch (current_service) {
-        case sync::ServiceId::MyAnimeList:
-        case sync::ServiceId::AniList:
+        case services::ServiceId::MyAnimeList:
+        case services::ServiceId::AniList:
           DRAWLINE(L"Producers:");
           break;
       }
@@ -517,8 +518,8 @@ LRESULT SeasonDialog::OnListCustomDraw(LPARAM lParam) {
       DRAWLINE(ui::TranslateNumber(anime_item->GetEpisodeCount(), L"Unknown"));
       DRAWLINE(anime_item->GetGenres().empty() ? L"?" : Join(anime_item->GetGenres(), L", "));
       switch (current_service) {
-        case sync::ServiceId::MyAnimeList:
-        case sync::ServiceId::AniList: {
+        case services::ServiceId::MyAnimeList:
+        case services::ServiceId::AniList: {
           const auto producers = anime::GetStudiosAndProducers(*anime_item);
           DRAWLINE(producers.empty() ? L"?" : Join(producers, L", "));
           break;
@@ -529,7 +530,7 @@ LRESULT SeasonDialog::OnListCustomDraw(LPARAM lParam) {
         default:
           DRAWLINE(L"#" + ToWstr(anime_item->GetPopularity()));
           break;
-        case sync::ServiceId::AniList:
+        case services::ServiceId::AniList:
           DRAWLINE(ToWstr(anime_item->GetPopularity()) + L" users");
           break;
       }
@@ -613,11 +614,11 @@ void SeasonDialog::EnableInput(bool enable) {
 
 void SeasonDialog::RefreshData(const std::vector<int>& anime_ids) {
   for (const auto& id : anime_ids) {
-    sync::GetMetadataById(id);
+    services::GetMetadataById(id);
 
     if (const auto anime_item = anime::db.Find(id)) {
       if (!anime_item->GetImageUrl().empty()) {
-        sync::DownloadImage(id, anime_item->GetImageUrl());
+        services::DownloadImage(id, anime_item->GetImageUrl());
       }
     }
   }
@@ -736,11 +737,11 @@ void SeasonDialog::RefreshList(bool redraw_only) {
       list_.Sort(0, -1, ui::kListSortEpisodeCount, ui::ListViewCompareProc);
       break;
     case kSeasonSortByPopularity:
-      switch (sync::GetCurrentServiceId()) {
+      switch (services::GetCurrentServiceId()) {
         default:
           list_.Sort(0, 1, ui::kListSortPopularity, ui::ListViewCompareProc);
           break;
-        case sync::ServiceId::AniList:
+        case services::ServiceId::AniList:
           list_.Sort(0, -1, ui::kListSortPopularity, ui::ListViewCompareProc);
           break;
       }
@@ -864,12 +865,12 @@ void SeasonDialog::SetViewMode(int mode) {
 }
 
 int SeasonDialog::GetLineCount() const {
-  switch (sync::GetCurrentServiceId()) {
+  switch (services::GetCurrentServiceId()) {
     default:
-    case sync::ServiceId::MyAnimeList:
-    case sync::ServiceId::AniList:
+    case services::ServiceId::MyAnimeList:
+    case services::ServiceId::AniList:
       return 6;
-    case sync::ServiceId::Kitsu:
+    case services::ServiceId::Kitsu:
       return 5;  // missing producers
   }
 }

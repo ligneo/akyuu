@@ -1,6 +1,7 @@
 /*
 ** Taiga
 ** Copyright (C) 2010-2021, Eren Okka
+** Copyright (C) 2026, cenky <cenkkgl@gmail.com>
 **
 ** This program is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -33,7 +34,7 @@ namespace taiga::http {
 using Transfer = hypr::detail::Transfer;
 }
 
-namespace sync {
+namespace services {
 
 enum class RequestType {
   RequestAccessToken,
@@ -74,4 +75,4 @@ void OnResponse(const RequestType type);
 
 void OnInvalidAnimeId(const int id);
 
-}  // namespace sync
+}  // namespace services

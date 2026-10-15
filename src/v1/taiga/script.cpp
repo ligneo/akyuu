@@ -1,6 +1,7 @@
 /*
 ** Taiga
 ** Copyright (C) 2010-2021, Eren Okka
+** Copyright (C) 2026, cenky <cenkkgl@gmail.com>
 **
 ** This program is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -118,20 +119,20 @@ std::wstring ReplaceVariables(const std::wstring& str,
     fields[L"total"] = ui::TranslateNumber(anime_item->GetEpisodeCount(), L"");
     fields[L"score"] = ui::TranslateMyScore(anime_item->GetMyScore(), L"");
     fields[L"season"] = ui::TranslateDateToSeasonString(anime_item->GetDateStart());
-    fields[L"id"] = anime_item->GetId(sync::GetCurrentServiceId());
+    fields[L"id"] = anime_item->GetId(services::GetCurrentServiceId());
     fields[L"image"] = anime_item->GetImageUrl();
     fields[L"status"] = ToWstr(static_cast<int>(anime_item->GetMyStatus()));
     fields[L"rewatching"] = ToWstr(anime_item->GetMyRewatching());
     fields[L"notes"] = anime_item->GetMyNotes();
-    switch (sync::GetCurrentServiceId()) {
-      case sync::ServiceId::MyAnimeList:
-        fields[L"animeurl"] = sync::myanimelist::GetAnimePage(*anime_item);
+    switch (services::GetCurrentServiceId()) {
+      case services::ServiceId::MyAnimeList:
+        fields[L"animeurl"] = services::myanimelist::GetAnimePage(*anime_item);
         break;
-      case sync::ServiceId::Kitsu:
-        fields[L"animeurl"] = sync::kitsu::GetAnimePage(*anime_item);
+      case services::ServiceId::Kitsu:
+        fields[L"animeurl"] = services::kitsu::GetAnimePage(*anime_item);
         break;
-      case sync::ServiceId::AniList:
-        fields[L"animeurl"] = sync::anilist::GetAnimePage(*anime_item);
+      case services::ServiceId::AniList:
+        fields[L"animeurl"] = services::anilist::GetAnimePage(*anime_item);
         break;
     }
   }

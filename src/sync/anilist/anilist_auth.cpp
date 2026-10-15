@@ -26,7 +26,7 @@
 #include "sync/anilist/anilist_error.hpp"
 #include "sync/anilist/anilist_utils.hpp"
 
-namespace sync::anilist {
+namespace services::anilist {
 
 void Service::setAccessToken(const QString& token) {
   akyuu::accounts.setAnilistToken(token.toStdString());
@@ -65,4 +65,4 @@ void Service::authenticateUser() {
   manager_.post(api_.createRequest(), data, this, callback);
 }
 
-}  // namespace sync::anilist
+}  // namespace services::anilist

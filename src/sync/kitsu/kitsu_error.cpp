@@ -1,6 +1,7 @@
 /**
  * Akyuu
  * Copyright (C) 2010-2026, Eren Okka
+ * Copyright (C) 2026, cenky <cenkkgl@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,7 +30,7 @@
 #include "base/string.hpp"
 #include "sync/service.hpp"
 
-namespace sync::kitsu {
+namespace services::kitsu {
 
 namespace {
 
@@ -69,11 +70,11 @@ bool isTokenExpired(const QRestReply& reply) {
   return reply.httpStatus() == 401;
 }
 
-void handleError(sync::Service& service, QRestReply& reply, const QString& message) {
+void handleError(services::Service& service, QRestReply& reply, const QString& message) {
   handleError(service, reply, reply.readJson(), message);
 }
 
-void handleError(sync::Service& service, QRestReply& reply,
+void handleError(services::Service& service, QRestReply& reply,
                  const std::optional<QJsonDocument>& json, const QString& message) {
   if (akyuu::isDdosProtectionActive(reply)) {
     const auto server = QString::fromUtf8(reply.networkReply()->rawHeader("Server"));
@@ -98,4 +99,4 @@ void handleError(sync::Service& service, QRestReply& reply,
   }
 }
 
-}  // namespace sync::kitsu
+}  // namespace services::kitsu

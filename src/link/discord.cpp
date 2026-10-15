@@ -30,7 +30,7 @@
 #include "base/log.hpp"
 #include "sync/service.hpp"
 
-namespace link {
+namespace share {
 
 using namespace Qt::StringLiterals;
 
@@ -117,15 +117,15 @@ void Discord::updatePresence(QString details, QString state, const QString& larg
   }
   if (!connectToDiscord()) return;
 
-  const auto service = sync::currentServiceId();
+  const auto service = services::currentServiceId();
 
   const auto userName = [service]() -> QString {
     switch (service) {
-      case sync::ServiceId::AniList:
+      case services::ServiceId::AniList:
         return QString::fromStdString(akyuu::accounts.anilistUsername());
-      case sync::ServiceId::Kitsu:
+      case services::ServiceId::Kitsu:
         return QString::fromStdString(akyuu::accounts.kitsuUsername());
-      case sync::ServiceId::MyAnimeList:
+      case services::ServiceId::MyAnimeList:
         return QString::fromStdString(akyuu::accounts.myanimelistUsername());
       default:
         return {};
@@ -133,13 +133,13 @@ void Discord::updatePresence(QString details, QString state, const QString& larg
   }();
 
   const auto smallText = akyuu::settings.discordUsernameEnabled() && !userName.isEmpty()
-                             ? u"%1 at %2"_s.arg(userName).arg(sync::serviceName(service))
-                             : sync::serviceName(service);
+                             ? u"%1 at %2"_s.arg(userName).arg(services::serviceName(service))
+                             : services::serviceName(service);
 
   QJsonObject assets;
   assets[u"large_image"_s] = largeImage.isEmpty() ? u"default"_s : largeImage;
   assets[u"large_text"_s] = details;
-  assets[u"small_image"_s] = sync::serviceSlug(service);
+  assets[u"small_image"_s] = services::serviceSlug(service);
   assets[u"small_text"_s] = smallText;
 
   QJsonObject activity;
@@ -172,4 +172,4 @@ void Discord::clearPresence() {
                       });
 }
 
-}  // namespace link
+}  // namespace share

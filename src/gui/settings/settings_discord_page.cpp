@@ -72,7 +72,7 @@ void DiscordPage::save() {
   akyuu::settings.setDiscordUsernameEnabled(m_checkUsername->isChecked());
   akyuu::settings.setDiscordGroupEnabled(m_checkGroup->isChecked());
 
-  link::discord()->applySettings();
+  share::discord()->applySettings();
 }
 
 }  // namespace gui
