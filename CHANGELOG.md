@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.1
+
+- Build with GCC 15 and Qt 6.10, so that Fedora, openSUSE, Ubuntu and Debian can build Akyuu
+  from source.
+- Packages from a distribution's repository leave updates to its package manager.
+
 ## 0.1.0
 
 - The first stable release. It contains the same changes as 0.1.0-beta.6; only the version
