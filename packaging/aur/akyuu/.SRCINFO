@@ -1,0 +1,32 @@
+pkgbase = akyuu
+	pkgdesc = Anime list tracker with media player and web browser detection
+	pkgver = 0.1.1
+	pkgrel = 1
+	url = https://github.com/ligneo/akyuu
+	arch = x86_64
+	license = GPL-3.0-or-later
+	makedepends = cmake
+	makedepends = ninja
+	makedepends = git
+	makedepends = qt6-tools
+	depends = qt6-base
+	depends = qt6-multimedia
+	depends = qt6-svg
+	depends = systemd-libs
+	depends = hicolor-icon-theme
+	source = akyuu::git+https://github.com/ligneo/akyuu.git#tag=v0.1.1
+	source = akyuu-anime-relations::git+https://github.com/erengy/anime-relations.git
+	source = akyuu-anisthesia::git+https://github.com/ligneo/anisthesia.git
+	source = akyuu-anitomy::git+https://github.com/ligneo/anitomy.git
+	source = akyuu-nstd::git+https://github.com/erengy/nstd.git
+	source = akyuu-semaver::git+https://github.com/erengy/semaver.git
+	source = akyuu-utf8proc::git+https://github.com/JuliaStrings/utf8proc.git
+	sha256sums = SKIP
+	sha256sums = SKIP
+	sha256sums = SKIP
+	sha256sums = SKIP
+	sha256sums = SKIP
+	sha256sums = SKIP
+	sha256sums = SKIP
+
+pkgname = akyuu

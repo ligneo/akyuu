@@ -44,6 +44,10 @@ public:
   void addListEntry(const int id, const anime::list::Fields dirty);
   void deleteListEntry(const int id);
   void updateListEntry(const int id, const anime::list::Fields dirty);
+
+private:
+  void fetchMalIdBatch(QList<int> remaining, QMap<int, int> found,
+                       const std::function<void(std::optional<QMap<int, int>>)>& done);
 };
 
 }  // namespace services::anilist
