@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.0
+
+- The first stable release. It contains the same changes as 0.1.0-beta.6; only the version
+  changes. Beta users get it as an update, and stable users are not offered betas.
+
 ## 0.1.0-beta.6
 
 - The statistics page no longer squeezes its groups in a short window (#1). Its text shrinks to
