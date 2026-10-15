@@ -1,6 +1,7 @@
 /*
 ** Taiga
 ** Copyright (C) 2010-2021, Eren Okka
+** Copyright (C) 2026, cenky <cenkkgl@gmail.com>
 **
 ** This program is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -100,7 +101,7 @@ bool ExportAsMalXml(const std::wstring& path) {
 
   for (const auto& [id, item] : anime::db.items) {
     if (item.IsInList()) {
-      const auto mal_id = ToInt(item.GetId(sync::ServiceId::MyAnimeList));
+      const auto mal_id = ToInt(item.GetId(services::ServiceId::MyAnimeList));
       if (!mal_id) {
         LOGW(L"MAL ID unavailable for #{} ({})", id, item.GetTitle());
         continue;
@@ -118,7 +119,7 @@ bool ExportAsMalXml(const std::wstring& path) {
       XmlWriteStr(node, L"my_finish_date", item.GetMyDateEnd().to_string());
       XmlWriteStr(node, L"my_fansub_group", L"", pugi::node_cdata);
       XmlWriteStr(node, L"my_rated", L"");
-      XmlWriteInt(node, L"my_score", sync::myanimelist::TranslateMyRatingTo(item.GetMyScore()));
+      XmlWriteInt(node, L"my_score", services::myanimelist::TranslateMyRatingTo(item.GetMyScore()));
       XmlWriteStr(node, L"my_dvd", L"");
       XmlWriteStr(node, L"my_storage", L"");
       XmlWriteStr(node, L"my_status", tr_my_status(item.GetMyStatus()));

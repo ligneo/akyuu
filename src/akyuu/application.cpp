@@ -97,7 +97,7 @@ int Application::run() {
   akyuu::applyAutoStart();
   anime::db.init();
   anime::history.init();
-  sync::queue.init();
+  services::queue.init();
   track::archive.init();
   track::library()->applyWatchSettings();
   if (akyuu::settings.libraryScanOnStartup()) track::library()->scan();

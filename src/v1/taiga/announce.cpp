@@ -1,6 +1,7 @@
 /*
 ** Taiga
 ** Copyright (C) 2010-2021, Eren Okka
+** Copyright (C) 2026, cenky <cenkkgl@gmail.com>
 **
 ** This program is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -37,17 +38,17 @@
 namespace taiga {
 
 Announcer::~Announcer() {
-  link::discord::Shutdown();
+  share::discord::Shutdown();
 }
 
 void Announcer::Clear(int modes, bool force) {
   if (modes & kAnnounceToDiscord)
     if (settings.GetShareDiscordEnabled() || force)
-      link::discord::ClearPresence();
+      share::discord::ClearPresence();
 
   if (modes & kAnnounceToHttp)
     if (settings.GetShareHttpEnabled() || force)
-      link::http::Send(WstrToStr(settings.GetShareHttpUrl()), {});
+      share::http::Send(WstrToStr(settings.GetShareHttpUrl()), {});
 }
 
 void Announcer::Do(int modes, anime::Episode* episode, bool force) {
@@ -70,7 +71,7 @@ void Announcer::Do(int modes, anime::Episode* episode, bool force) {
       LOGD(L"HTTP");
       const auto data = WstrToStr(ReplaceVariables(
           settings.GetShareHttpFormat(), *episode, true, force));
-      link::http::Send(WstrToStr(settings.GetShareHttpUrl()), data);
+      share::http::Send(WstrToStr(settings.GetShareHttpUrl()), data);
     }
   }
 
@@ -98,15 +99,15 @@ void Announcer::Do(int modes, anime::Episode* episode, bool force) {
 
       std::wstring button_url;
       if (anime_item) {
-        switch (sync::GetCurrentServiceId()) {
-          case sync::ServiceId::MyAnimeList:
-            button_url = sync::myanimelist::GetAnimePage(*anime_item);
+        switch (services::GetCurrentServiceId()) {
+          case services::ServiceId::MyAnimeList:
+            button_url = services::myanimelist::GetAnimePage(*anime_item);
             break;
-          case sync::ServiceId::Kitsu:
-            button_url = sync::kitsu::GetAnimePage(*anime_item);
+          case services::ServiceId::Kitsu:
+            button_url = services::kitsu::GetAnimePage(*anime_item);
             break;
-          case sync::ServiceId::AniList:
-            button_url = sync::anilist::GetAnimePage(*anime_item);
+          case services::ServiceId::AniList:
+            button_url = services::anilist::GetAnimePage(*anime_item);
             break;
         }
       }
@@ -115,7 +116,7 @@ void Announcer::Do(int modes, anime::Episode* episode, bool force) {
       if (!force)
         timestamp -= settings.GetSyncUpdateDelay();
 
-      link::discord::UpdatePresence(WstrToStr(details), WstrToStr(state),
+      share::discord::UpdatePresence(WstrToStr(details), WstrToStr(state),
                                     WstrToStr(large_image), "View Anime",
                                     WstrToStr(button_url), timestamp);
     }
@@ -126,7 +127,7 @@ void Announcer::Do(int modes, anime::Episode* episode, bool force) {
       LOGD(L"mIRC");
       const auto data = ReplaceVariables(settings.GetShareMircFormat(),
                                          *episode, false, force);
-      if (!link::mirc::Send(settings.GetShareMircService(),
+      if (!share::mirc::Send(settings.GetShareMircService(),
                             settings.GetShareMircChannels(),
                             data, settings.GetShareMircMode(),
                             settings.GetShareMircUseMeAction(),

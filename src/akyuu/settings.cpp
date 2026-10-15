@@ -79,7 +79,9 @@ std::vector<std::string> Settings::disabledMediaPlayers() const {
 }
 
 std::string Settings::service() const {
-  return value("v1.service", sync::serviceSlug(sync::ServiceId::AniList)).toString().toStdString();
+  return value("v1.service", services::serviceSlug(services::ServiceId::AniList))
+      .toString()
+      .toStdString();
 }
 
 std::vector<std::string> Settings::libraryFolders() const {

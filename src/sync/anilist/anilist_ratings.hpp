@@ -1,6 +1,7 @@
 /**
  * Akyuu
  * Copyright (C) 2010-2024, Eren Okka
+ * Copyright (C) 2026, cenky <cenkkgl@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,11 +22,11 @@
 #include <QList>
 #include <QString>
 
-namespace sync {
+namespace services {
 struct Rating;
 }
 
-namespace sync::anilist {
+namespace services::anilist {
 
 enum class RatingSystem {
   Point_100,
@@ -37,10 +38,10 @@ enum class RatingSystem {
 
 constexpr auto kDefaultRatingSystem = RatingSystem::Point_10;
 
-QList<sync::Rating> ratingList(const RatingSystem ratingSystem);
+QList<services::Rating> ratingList(const RatingSystem ratingSystem);
 
 QString formatRating(int value, const RatingSystem ratingSystem);
 
 RatingSystem parseRatingSystem(const QString& value);
 
-}  // namespace sync::anilist
+}  // namespace services::anilist

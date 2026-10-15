@@ -1,6 +1,7 @@
 /*
 ** Taiga
 ** Copyright (C) 2010-2021, Eren Okka
+** Copyright (C) 2026, cenky <cenkkgl@gmail.com>
 **
 ** This program is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -31,7 +32,7 @@
 #include "sync/kitsu_types.h"
 #include "taiga/settings.h"
 
-namespace sync::kitsu {
+namespace services::kitsu {
 
 RatingSystem GetRatingSystem() {
   return TranslateRatingSystemFrom(
@@ -283,4 +284,4 @@ void ViewProfile() {
       taiga::settings.GetSyncServiceKitsuUsername()));
 }
 
-}  // namespace sync::kitsu
+}  // namespace services::kitsu

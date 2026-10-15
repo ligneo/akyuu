@@ -1,6 +1,7 @@
 /*
 ** Taiga
 ** Copyright (C) 2010-2021, Eren Okka
+** Copyright (C) 2026, cenky <cenkkgl@gmail.com>
 **
 ** This program is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -104,8 +105,8 @@ BOOL SettingsPage::OnInitDialog() {
     // Services > Main
     case kSettingsPageServicesMain: {
       win::ComboBox combo(GetDlgItem(IDC_COMBO_SERVICE));
-      for (const auto service_id : sync::kServiceIds) {
-        combo.AddItem(sync::GetServiceNameById(service_id).c_str(),
+      for (const auto service_id : services::kServiceIds) {
+        combo.AddItem(services::GetServiceNameById(service_id).c_str(),
                       static_cast<LPARAM>(service_id));
         if (service_id == taiga::settings.GetSyncActiveService())
           combo.SetCurSel(combo.GetCount() - 1);
@@ -547,11 +548,11 @@ BOOL SettingsPage::OnCommand(WPARAM wParam, LPARAM lParam) {
           std::wstring service;
           GetDlgItemText(IDC_EDIT_MIRC_SERVICE, service);
 
-          if (!link::mirc::IsRunning()) {
+          if (!share::mirc::IsRunning()) {
             ui::OnMircNotRunning(true);
           } else {
             std::vector<std::wstring> channels;
-            if (!link::mirc::GetChannels(service, channels)) {
+            if (!share::mirc::GetChannels(service, channels)) {
               ui::OnMircDdeConnectionFail(true);
             } else {
               ui::OnMircDdeConnectionSuccess(channels, true);
@@ -565,7 +566,7 @@ BOOL SettingsPage::OnCommand(WPARAM wParam, LPARAM lParam) {
 
         // Authorize AniList
         case IDC_BUTTON_ANILIST_AUTH: {
-          sync::anilist::RequestToken();
+          services::anilist::RequestToken();
           std::wstring auth_pin;
           if (ui::EnterAuthorizationPin(L"AniList", auth_pin)) {
             taiga::settings.SetSyncServiceAniListToken(auth_pin);
@@ -576,10 +577,10 @@ BOOL SettingsPage::OnCommand(WPARAM wParam, LPARAM lParam) {
         // Authorize MyAnimeList
         case IDC_BUTTON_MAL_AUTH: {
           std::wstring code_verifier;
-          sync::myanimelist::RequestAuthorizationCode(code_verifier);
+          services::myanimelist::RequestAuthorizationCode(code_verifier);
           std::wstring authorization_code;
           if (ui::EnterAuthorizationPin(L"MyAnimeList", authorization_code)) {
-            sync::myanimelist::RequestAccessToken(authorization_code, code_verifier);
+            services::myanimelist::RequestAccessToken(authorization_code, code_verifier);
           }
           return TRUE;
         }

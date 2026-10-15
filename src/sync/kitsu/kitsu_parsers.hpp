@@ -1,6 +1,7 @@
 /**
  * Akyuu
  * Copyright (C) 2010-2026, Eren Okka
+ * Copyright (C) 2026, cenky <cenkkgl@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,7 +37,7 @@ enum class Status;
 struct Entry;
 }  // namespace anime::list
 
-namespace sync::kitsu {
+namespace services::kitsu {
 
 anime::AgeRating parseAgeRating(const QString& value);
 float parseScore(const QString& value);
@@ -52,4 +53,4 @@ QString fromListStatus(const anime::list::Status value);
 std::optional<anime::Details> parseAnime(const QJsonValue& data, const QJsonArray& included = {});
 std::optional<anime::list::Entry> parseListEntry(const QJsonValue& json, const int animeId);
 
-}  // namespace sync::kitsu
+}  // namespace services::kitsu

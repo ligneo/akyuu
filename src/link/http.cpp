@@ -27,7 +27,7 @@
 #include "akyuu/settings.hpp"
 #include "base/log.hpp"
 
-namespace link::http {
+namespace share::http {
 
 using namespace Qt::StringLiterals;
 
@@ -55,4 +55,4 @@ void announce(const track::Episode& episode, const bool force) {
   });
 }
 
-}  // namespace link::http
+}  // namespace share::http

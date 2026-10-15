@@ -1,6 +1,7 @@
 /*
 ** Taiga
 ** Copyright (C) 2010-2021, Eren Okka
+** Copyright (C) 2026, cenky <cenkkgl@gmail.com>
 **
 ** This program is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -101,7 +102,7 @@ BOOL MainDialog::OnInitDialog() {
 
   // Apply startup settings
   if (taiga::settings.GetSyncAutoOnStart()) {
-    sync::Synchronize();
+    services::Synchronize();
   }
   if (taiga::settings.GetAppBehaviorScanAvailableEpisodes()) {
     ScanAvailableEpisodesQuick();
@@ -113,7 +114,7 @@ BOOL MainDialog::OnInitDialog() {
   // Display window
   InitWindowPosition();
 
-  if (!sync::IsUserAccountAvailable()) {
+  if (!services::IsUserAccountAvailable()) {
     win::TaskDialog dlg(TAIGA_APP_NAME, TD_ICON_INFORMATION);
     dlg.SetMainInstruction(L"Welcome to Taiga!");
     dlg.SetContent(L"Would you like set up your account now?");
@@ -210,7 +211,7 @@ void MainDialog::CreateDialogControls() {
   // Insert main toolbar buttons
   BYTE fsStyle1 = BTNS_AUTOSIZE;
   BYTE fsStyle2 = BTNS_AUTOSIZE | BTNS_WHOLEDROPDOWN;
-  std::wstring tooltip = L"Synchronize list with " + sync::GetCurrentServiceName();
+  std::wstring tooltip = L"Synchronize list with " + services::GetCurrentServiceName();
   toolbar_main.InsertButton(0, ui::kIcon24_Sync, kToolbarButtonSync,
                             fsState, fsStyle1, 0, nullptr, tooltip.c_str());
   toolbar_main.InsertButton(1, 0, 0, 0, BTNS_SEP, 0, nullptr, nullptr);
@@ -454,7 +455,7 @@ BOOL MainDialog::PreTranslateMessage(MSG* pMsg) {
         // Synchronize list
         case 'S': {
           if (GetKeyState(VK_CONTROL) & 0x8000) {
-            sync::Synchronize();
+            services::Synchronize();
             return TRUE;
           }
           break;
@@ -487,7 +488,7 @@ BOOL MainDialog::PreTranslateMessage(MSG* pMsg) {
               return TRUE;
             case kSidebarItemSeasons:
               // Refresh season data
-              sync::GetSeason(anime::season_db.current_season);
+              services::GetSeason(anime::season_db.current_season);
               return TRUE;
             case kSidebarItemFeeds: {
               // Check new torrents
@@ -861,7 +862,7 @@ void MainDialog::UpdateTip() {
     tip += L" [debug]";
 
   if (taiga::app.options.allow_multiple_instances)
-    tip += L" @ " + sync::GetCurrentServiceName();
+    tip += L" @ " + services::GetCurrentServiceName();
   
   if (const auto anime_item = anime::db.Find(CurrentEpisode.anime_id)) {
     tip += L"\nWatching: " + anime::GetPreferredTitle(*anime_item);
@@ -884,7 +885,7 @@ void MainDialog::UpdateTitle() {
   if (!display_name.empty())
     title += L" \u2013 " + display_name;
   if (taiga::app.options.debug_mode || taiga::app.options.allow_multiple_instances)
-    title += L" @ " + sync::GetCurrentServiceName();
+    title += L" @ " + services::GetCurrentServiceName();
 
   if (const auto anime_item = anime::db.Find(CurrentEpisode.anime_id)) {
     title += L" \u2013 " + anime::GetPreferredTitle(*anime_item);
@@ -981,14 +982,14 @@ void MainDialog::Navigation::RefreshSearchText(int previous_page) {
     case kSidebarItemAnimeList:
     case kSidebarItemSeasons:
       parent->search_bar.mode = SearchMode::Service;
-      cue_text = L"Filter list or search " + sync::GetCurrentServiceName();
+      cue_text = L"Filter list or search " + services::GetCurrentServiceName();
       break;
     case kSidebarItemNowPlaying:
     case kSidebarItemHistory:
     case kSidebarItemStats:
     case kSidebarItemSearch:
       parent->search_bar.mode = SearchMode::Service;
-      cue_text = L"Search " + sync::GetCurrentServiceName() + L" for anime";
+      cue_text = L"Search " + services::GetCurrentServiceName() + L" for anime";
       break;
     case kSidebarItemFeeds:
       parent->search_bar.mode = SearchMode::Feed;

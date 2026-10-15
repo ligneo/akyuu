@@ -1,6 +1,7 @@
 /**
  * Akyuu
  * Copyright (C) 2010-2026, Eren Okka
+ * Copyright (C) 2026, cenky <cenkkgl@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +26,7 @@
 
 class QRestReply;
 
-namespace sync::kitsu {
+namespace services::kitsu {
 
 // Application registration has not yet been implemented on Kitsu's end, so all requests are made
 // with the following public client ID and secret.
@@ -48,7 +49,7 @@ enum ListStatus {
   kDropped,
 };
 
-class Service final : public sync::Service {
+class Service final : public services::Service {
 public:
   Service();
   ~Service() = default;
@@ -69,4 +70,4 @@ private:
   bool retryOnTokenExpiry(QRestReply& reply, std::function<void()> retry);
 };
 
-}  // namespace sync::kitsu
+}  // namespace services::kitsu

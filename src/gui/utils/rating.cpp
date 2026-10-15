@@ -1,6 +1,7 @@
 /**
  * Akyuu
  * Copyright (C) 2010-2026, Eren Okka
+ * Copyright (C) 2026, cenky <cenkkgl@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,15 +32,15 @@
 
 namespace gui {
 
-QList<sync::Rating> currentRatingList() {
-  switch (sync::currentServiceId()) {
-    case sync::ServiceId::MyAnimeList:
-      return sync::myanimelist::ratingList();
-    case sync::ServiceId::Kitsu:
-      return sync::kitsu::ratingList(akyuu::accounts.kitsuRatingSystem());
-    case sync::ServiceId::AniList:
-      return sync::anilist::ratingList(akyuu::accounts.anilistRatingSystem());
-    case sync::ServiceId::Unknown:
+QList<services::Rating> currentRatingList() {
+  switch (services::currentServiceId()) {
+    case services::ServiceId::MyAnimeList:
+      return services::myanimelist::ratingList();
+    case services::ServiceId::Kitsu:
+      return services::kitsu::ratingList(akyuu::accounts.kitsuRatingSystem());
+    case services::ServiceId::AniList:
+      return services::anilist::ratingList(akyuu::accounts.anilistRatingSystem());
+    case services::ServiceId::Unknown:
       break;
   }
   return {};
@@ -48,14 +49,14 @@ QList<sync::Rating> currentRatingList() {
 QString formatRating(int value, QString placeholder) {
   if (value <= 0) return placeholder;
 
-  switch (sync::currentServiceId()) {
-    case sync::ServiceId::MyAnimeList:
-      return sync::myanimelist::formatRating(value);
-    case sync::ServiceId::Kitsu:
-      return sync::kitsu::formatRating(value, akyuu::accounts.kitsuRatingSystem());
-    case sync::ServiceId::AniList:
-      return sync::anilist::formatRating(value, akyuu::accounts.anilistRatingSystem());
-    case sync::ServiceId::Unknown:
+  switch (services::currentServiceId()) {
+    case services::ServiceId::MyAnimeList:
+      return services::myanimelist::formatRating(value);
+    case services::ServiceId::Kitsu:
+      return services::kitsu::formatRating(value, akyuu::accounts.kitsuRatingSystem());
+    case services::ServiceId::AniList:
+      return services::anilist::formatRating(value, akyuu::accounts.anilistRatingSystem());
+    case services::ServiceId::Unknown:
       break;
   }
   return QString::number(value);
@@ -87,15 +88,15 @@ void setRatingComboBoxValue(QComboBox* comboBox, int score) {
 }
 
 bool usesRatingSpinBox() {
-  if (sync::currentServiceId() != sync::ServiceId::AniList) return false;
+  if (services::currentServiceId() != services::ServiceId::AniList) return false;
 
   switch (akyuu::accounts.anilistRatingSystem()) {
-    case sync::anilist::RatingSystem::Point_100:
-    case sync::anilist::RatingSystem::Point_10_Decimal:
+    case services::anilist::RatingSystem::Point_100:
+    case services::anilist::RatingSystem::Point_10_Decimal:
       return true;
-    case sync::anilist::RatingSystem::Point_10:
-    case sync::anilist::RatingSystem::Point_5:
-    case sync::anilist::RatingSystem::Point_3:
+    case services::anilist::RatingSystem::Point_10:
+    case services::anilist::RatingSystem::Point_5:
+    case services::anilist::RatingSystem::Point_3:
       return false;
   }
 
@@ -104,15 +105,15 @@ bool usesRatingSpinBox() {
 
 void populateRatingSpinBox(QDoubleSpinBox* spinBox) {
   switch (akyuu::accounts.anilistRatingSystem()) {
-    case sync::anilist::RatingSystem::Point_10_Decimal:
+    case services::anilist::RatingSystem::Point_10_Decimal:
       spinBox->setDecimals(1);
       spinBox->setRange(0.0, 10.0);
       spinBox->setSingleStep(0.1);
       return;
-    case sync::anilist::RatingSystem::Point_100:
-    case sync::anilist::RatingSystem::Point_10:
-    case sync::anilist::RatingSystem::Point_5:
-    case sync::anilist::RatingSystem::Point_3:
+    case services::anilist::RatingSystem::Point_100:
+    case services::anilist::RatingSystem::Point_10:
+    case services::anilist::RatingSystem::Point_5:
+    case services::anilist::RatingSystem::Point_3:
       spinBox->setDecimals(0);
       spinBox->setRange(0, 100);
       spinBox->setSingleStep(1);
@@ -122,13 +123,13 @@ void populateRatingSpinBox(QDoubleSpinBox* spinBox) {
 
 void setRatingSpinBoxValue(QDoubleSpinBox* spinBox, int score) {
   spinBox->setValue(akyuu::accounts.anilistRatingSystem() ==
-                            sync::anilist::RatingSystem::Point_10_Decimal
+                            services::anilist::RatingSystem::Point_10_Decimal
                         ? score / 10.0
                         : score);
 }
 
 int ratingSpinBoxValue(const QDoubleSpinBox* spinBox) {
-  if (akyuu::accounts.anilistRatingSystem() == sync::anilist::RatingSystem::Point_10_Decimal) {
+  if (akyuu::accounts.anilistRatingSystem() == services::anilist::RatingSystem::Point_10_Decimal) {
     return static_cast<int>(std::lround(spinBox->value() * 10));
   }
   return static_cast<int>(std::lround(spinBox->value()));

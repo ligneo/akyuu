@@ -1,6 +1,7 @@
 /**
  * Akyuu
  * Copyright (C) 2010-2026, Eren Okka
+ * Copyright (C) 2026, cenky <cenkkgl@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,9 +38,9 @@ bool Accounts::anilistAuthenticated() const {
   return value("anilist.authenticated").toBool();
 }
 
-sync::anilist::RatingSystem Accounts::anilistRatingSystem() const {
+services::anilist::RatingSystem Accounts::anilistRatingSystem() const {
   const auto ratingSystem = value("anilist.ratingSystem").toString();
-  return sync::anilist::parseRatingSystem(ratingSystem);
+  return services::anilist::parseRatingSystem(ratingSystem);
 }
 
 std::string Accounts::anilistUsername() const {
@@ -66,9 +67,9 @@ std::string Accounts::kitsuEmail() const {
   return value("kitsu.email").toString().toStdString();
 }
 
-sync::kitsu::RatingSystem Accounts::kitsuRatingSystem() const {
+services::kitsu::RatingSystem Accounts::kitsuRatingSystem() const {
   const auto ratingSystem = value("kitsu.ratingSystem").toString();
-  return sync::kitsu::parseRatingSystem(ratingSystem);
+  return services::kitsu::parseRatingSystem(ratingSystem);
 }
 
 std::string Accounts::kitsuRefreshToken() const {

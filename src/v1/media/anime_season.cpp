@@ -1,6 +1,7 @@
 /*
 ** Taiga
 ** Copyright (C) 2010-2021, Eren Okka
+** Copyright (C) 2026, cenky <cenkkgl@gmail.com>
 **
 ** This program is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -37,8 +38,8 @@ constexpr auto Summer = Season::Name::Summer;
 constexpr auto Fall = Season::Name::Fall;
 
 bool ShiftedSeasons() {
-  switch (sync::GetCurrentServiceId()) {
-    case sync::ServiceId::MyAnimeList:
+  switch (services::GetCurrentServiceId()) {
+    case services::ServiceId::MyAnimeList:
       return false;  // Winter: January, February, March
     default:
       return true;  // Winter: December, January, February

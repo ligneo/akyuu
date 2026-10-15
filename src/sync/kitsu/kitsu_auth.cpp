@@ -1,6 +1,7 @@
 /**
  * Akyuu
  * Copyright (C) 2010-2026, Eren Okka
+ * Copyright (C) 2026, cenky <cenkkgl@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,7 +30,7 @@
 #include "sync/kitsu/kitsu_error.hpp"
 #include "sync/kitsu/kitsu_utils.hpp"
 
-namespace sync::kitsu {
+namespace services::kitsu {
 
 bool Service::retryOnTokenExpiry(QRestReply& reply, std::function<void()> retry) {
   if (!isTokenExpired(reply)) return false;
@@ -174,4 +175,4 @@ void Service::resolveUser(std::function<void()> onSuccess) {
   manager_.get(api_.createRequest(u"/users"_s, query), this, callback);
 }
 
-}  // namespace sync::kitsu
+}  // namespace services::kitsu

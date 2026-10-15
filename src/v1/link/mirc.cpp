@@ -1,6 +1,7 @@
 /*
 ** Taiga
 ** Copyright (C) 2010-2021, Eren Okka
+** Copyright (C) 2026, cenky <cenkkgl@gmail.com>
 **
 ** This program is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -23,7 +24,7 @@
 #include "base/string.h"
 #include "ui/ui.h"
 
-namespace link::mirc {
+namespace share::mirc {
 
 bool IsRunning() {
   return ::FindWindow(L"mIRC", nullptr) != nullptr;
@@ -112,4 +113,4 @@ bool Send(const std::wstring& service, std::wstring channels,
   return SendCommands(service, commands);
 }
 
-}  // namespace link::mirc
+}  // namespace share::mirc

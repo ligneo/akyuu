@@ -1,6 +1,7 @@
 /**
  * Akyuu
  * Copyright (C) 2010-2026, Eren Okka
+ * Copyright (C) 2026, cenky <cenkkgl@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,7 +31,7 @@
 #include "media/anime_season.hpp"
 #include "sync/myanimelist/myanimelist.hpp"
 
-namespace sync::myanimelist {
+namespace services::myanimelist {
 
 int fromListScore(int value) {
   return (value * 10) / anime::list::kScoreMax;
@@ -136,4 +137,4 @@ std::string authorizationCodeUrl(std::string& codeVerifier) {
   return url.toString().toStdString();
 }
 
-}  // namespace sync::myanimelist
+}  // namespace services::myanimelist

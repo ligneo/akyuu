@@ -1,6 +1,7 @@
 /*
 ** Taiga
 ** Copyright (C) 2010-2021, Eren Okka
+** Copyright (C) 2026, cenky <cenkkgl@gmail.com>
 **
 ** This program is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -21,7 +22,7 @@
 #include <string>
 #include <vector>
 
-namespace link::mirc {
+namespace share::mirc {
 
 enum ChannelMode {
   kChannelModeActive = 1,
@@ -36,4 +37,4 @@ bool Send(const std::wstring& service, std::wstring channels,
           const std::wstring& data, int mode, bool use_action,
           bool multi_server);
 
-}  // namespace link::mirc
+}  // namespace share::mirc

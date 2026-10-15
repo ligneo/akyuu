@@ -1,6 +1,7 @@
 /*
 ** Taiga
 ** Copyright (C) 2010-2021, Eren Okka
+** Copyright (C) 2026, cenky <cenkkgl@gmail.com>
 **
 ** This program is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -192,8 +193,8 @@ void PageSeriesInfo::Refresh(int anime_id, bool connect) {
   SetDlgItemText(IDC_EDIT_ANIME_ALT, text.c_str());
 
   // Set information
-  switch (sync::GetCurrentServiceId()) {
-    case sync::ServiceId::Kitsu:
+  switch (services::GetCurrentServiceId()) {
+    case services::ServiceId::Kitsu:
       SetDlgItemText(IDC_STATIC_ANIME_DETAILS_NAMES,
           L"Type:\nEpisodes:\nStatus:\nSeason:\nCategories:\nProducers:\nScore:");
       break;
@@ -218,7 +219,7 @@ void PageSeriesInfo::Refresh(int anime_id, bool connect) {
   // Get new data if necessary
   if (connect && anime::MetadataNeedsRefresh(*anime_item)) {
     parent->UpdateTitle(true);
-    sync::GetMetadataById(anime_id_);
+    services::GetMetadataById(anime_id_);
   }
 }
 
@@ -255,9 +256,9 @@ BOOL PageMyInfo::OnCommand(WPARAM wParam, LPARAM lParam) {
         int episode_value = 0;
         spin.GetPos32(episode_value);
         if (IsDlgButtonChecked(IDC_CHECK_ANIME_REWATCH)) {
-          switch (sync::GetCurrentServiceId()) {
-            case sync::ServiceId::Kitsu:
-            case sync::ServiceId::AniList:
+          switch (services::GetCurrentServiceId()) {
+            case services::ServiceId::Kitsu:
+            case services::ServiceId::AniList:
               combobox.SetCurSel(static_cast<int>(anime::MyStatus::Watching) - 1);
               break;
           }
@@ -265,9 +266,9 @@ BOOL PageMyInfo::OnCommand(WPARAM wParam, LPARAM lParam) {
               episode_value == anime_item->GetEpisodeCount())
             spin.SetPos32(0);
         } else {
-          switch (sync::GetCurrentServiceId()) {
-            case sync::ServiceId::Kitsu:
-            case sync::ServiceId::AniList:
+          switch (services::GetCurrentServiceId()) {
+            case services::ServiceId::Kitsu:
+            case services::ServiceId::AniList:
               combobox.SetCurSel(static_cast<int>(anime_item->GetMyStatus()) - 1);
               break;
           }
@@ -399,24 +400,24 @@ void PageMyInfo::Refresh(int anime_id) {
   win::Edit edit = GetDlgItem(IDC_EDIT_ANIME_SCORE);
   spin.SetWindowHandle(GetDlgItem(IDC_SPIN_ANIME_SCORE));
   if (combobox.GetCount() == 0) {
-    std::vector<sync::Rating> ratings;
+    std::vector<services::Rating> ratings;
     std::wstring current_rating;
     int selected_item = -1;
-    switch (sync::GetCurrentServiceId()) {
-      case sync::ServiceId::MyAnimeList:
-        ratings = sync::myanimelist::GetMyRatings();
-        current_rating = sync::myanimelist::TranslateMyRating(anime_item->GetMyScore(), true);
+    switch (services::GetCurrentServiceId()) {
+      case services::ServiceId::MyAnimeList:
+        ratings = services::myanimelist::GetMyRatings();
+        current_rating = services::myanimelist::TranslateMyRating(anime_item->GetMyScore(), true);
         break;
-      case sync::ServiceId::Kitsu: {
-        const auto rating_system = sync::kitsu::GetRatingSystem();
-        ratings = sync::kitsu::GetMyRatings(rating_system);
-        current_rating = sync::kitsu::TranslateMyRating(anime_item->GetMyScore(), rating_system);
+      case services::ServiceId::Kitsu: {
+        const auto rating_system = services::kitsu::GetRatingSystem();
+        ratings = services::kitsu::GetMyRatings(rating_system);
+        current_rating = services::kitsu::TranslateMyRating(anime_item->GetMyScore(), rating_system);
         break;
       }
-      case sync::ServiceId::AniList: {
-        const auto rating_system = sync::anilist::GetRatingSystem();
-        ratings = sync::anilist::GetMyRatings(rating_system);
-        current_rating = sync::anilist::TranslateMyRating(anime_item->GetMyScore(), rating_system);
+      case services::ServiceId::AniList: {
+        const auto rating_system = services::anilist::GetRatingSystem();
+        ratings = services::anilist::GetMyRatings(rating_system);
+        current_rating = services::anilist::TranslateMyRating(anime_item->GetMyScore(), rating_system);
         break;
       }
     }
@@ -552,10 +553,10 @@ bool PageMyInfo::Save() {
     queue_item.score = static_cast<int>(combobox.GetItemData(combobox.GetCurSel()));
   } else {
     const auto score_text = GetDlgItemText(IDC_EDIT_ANIME_SCORE);
-    switch (sync::GetCurrentServiceId()) {
-      case sync::ServiceId::AniList:
-        switch (sync::anilist::GetRatingSystem()) {
-          case sync::anilist::RatingSystem::Point_10_Decimal:
+    switch (services::GetCurrentServiceId()) {
+      case services::ServiceId::AniList:
+        switch (services::anilist::GetRatingSystem()) {
+          case services::anilist::RatingSystem::Point_10_Decimal:
             queue_item.score = static_cast<int>(ToDouble(score_text) * 10);
             break;
         }
@@ -611,11 +612,11 @@ bool PageMyInfo::Save() {
 }
 
 bool PageMyInfo::IsAdvancedScoreInput() const {
-  switch (sync::GetCurrentServiceId()) {
-    case sync::ServiceId::AniList: {
-      switch (sync::anilist::GetRatingSystem()) {
-        case sync::anilist::RatingSystem::Point_100:
-        case sync::anilist::RatingSystem::Point_10_Decimal:
+  switch (services::GetCurrentServiceId()) {
+    case services::ServiceId::AniList: {
+      switch (services::anilist::GetRatingSystem()) {
+        case services::anilist::RatingSystem::Point_100:
+        case services::anilist::RatingSystem::Point_10_Decimal:
           return true;
       }
       break;

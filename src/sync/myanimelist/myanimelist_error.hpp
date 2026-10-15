@@ -1,6 +1,7 @@
 /**
  * Akyuu
  * Copyright (C) 2010-2026, Eren Okka
+ * Copyright (C) 2026, cenky <cenkkgl@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,15 +23,15 @@
 
 class QRestReply;
 
-namespace sync {
+namespace services {
 class Service;
 }
 
-namespace sync::myanimelist {
+namespace services::myanimelist {
 
 bool isError(const QRestReply& reply);
 bool isTokenExpired(const QRestReply& reply);
 
-void handleError(sync::Service& service, QRestReply& reply, const QString& message = {});
+void handleError(services::Service& service, QRestReply& reply, const QString& message = {});
 
-}  // namespace sync::myanimelist
+}  // namespace services::myanimelist

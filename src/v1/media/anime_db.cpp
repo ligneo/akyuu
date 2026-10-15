@@ -1,6 +1,7 @@
 /*
 ** Taiga
 ** Copyright (C) 2010-2021, Eren Okka
+** Copyright (C) 2026, cenky <cenkkgl@gmail.com>
 **
 ** This program is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -57,21 +58,21 @@ bool Database::LoadDatabase() {
 
 void Database::ReadDatabaseNode(XmlNode& database_node) {
   for (auto node : database_node.children(L"anime")) {
-    std::map<sync::ServiceId, std::wstring> id_map;
+    std::map<services::ServiceId, std::wstring> id_map;
 
     for (auto id_node : node.children(L"id")) {
       const std::wstring slug = id_node.attribute(L"name").as_string();
-      const auto service_id = sync::GetServiceIdBySlug(slug);
-      if (service_id != sync::ServiceId::Unknown)
+      const auto service_id = services::GetServiceIdBySlug(slug);
+      if (service_id != services::ServiceId::Unknown)
         id_map[service_id] = id_node.child_value();
     }
 
-    auto source = sync::GetServiceIdBySlug(XmlReadStr(node, L"source"));
-    if (source == sync::ServiceId::Unknown) {
-      const auto current_service_id = sync::GetCurrentServiceId();
+    auto source = services::GetServiceIdBySlug(XmlReadStr(node, L"source"));
+    if (source == services::ServiceId::Unknown) {
+      const auto current_service_id = services::GetCurrentServiceId();
       if (nstd::contains(id_map, current_service_id)) {
         source = current_service_id;
-        LOGW(L"Fixed source to {} ({}).", sync::GetCurrentServiceName(),
+        LOGW(L"Fixed source to {} ({}).", services::GetCurrentServiceName(),
              id_map[source]);
       } else {
         LOGE(L"Discarding data from unknown source.");
@@ -79,7 +80,7 @@ void Database::ReadDatabaseNode(XmlNode& database_node) {
       }
     }
 
-    const int id = ToInt(id_map[sync::GetCurrentServiceId()]);
+    const int id = ToInt(id_map[services::GetCurrentServiceId()]);
     Item& item = items[id];  // Creates the item if it doesn't exist
 
     for (const auto& [service, id] : id_map) {
@@ -130,18 +131,18 @@ void Database::WriteDatabaseNode(XmlNode& database_node) const {
   for (const auto& [id, item] : items) {
     auto anime_node = database_node.append_child(L"anime");
 
-    for (const auto service_id : sync::kServiceIds) {
+    for (const auto service_id : services::kServiceIds) {
       const auto id = item.GetId(service_id);
       if (!id.empty()) {
         auto child = anime_node.append_child(L"id");
-        const auto slug = sync::GetServiceSlugById(service_id);
+        const auto slug = services::GetServiceSlugById(service_id);
         child.append_attribute(L"name") = slug.c_str();
         child.append_child(pugi::node_pcdata).set_value(id.c_str());
       }
     }
 
-    const std::wstring source = sync::GetServiceSlugById(
-        static_cast<sync::ServiceId>(item.GetSource()));
+    const std::wstring source = services::GetServiceSlugById(
+        static_cast<services::ServiceId>(item.GetSource()));
 
     #define XML_WC(n, v, t) \
       if (!v.empty()) XmlWriteChildNodes(anime_node, v, n, t)
@@ -203,7 +204,7 @@ Item* Database::Find(int id, bool log_error) {
   return nullptr;
 }
 
-Item* Database::Find(const std::wstring& id, sync::ServiceId service,
+Item* Database::Find(const std::wstring& id, services::ServiceId service,
                      bool log_error) {
   if (!id.empty()) {
     for (auto& pair : items)

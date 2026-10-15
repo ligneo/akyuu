@@ -26,7 +26,7 @@
 
 class QRestReply;
 
-namespace sync::myanimelist {
+namespace services::myanimelist {
 
 // Akyuu's own client (myanimelist.net/apiconfig), of the "other" type: it has no secret, and the
 // code is exchanged with PKCE instead. The redirect URL is a static page that only shows the code
@@ -36,7 +36,7 @@ constexpr auto kRedirectUrl = "https://cenky.dev/akyuu/mal/";
 constexpr auto kApiUrl = "https://api.myanimelist.net/v2";
 constexpr auto kTokenUrl = "https://myanimelist.net/v1/oauth2/token";
 
-class Service final : public sync::Service {
+class Service final : public services::Service {
 public:
   Service();
   ~Service() = default;
@@ -57,4 +57,4 @@ private:
   bool retryOnTokenExpiry(QRestReply& reply, std::function<void()> retry);
 };
 
-}  // namespace sync::myanimelist
+}  // namespace services::myanimelist

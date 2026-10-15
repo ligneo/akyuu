@@ -24,7 +24,7 @@
 
 #include "base/settings.hpp"
 
-namespace sync {
+namespace services {
 
 namespace anilist {
 enum class RatingSystem;
@@ -34,7 +34,7 @@ namespace kitsu {
 enum class RatingSystem;
 }
 
-}  // namespace sync
+}  // namespace services
 
 namespace akyuu {
 
@@ -47,7 +47,7 @@ public:
   ~Accounts() = default;
 
   bool anilistAuthenticated() const;
-  sync::anilist::RatingSystem anilistRatingSystem() const;
+  services::anilist::RatingSystem anilistRatingSystem() const;
   std::string anilistUsername() const;
   std::string anilistToken() const;
 
@@ -55,7 +55,7 @@ public:
   std::string kitsuAccessToken() const;
   std::string kitsuDisplayName() const;
   std::string kitsuEmail() const;
-  sync::kitsu::RatingSystem kitsuRatingSystem() const;
+  services::kitsu::RatingSystem kitsuRatingSystem() const;
   std::string kitsuRefreshToken() const;
   std::string kitsuUserId() const;
   std::string kitsuUsername() const;

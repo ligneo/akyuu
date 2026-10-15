@@ -1,6 +1,7 @@
 /*
 ** Taiga
 ** Copyright (C) 2010-2021, Eren Okka
+** Copyright (C) 2026, cenky <cenkkgl@gmail.com>
 **
 ** This program is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -31,7 +32,7 @@ class Item;
 namespace library {
 struct QueueItem;
 }
-namespace sync {
+namespace services {
 enum class ServiceId;
 }
 namespace track {
@@ -102,7 +103,7 @@ void OnSettingsChange();
 void OnSettingsLibraryFoldersEmpty();
 void OnSettingsRestoreDefaults();
 void OnSettingsServiceChange();
-bool OnSettingsServiceChangeConfirm(const sync::ServiceId current_service, const sync::ServiceId new_service);
+bool OnSettingsServiceChangeConfirm(const services::ServiceId current_service, const services::ServiceId new_service);
 void OnSettingsServiceChangeFailed();
 void OnSettingsThemeChange();
 void OnSettingsUserChange();

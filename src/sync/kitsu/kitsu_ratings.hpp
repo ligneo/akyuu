@@ -1,6 +1,7 @@
 /**
  * Akyuu
  * Copyright (C) 2010-2024, Eren Okka
+ * Copyright (C) 2026, cenky <cenkkgl@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,11 +22,11 @@
 #include <QList>
 #include <QString>
 
-namespace sync {
+namespace services {
 struct Rating;
 }
 
-namespace sync::kitsu {
+namespace services::kitsu {
 
 enum class RatingSystem {
   Simple,
@@ -41,4 +42,4 @@ int parseListScore(const int value);
 int fromListScore(const int value);
 RatingSystem parseRatingSystem(const QString& value);
 
-}  // namespace sync::kitsu
+}  // namespace services::kitsu

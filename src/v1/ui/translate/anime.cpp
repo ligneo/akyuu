@@ -1,6 +1,7 @@
 /*
 ** Taiga
 ** Copyright (C) 2010-2021, Eren Okka
+** Copyright (C) 2026, cenky <cenkkgl@gmail.com>
 **
 ** This program is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -35,14 +36,14 @@
 namespace ui {
 
 std::wstring TranslateScore(const double value) {
-  switch (sync::GetCurrentServiceId()) {
+  switch (services::GetCurrentServiceId()) {
     default:
-    case sync::ServiceId::MyAnimeList:
+    case services::ServiceId::MyAnimeList:
       return ToWstr(value, 2);
-    case sync::ServiceId::Kitsu:
-      return ToWstr(sync::kitsu::TranslateSeriesRatingTo(value), 2) + L"%";
-    case sync::ServiceId::AniList:
-      return ToWstr(sync::anilist::TranslateSeriesRatingTo(value), 0) + L"%";
+    case services::ServiceId::Kitsu:
+      return ToWstr(services::kitsu::TranslateSeriesRatingTo(value), 2) + L"%";
+    case services::ServiceId::AniList:
+      return ToWstr(services::anilist::TranslateSeriesRatingTo(value), 0) + L"%";
   }
 }
 

@@ -1,6 +1,7 @@
 /*
 ** Taiga
 ** Copyright (C) 2010-2021, Eren Okka
+** Copyright (C) 2026, cenky <cenkkgl@gmail.com>
 **
 ** This program is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -262,7 +263,7 @@ void StartWatching(Item& item, Episode& episode) {
 
   // Get additional information
   if (item.GetScore() == kUnknownScore || item.GetSynopsis().empty())
-    sync::GetMetadataById(item.GetId());
+    services::GetMetadataById(item.GetId());
 
   // Update list
   if (taiga::settings.GetSyncUpdateDelay() == 0 &&

@@ -32,7 +32,7 @@
 #include "media/anime_season.hpp"
 #include "sync/search_params.hpp"
 
-namespace sync::anilist {
+namespace services::anilist {
 
 QJsonObject fromFuzzyDate(const FuzzyDate& date) {
   return {
@@ -155,4 +155,4 @@ std::string requestTokenUrl() {
   return url.toString().toStdString();
 }
 
-}  // namespace sync::anilist
+}  // namespace services::anilist

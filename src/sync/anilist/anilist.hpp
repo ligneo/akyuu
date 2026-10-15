@@ -25,9 +25,9 @@
 
 #include "sync/service.hpp"
 
-namespace sync::anilist {
+namespace services::anilist {
 
-class Service final : public sync::Service {
+class Service final : public services::Service {
 public:
   Service();
   ~Service() = default;
@@ -46,4 +46,4 @@ public:
   void updateListEntry(const int id, const anime::list::Fields dirty);
 };
 
-}  // namespace sync::anilist
+}  // namespace services::anilist

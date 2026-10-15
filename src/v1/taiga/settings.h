@@ -1,6 +1,7 @@
 /*
 ** Taiga
 ** Copyright (C) 2010-2021, Eren Okka
+** Copyright (C) 2026, cenky <cenkkgl@gmail.com>
 **
 ** This program is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -35,7 +36,7 @@ enum class TitleLanguage;
 namespace semaver {
 class Version;
 }
-namespace sync {
+namespace services {
 enum class ServiceId;
 }
 namespace track {
@@ -78,8 +79,8 @@ public:
   semaver::Version GetMetaVersion() const;
 
   // Services
-  sync::ServiceId GetSyncActiveService() const;
-  void SetSyncActiveService(const sync::ServiceId service_id);
+  services::ServiceId GetSyncActiveService() const;
+  void SetSyncActiveService(const services::ServiceId service_id);
   bool GetSyncAutoOnStart() const;
   void SetSyncAutoOnStart(const bool enabled);
   std::wstring GetSyncServiceMalUsername() const;

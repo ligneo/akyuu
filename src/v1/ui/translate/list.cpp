@@ -1,6 +1,7 @@
 /*
 ** Taiga
 ** Copyright (C) 2010-2021, Eren Okka
+** Copyright (C) 2026, cenky <cenkkgl@gmail.com>
 **
 ** This program is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -45,32 +46,32 @@ std::wstring TranslateMyScore(const int value,
   if (!value)
     return default_char;
 
-  switch (sync::GetCurrentServiceId()) {
+  switch (services::GetCurrentServiceId()) {
     default:
       return ToWstr(value);
-    case sync::ServiceId::MyAnimeList:
-      return sync::myanimelist::TranslateMyRating(value, false);
-    case sync::ServiceId::Kitsu:
-      return sync::kitsu::TranslateMyRating(
-          value, sync::kitsu::GetRatingSystem());
-    case sync::ServiceId::AniList:
-      return sync::anilist::TranslateMyRating(
-          value, sync::anilist::GetRatingSystem());
+    case services::ServiceId::MyAnimeList:
+      return services::myanimelist::TranslateMyRating(value, false);
+    case services::ServiceId::Kitsu:
+      return services::kitsu::TranslateMyRating(
+          value, services::kitsu::GetRatingSystem());
+    case services::ServiceId::AniList:
+      return services::anilist::TranslateMyRating(
+          value, services::anilist::GetRatingSystem());
   }
 }
 
 std::wstring TranslateMyScoreFull(const int value) {
-  switch (sync::GetCurrentServiceId()) {
+  switch (services::GetCurrentServiceId()) {
     default:
       return ToWstr(value);
-    case sync::ServiceId::MyAnimeList:
-      return sync::myanimelist::TranslateMyRating(value, true);
-    case sync::ServiceId::Kitsu:
-      return sync::kitsu::TranslateMyRating(
-          value, sync::kitsu::GetRatingSystem());
-    case sync::ServiceId::AniList:
-      return sync::anilist::TranslateMyRating(
-          value, sync::anilist::GetRatingSystem());
+    case services::ServiceId::MyAnimeList:
+      return services::myanimelist::TranslateMyRating(value, true);
+    case services::ServiceId::Kitsu:
+      return services::kitsu::TranslateMyRating(
+          value, services::kitsu::GetRatingSystem());
+    case services::ServiceId::AniList:
+      return services::anilist::TranslateMyRating(
+          value, services::anilist::GetRatingSystem());
   }
 }
 

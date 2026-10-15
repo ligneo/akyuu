@@ -1,6 +1,7 @@
 /*
 ** Taiga
 ** Copyright (C) 2010-2021, Eren Okka
+** Copyright (C) 2026, cenky <cenkkgl@gmail.com>
 **
 ** This program is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -42,7 +43,7 @@
 #include "ui/translate.h"
 #include "ui/ui.h"
 
-namespace sync::myanimelist {
+namespace services::myanimelist {
 
 // API documentation:
 // https://myanimelist.net/apiconfig/references/api/v2
@@ -380,7 +381,7 @@ void RequestAccessToken(const std::wstring& authorization_code,
   const auto on_response = [](const taiga::http::Response& response) {
     if (const auto error = HasError(response)) {
       HandleError(*error);
-      sync::OnError(RequestType::RequestAccessToken);
+      services::OnError(RequestType::RequestAccessToken);
       ui::OnMalRequestAccessTokenError(error->description);
       return;
     }
@@ -388,7 +389,7 @@ void RequestAccessToken(const std::wstring& authorization_code,
     Json json;
 
     if (!JsonParseString(response.body(), json)) {
-      sync::OnError(RequestType::RequestAccessToken);
+      services::OnError(RequestType::RequestAccessToken);
       ui::OnMalRequestAccessTokenError(L"Could not parse the response.");
       return;
     }
@@ -396,7 +397,7 @@ void RequestAccessToken(const std::wstring& authorization_code,
     Account::set_access_token(JsonReadStr(json, "access_token"));
     Account::set_refresh_token(JsonReadStr(json, "refresh_token"));
 
-    sync::OnResponse(RequestType::RequestAccessToken);
+    services::OnResponse(RequestType::RequestAccessToken);
     ui::OnMalRequestAccessTokenSuccess();
   };
 
@@ -433,7 +434,7 @@ void RefreshAccessToken(std::function<void()> after_response) {
             L"MyAnimeList: Refresh token has expired. "
             L"Please re-authorize your account via Settings.");
       }
-      sync::OnError(RequestType::RefreshAccessToken);
+      services::OnError(RequestType::RefreshAccessToken);
       return;
     }
 
@@ -443,7 +444,7 @@ void RefreshAccessToken(std::function<void()> after_response) {
       account.set_authenticated(false);
       ui::ChangeStatusText(
           L"MyAnimeList: Could not parse authentication data.");
-      sync::OnError(RequestType::RefreshAccessToken);
+      services::OnError(RequestType::RefreshAccessToken);
       return;
     }
 
@@ -451,7 +452,7 @@ void RefreshAccessToken(std::function<void()> after_response) {
     Account::set_refresh_token(JsonReadStr(root, "refresh_token"));
     account.set_authenticated(true);
 
-    sync::OnResponse(RequestType::RefreshAccessToken);
+    services::OnResponse(RequestType::RefreshAccessToken);
 
     if (after_response) {
       after_response();
@@ -504,7 +505,7 @@ void GetUser() {
 
   const auto on_response = [](const taiga::http::Response& response) {
     if (HasError(response)) {
-      sync::OnError(RequestType::GetUser);
+      services::OnError(RequestType::GetUser);
       return;
     }
 
@@ -512,16 +513,16 @@ void GetUser() {
 
     if (!JsonParseString(response.body(), root)) {
       ui::ChangeStatusText(L"MyAnimeList: Could not parse user data.");
-      sync::OnError(RequestType::GetUser);
+      services::OnError(RequestType::GetUser);
       return;
     }
 
     Account::set_username(JsonReadStr(root, "name"));
 
-    sync::OnResponse(RequestType::GetUser);
+    services::OnResponse(RequestType::GetUser);
 
     if (account.authenticated()) {
-      sync::Synchronize();
+      services::Synchronize();
     } else {
       GetLibraryEntries();
     }
@@ -548,7 +549,7 @@ void GetLibraryEntries(const int page_offset) {
 
   const auto on_response = [](const taiga::http::Response& response) {
     if (HasError(response)) {
-      sync::OnError(RequestType::GetLibraryEntries);
+      services::OnError(RequestType::GetLibraryEntries);
       return;
     }
 
@@ -556,7 +557,7 @@ void GetLibraryEntries(const int page_offset) {
 
     if (!JsonParseString(response.body(), root)) {
       ui::ChangeStatusText(L"MyAnimeList: Could not parse anime list.");
-      sync::OnError(RequestType::GetLibraryEntries);
+      services::OnError(RequestType::GetLibraryEntries);
       return;
     }
 
@@ -577,7 +578,7 @@ void GetLibraryEntries(const int page_offset) {
     if (next_page_offset && *next_page_offset > 0) {
       GetLibraryEntries(*next_page_offset);
     } else {
-      sync::OnResponse(RequestType::GetLibraryEntries);
+      services::OnResponse(RequestType::GetLibraryEntries);
     }
   };
 
@@ -597,11 +598,11 @@ void GetMetadataById(const int id) {
   const auto on_response = [id](const taiga::http::Response& response) {
     if (HasError(response)) {
       if (response.status_code() == 404) {
-        sync::OnInvalidAnimeId(id);
+        services::OnInvalidAnimeId(id);
       } else {
         ui::OnLibraryEntryChangeFailure(id);
       }
-      sync::OnError(RequestType::GetMetadataById);
+      services::OnError(RequestType::GetMetadataById);
       return;
     }
 
@@ -610,14 +611,14 @@ void GetMetadataById(const int id) {
     if (!JsonParseString(response.body(), root)) {
       ui::ChangeStatusText(L"MyAnimeList: Could not parse anime data.");
       ui::OnLibraryEntryChangeFailure(id);
-      sync::OnError(RequestType::GetMetadataById);
+      services::OnError(RequestType::GetMetadataById);
       return;
     }
 
     const auto anime_id = ParseAnimeObject(root);
 
     ui::OnLibraryEntryChange(anime_id);
-    sync::OnResponse(RequestType::GetMetadataById);
+    services::OnResponse(RequestType::GetMetadataById);
   };
 
   SendRequest(request, on_transfer, on_response);
@@ -645,7 +646,7 @@ void GetSeason(const anime::Season season, const int page_offset) {
 
   const auto on_response = [season](const taiga::http::Response& response) {
     if (HasError(response)) {
-      sync::OnError(RequestType::GetSeason);
+      services::OnError(RequestType::GetSeason);
       return;
     }
 
@@ -653,7 +654,7 @@ void GetSeason(const anime::Season season, const int page_offset) {
 
     if (!JsonParseString(response.body(), root)) {
       ui::ChangeStatusText(L"MyAnimeList: Could not parse season data.");
-      sync::OnError(RequestType::GetSeason);
+      services::OnError(RequestType::GetSeason);
       return;
     }
 
@@ -673,7 +674,7 @@ void GetSeason(const anime::Season season, const int page_offset) {
     if (next_page_offset && *next_page_offset > 0) {
       GetSeason(season, *next_page_offset);
     } else {
-      sync::OnResponse(RequestType::GetSeason);
+      services::OnResponse(RequestType::GetSeason);
     }
   };
 
@@ -696,7 +697,7 @@ void SearchTitle(const std::wstring& title) {
 
   const auto on_response = [](const taiga::http::Response& response) {
     if (HasError(response)) {
-      sync::OnError(RequestType::SearchTitle);
+      services::OnError(RequestType::SearchTitle);
       return;
     }
 
@@ -704,7 +705,7 @@ void SearchTitle(const std::wstring& title) {
 
     if (!JsonParseString(response.body(), root)) {
       ui::ChangeStatusText(L"MyAnimeList: Could not parse search results.");
-      sync::OnError(RequestType::SearchTitle);
+      services::OnError(RequestType::SearchTitle);
       return;
     }
 
@@ -715,7 +716,7 @@ void SearchTitle(const std::wstring& title) {
     }
 
     ui::OnLibrarySearchTitle(ids);
-    sync::OnResponse(RequestType::SearchTitle);
+    services::OnResponse(RequestType::SearchTitle);
   };
 
   SendRequest(request, on_transfer, on_response);
@@ -741,12 +742,12 @@ void DeleteLibraryEntry(const int id) {
         // We consider "404 Not Found" to be a success.
       } else {
         ui::OnLibraryUpdateFailure(id, error->description, false);
-        sync::OnError(RequestType::DeleteLibraryEntry);
+        services::OnError(RequestType::DeleteLibraryEntry);
         return;
       }
     }
 
-    sync::OnResponse(RequestType::DeleteLibraryEntry);
+    services::OnResponse(RequestType::DeleteLibraryEntry);
   };
 
   SendRequest(request, on_transfer, on_response);
@@ -792,7 +793,7 @@ void UpdateLibraryEntry(const library::QueueItem& queue_item) {
         error->description = L"Anime list entry does not exist";
       }
       ui::OnLibraryUpdateFailure(id, error->description, false);
-      sync::OnError(RequestType::UpdateLibraryEntry);
+      services::OnError(RequestType::UpdateLibraryEntry);
       return;
     }
 
@@ -800,16 +801,16 @@ void UpdateLibraryEntry(const library::QueueItem& queue_item) {
 
     if (!JsonParseString(response.body(), root)) {
       ui::ChangeStatusText(L"MyAnimeList: Could not parse anime list entry.");
-      sync::OnError(RequestType::UpdateLibraryEntry);
+      services::OnError(RequestType::UpdateLibraryEntry);
       return;
     }
 
     ParseLibraryObject(root, id);
 
-    sync::OnResponse(RequestType::UpdateLibraryEntry);
+    services::OnResponse(RequestType::UpdateLibraryEntry);
   };
 
   SendRequest(request, on_transfer, on_response);
 }
 
-}  // namespace sync::myanimelist
+}  // namespace services::myanimelist

@@ -24,7 +24,7 @@
 #include <QString>
 #include <ctime>
 
-namespace link {
+namespace share {
 
 // Discord's rich presence, spoken directly over its local socket. v1 links against discord-rpc;
 // the protocol is a handshake and one command, so there is no need for the library here.
@@ -52,4 +52,4 @@ inline Discord* discord() {
   return instance;
 }
 
-}  // namespace link
+}  // namespace share

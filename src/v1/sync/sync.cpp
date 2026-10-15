@@ -1,6 +1,7 @@
 /*
 ** Taiga
 ** Copyright (C) 2010-2021, Eren Okka
+** Copyright (C) 2026, cenky <cenkkgl@gmail.com>
 **
 ** This program is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -37,7 +38,7 @@
 #include "ui/translate.h"
 #include "ui/ui.h"
 
-namespace sync {
+namespace services {
 
 void AuthenticateUser() {
   ui::EnableDialogInput(ui::Dialog::Main, false);
@@ -444,4 +445,4 @@ void OnInvalidAnimeId(const int id) {
   }
 }
 
-}  // namespace sync
+}  // namespace services

@@ -1,6 +1,7 @@
 /*
 ** Taiga
 ** Copyright (C) 2010-2021, Eren Okka
+** Copyright (C) 2026, cenky <cenkkgl@gmail.com>
 **
 ** This program is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -21,7 +22,7 @@
 #include <array>
 #include <string>
 
-namespace sync {
+namespace services {
 
 enum class ServiceId {
   Unknown,
@@ -48,4 +49,4 @@ ServiceId GetServiceIdBySlug(const std::wstring& slug);
 std::wstring GetServiceNameById(const ServiceId service_id);
 std::wstring GetServiceSlugById(const ServiceId service_id);
 
-}  // namespace sync
+}  // namespace services

@@ -1,6 +1,7 @@
 /*
 ** Taiga
 ** Copyright (C) 2010-2021, Eren Okka
+** Copyright (C) 2026, cenky <cenkkgl@gmail.com>
 **
 ** This program is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -30,7 +31,7 @@ namespace library {
 enum class QueueSearch;
 struct QueueItem;
 }
-namespace sync {
+namespace services {
 enum class ServiceId;
 }
 
@@ -42,9 +43,9 @@ public:
   // Metadata
 
   int GetId() const;
-  const std::wstring& GetId(sync::ServiceId service) const;
+  const std::wstring& GetId(services::ServiceId service) const;
   const std::wstring& GetSlug() const;
-  sync::ServiceId GetSource() const;
+  services::ServiceId GetSource() const;
   SeriesType GetType() const;
   int GetEpisodeCount() const;
   int GetEpisodeLength() const;
@@ -69,9 +70,9 @@ public:
   int GetLastAiredEpisodeNumber() const;
   time_t GetNextEpisodeTime() const;
 
-  void SetId(const std::wstring& id, sync::ServiceId service);
+  void SetId(const std::wstring& id, services::ServiceId service);
   void SetSlug(const std::wstring& slug);
-  void SetSource(sync::ServiceId source);
+  void SetSource(services::ServiceId source);
   void SetType(SeriesType type);
   void SetEpisodeCount(int number);
   void SetEpisodeLength(int number);

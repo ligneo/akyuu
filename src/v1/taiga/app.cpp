@@ -1,6 +1,7 @@
 /*
 ** Taiga
 ** Copyright (C) 2010-2021, Eren Okka
+** Copyright (C) 2026, cenky <cenkkgl@gmail.com>
 **
 ** This program is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -136,7 +137,7 @@ BOOL App::InitInstance() {
 
   // Initialize Discord
   if (settings.GetShareDiscordEnabled())
-    link::discord::Initialize();
+    share::discord::Initialize();
 
   if (settings.GetAppBehaviorCheckForUpdates()) {
     ui::ShowDialog(ui::Dialog::Update);

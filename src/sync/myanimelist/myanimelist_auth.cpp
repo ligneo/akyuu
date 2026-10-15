@@ -1,6 +1,7 @@
 /**
  * Akyuu
  * Copyright (C) 2010-2026, Eren Okka
+ * Copyright (C) 2026, cenky <cenkkgl@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,7 +29,7 @@
 #include "sync/myanimelist/myanimelist_error.hpp"
 #include "sync/myanimelist/myanimelist_utils.hpp"
 
-namespace sync::myanimelist {
+namespace services::myanimelist {
 
 bool Service::retryOnTokenExpiry(QRestReply& reply, std::function<void()> retry) {
   if (!isTokenExpired(reply)) return false;
@@ -144,4 +145,4 @@ void Service::authenticateUser() {
   manager_.get(api_.createRequest(u"/users/@me"_s), this, callback);
 }
 
-}  // namespace sync::myanimelist
+}  // namespace services::myanimelist

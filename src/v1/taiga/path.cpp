@@ -1,6 +1,7 @@
 /*
 ** Taiga
 ** Copyright (C) 2010-2021, Eren Okka
+** Copyright (C) 2026, cenky <cenkkgl@gmail.com>
 **
 ** This program is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -45,12 +46,12 @@ std::wstring GetDataPath() {
   return path + L"data\\";
 }
 
-std::wstring GetUserDirectoryName(const sync::ServiceId service_id) {
-  return GetCurrentUsername() + L"@" + sync::GetServiceSlugById(service_id);
+std::wstring GetUserDirectoryName(const services::ServiceId service_id) {
+  return GetCurrentUsername() + L"@" + services::GetServiceSlugById(service_id);
 }
 
 std::wstring GetUserDirectoryName() {
-  return GetUserDirectoryName(sync::GetCurrentServiceId());
+  return GetUserDirectoryName(services::GetCurrentServiceId());
 }
 
 std::wstring GetPath(Path path) {

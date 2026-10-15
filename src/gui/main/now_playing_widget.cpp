@@ -178,7 +178,7 @@ NowPlayingWidget::NowPlayingWidget(QWidget* parent) : QFrame(parent) {
   layout->addWidget(m_posterWidget);
   connect(m_posterWidget, &PosterWidget::clicked, this, [this](Qt::MouseButton button) {
     if (button == Qt::MouseButton::LeftButton && m_anime) {
-      QDesktopServices::openUrl(QUrl{sync::animePageUrl(m_anime->id)});
+      QDesktopServices::openUrl(QUrl{services::animePageUrl(m_anime->id)});
     }
   });
 

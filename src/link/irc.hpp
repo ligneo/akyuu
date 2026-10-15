@@ -23,7 +23,7 @@
 
 #include "track/episode.hpp"
 
-namespace link::irc {
+namespace share::irc {
 
 // v1 tells a running mIRC what to write, over DDE. Konversation is the client this speaks to
 // instead: it is driven over D-Bus, which Akyuu already uses for media detection.
@@ -37,4 +37,4 @@ QStringList joinedChannels(const QString& connection);
 // `force` shares even when the channel is turned off: v1 does that when asked from the menu.
 void announce(const track::Episode& episode, const bool force = false);
 
-}  // namespace link::irc
+}  // namespace share::irc

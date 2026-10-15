@@ -140,15 +140,15 @@ void IrcPage::save() {
 
 // Nothing is sent to a client that is not running, so the page says whether one was found.
 void IrcPage::updateStatus() {
-  if (!link::irc::isRunning()) {
+  if (!share::irc::isRunning()) {
     m_labelStatus->setText(
         tr("Konversation is not running. Nothing will be announced until it is."));
     return;
   }
 
   QStringList channels;
-  for (const auto& connection : link::irc::connections()) {
-    for (const auto& channel : link::irc::joinedChannels(connection)) {
+  for (const auto& connection : share::irc::connections()) {
+    for (const auto& channel : share::irc::joinedChannels(connection)) {
       channels.append(u"%1/%2"_s.arg(connection, channel));
     }
   }

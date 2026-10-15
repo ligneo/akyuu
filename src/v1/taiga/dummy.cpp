@@ -1,6 +1,7 @@
 /*
 ** Taiga
 ** Copyright (C) 2010-2021, Eren Okka
+** Copyright (C) 2026, cenky <cenkkgl@gmail.com>
 **
 ** This program is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -24,10 +25,10 @@
 namespace taiga {
 
 void InitializeDummies() {
-  dummy_anime.SetSource(sync::GetCurrentServiceId());
-  dummy_anime.SetId(L"4224", sync::ServiceId::MyAnimeList);
-  dummy_anime.SetId(L"3532", sync::ServiceId::Kitsu);
-  dummy_anime.SetId(L"4224", sync::ServiceId::AniList);
+  dummy_anime.SetSource(services::GetCurrentServiceId());
+  dummy_anime.SetId(L"4224", services::ServiceId::MyAnimeList);
+  dummy_anime.SetId(L"3532", services::ServiceId::Kitsu);
+  dummy_anime.SetId(L"4224", services::ServiceId::AniList);
   dummy_anime.SetSlug(L"toradora");
   dummy_anime.SetTitle(L"Toradora!");
   dummy_anime.SetEnglishTitle(L"Toradora!");
