@@ -2,13 +2,12 @@
 
 [![](https://img.shields.io/github/license/ligneo/akyuu)](LICENSE)
 
-Akyuu is an open-source desktop anime tracker for Linux. It detects the anime videos you watch on
+Akyuu is an open-source desktop anime tracker for Linux and Windows. It detects the anime videos you watch on
 your computer and synchronizes your progress with [AniList](https://anilist.co),
 [Kitsu](https://kitsu.app) or [MyAnimeList](https://myanimelist.net). It helps you manage your
 anime library, follow the season, share watched episodes and download new ones.
 
-> **Status:** beta. Intended for daily use and feedback; known limitations are listed in the
-> [changelog](CHANGELOG.md).
+Known limitations are listed in the [changelog](CHANGELOG.md).
 
 Download a published build from [Releases](https://github.com/ligneo/akyuu/releases).
 See the [wiki](https://github.com/ligneo/akyuu/wiki) for installation and documentation.
