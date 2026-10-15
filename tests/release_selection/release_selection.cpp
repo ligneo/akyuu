@@ -160,6 +160,7 @@ void testInstallationTargets() {
   };
   check("linux", "x86_64", "arch", Platform::Linux, "x86_64", Format::Arch);
   check("linux", "x86_64", "nix", Platform::Linux, "x86_64", Format::Nix);
+  check("linux", "x86_64", "system", Platform::Linux, "x86_64", Format::System);
   check("linux", "aarch64", "appimage", Platform::Linux, "arm64", Format::AppImage);
   check("linux", "x86_64", "source", Platform::Linux, "x86_64", Format::AppImage);
   check("winnt", "x86_64", "source", Platform::Windows, "x86_64", Format::WindowsInstaller);
@@ -208,6 +209,12 @@ void testPlatformPackages() {
           "a Nix installation must not offer a standalone Linux download");
   require(!akyuu::updateInstructions(nix).isEmpty(),
           "managed installations should explain how to update");
+  const auto system = akyuu::updateTarget(QStringLiteral("linux"), QStringLiteral("x86_64"),
+                                          QStringLiteral("system"));
+  require(!akyuu::selectPackage(selected.assets, system),
+          "a distribution package must not offer a standalone Linux download");
+  require(!akyuu::updateInstructions(system).isEmpty(),
+          "distribution packages should explain how to update");
   require(selected.assets.size() == 7,
           "source archives and untrusted assets must not become install packages");
   using Platform = akyuu::UpdatePlatform;

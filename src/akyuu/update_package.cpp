@@ -44,6 +44,8 @@ UpdateTarget updateTarget(const QString& kernel, const QString& architecture,
     target.format = PackageFormat::Rpm;
   if (target.platform == UpdatePlatform::Linux && packageFormat == u"nix")
     target.format = PackageFormat::Nix;
+  if (target.platform == UpdatePlatform::Linux && packageFormat == u"system")
+    target.format = PackageFormat::System;
   return target;
 }
 
@@ -56,6 +58,9 @@ QString updateInstructions(const UpdateTarget& target) {
   if (target.format == PackageFormat::Nix)
     return QCoreApplication::translate("UpdatePackage",
         "Update this installation through Nix. See the installation guide for commands.");
+  if (target.format == PackageFormat::System)
+    return QCoreApplication::translate("UpdatePackage",
+        "Update this installation through your system's package manager.");
   return {};
 }
 
