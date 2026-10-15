@@ -89,48 +89,47 @@ void Service::fetchAnime(const int id) {
 // to MyAnimeList's format needs it. A page holds 50, so the IDs go in batches, one after another.
 void Service::fetchMalIds(const QList<int>& ids,
                           const std::function<void(std::optional<QMap<int, int>>)>& done) {
-  // GCC 15 rejects `this` inside a lambda with an explicit object parameter.
-  const auto next = [service = this, done](this auto const& next, QList<int> remaining,
-                                           QMap<int, int> found) -> void {
-    if (remaining.isEmpty()) {
-      done(found);
-      return;
-    }
+  fetchMalIdBatch(ids, {}, done);
+}
 
-    const auto batch = remaining.first(std::min<qsizetype>(remaining.size(), 50));
-    remaining.remove(0, batch.size());
+void Service::fetchMalIdBatch(QList<int> remaining, QMap<int, int> found,
+                              const std::function<void(std::optional<QMap<int, int>>)>& done) {
+  if (remaining.isEmpty()) {
+    done(found);
+    return;
+  }
 
-    QJsonArray variables;
-    for (const auto id : batch) variables.append(id);
+  const auto batch = remaining.first(std::min<qsizetype>(remaining.size(), 50));
+  remaining.remove(0, batch.size());
 
-    const QJsonDocument data{{
-        {"query", gql("MediaIds")},
-        {"variables", QJsonObject{{"ids", variables}}},
-    }};
+  QJsonArray variables;
+  for (const auto id : batch) variables.append(id);
 
-    service->manager_.post(service->api_.createRequest(), data, service,
-                           [service, next, remaining, found, done](QRestReply& reply) mutable {
-                             if (isError(reply)) {
-                               handleError(*service, reply);
-                               done(std::nullopt);
-                               return;
-                             }
-                             const auto json = reply.readJson();
-                             if (!json) {
-                               handleError(*service, reply, "Could not parse media IDs.");
-                               done(std::nullopt);
-                               return;
-                             }
-                             for (const auto& value : (*json)["data"]["Page"]["media"].toArray()) {
-                               const auto media = value.toObject();
-                               const auto malId = media["idMal"].toInt();
-                               if (malId > 0) found[media["id"].toInt()] = malId;
-                             }
-                             next(remaining, found);
-                           });
-  };
+  const QJsonDocument data{{
+      {"query", gql("MediaIds")},
+      {"variables", QJsonObject{{"ids", variables}}},
+  }};
 
-  next(ids, {});
+  manager_.post(api_.createRequest(), data, this,
+                [this, remaining, found, done](QRestReply& reply) mutable {
+                  if (isError(reply)) {
+                    handleError(*this, reply);
+                    done(std::nullopt);
+                    return;
+                  }
+                  const auto json = reply.readJson();
+                  if (!json) {
+                    handleError(*this, reply, "Could not parse media IDs.");
+                    done(std::nullopt);
+                    return;
+                  }
+                  for (const auto& value : (*json)["data"]["Page"]["media"].toArray()) {
+                    const auto media = value.toObject();
+                    const auto malId = media["idMal"].toInt();
+                    if (malId > 0) found[media["id"].toInt()] = malId;
+                  }
+                  fetchMalIdBatch(remaining, found, done);
+                });
 }
 
 void Service::search(const SearchParams& params, const int page) {
