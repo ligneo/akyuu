@@ -13,13 +13,13 @@ depends=('qt6-base' 'qt6-multimedia' 'qt6-svg' 'systemd-libs' 'hicolor-icon-them
 makedepends=('cmake' 'ninja' 'git' 'qt6-tools')
 _submodules=(anime-relations anisthesia anitomy nstd semaver utf8proc)
 source=("$_pkgname::git+https://github.com/ligneo/akyuu.git#commit=$_commit"
-        "$_pkgname-anime-relations::git+https://github.com/erengy/anime-relations.git"
-        "$_pkgname-anisthesia::git+https://github.com/ligneo/anisthesia.git"
-        "$_pkgname-anitomy::git+https://github.com/ligneo/anitomy.git"
-        "$_pkgname-nstd::git+https://github.com/erengy/nstd.git"
-        "$_pkgname-semaver::git+https://github.com/erengy/semaver.git"
-        "$_pkgname-utf8proc::git+https://github.com/JuliaStrings/utf8proc.git")
-# Git sources use SKIP; the parent commit pins the exact submodule commits.
+        "$_pkgname-anime-relations::git+https://github.com/erengy/anime-relations.git#commit=51aa60e27f75baf95f522ed8abebf08e35b6d5b8"
+        "$_pkgname-anisthesia::git+https://github.com/ligneo/anisthesia.git#commit=38c1472785d58797ca9717108a6b687820965a02"
+        "$_pkgname-anitomy::git+https://github.com/ligneo/anitomy.git#commit=dbe7169aaf3a4b3f2a4af40dd156f6e91811df2f"
+        "$_pkgname-nstd::git+https://github.com/erengy/nstd.git#commit=a8c5ff1bf46b1dfd7a2d98f2516bdeb81942c55a"
+        "$_pkgname-semaver::git+https://github.com/erengy/semaver.git#commit=8775c316a8ebd204cf322eadc778459b99e8d49f"
+        "$_pkgname-utf8proc::git+https://github.com/JuliaStrings/utf8proc.git#commit=e5e799221b45bbb90f5fdc5c69b6b8dfbf017e78")
+# Git sources use SKIP; each one is pinned to a commit, the submodles to the ones v0.1.1 records.
 sha256sums=('SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP')
 
 prepare() {
