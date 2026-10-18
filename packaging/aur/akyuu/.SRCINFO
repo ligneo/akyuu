@@ -14,7 +14,7 @@ pkgbase = akyuu
 	depends = qt6-svg
 	depends = systemd-libs
 	depends = hicolor-icon-theme
-	source = akyuu::git+https://github.com/ligneo/akyuu.git#tag=v0.1.1
+	source = akyuu::git+https://github.com/ligneo/akyuu.git#commit=df4452622ed5b40d18888ef46c27cd0f8d8e9a79
 	source = akyuu-anime-relations::git+https://github.com/erengy/anime-relations.git
 	source = akyuu-anisthesia::git+https://github.com/ligneo/anisthesia.git
 	source = akyuu-anitomy::git+https://github.com/ligneo/anitomy.git
