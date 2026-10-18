@@ -19,7 +19,7 @@ source=("$_pkgname::git+https://github.com/ligneo/akyuu.git#commit=$_commit"
         "$_pkgname-nstd::git+https://github.com/erengy/nstd.git#commit=a8c5ff1bf46b1dfd7a2d98f2516bdeb81942c55a"
         "$_pkgname-semaver::git+https://github.com/erengy/semaver.git#commit=8775c316a8ebd204cf322eadc778459b99e8d49f"
         "$_pkgname-utf8proc::git+https://github.com/JuliaStrings/utf8proc.git#commit=e5e799221b45bbb90f5fdc5c69b6b8dfbf017e78")
-# Git sources use SKIP; each one is pinned to a commit, the submodles to the ones v0.1.1 records.
+# Git sources use SKIP; each one is pinned to a commit, the submodules to the ones v0.1.1 records.
 sha256sums=('SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP')
 
 prepare() {
