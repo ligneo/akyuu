@@ -463,9 +463,12 @@ void MainWindow::announceCurrentEpisode(const ShareChannel channel) {
 
 // v1's `RefreshSearchText`: every page keeps its own text, and the box says what it does there.
 void MainWindow::switchSearchText(MainWindowPage from, MainWindowPage to) {
-  if (!m_searchBox || from == to) return;
+  if (!m_searchBox) return;
 
-  m_searchTexts[from] = m_searchBox->text();
+  // The window starts on the page it opens with, so the first switch has no text to swap but
+  // still has to set the placeholder.
+  const bool isPageChange = from != to;
+  if (isPageChange) m_searchTexts[from] = m_searchBox->text();
 
   const auto service = services::serviceName(services::currentServiceId());
   QString placeholder;
@@ -491,7 +494,11 @@ void MainWindow::switchSearchText(MainWindowPage from, MainWindowPage to) {
   // Pages that do nothing with the text get an empty, disabled box rather than a stale one.
   m_searchBox->setEnabled(!placeholder.isEmpty());
   m_searchBox->setPlaceholderText(placeholder);
-  m_searchBox->setText(placeholder.isEmpty() ? QString{} : m_searchTexts[to]);
+  if (placeholder.isEmpty()) {
+    m_searchBox->clear();
+  } else if (isPageChange) {
+    m_searchBox->setText(m_searchTexts[to]);
+  }
 }
 
 void MainWindow::initPage(MainWindowPage page) {
