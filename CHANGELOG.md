@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- The search box says "Filter list" on the page Akyuu opens with. It said "Search", so typing a
+  title there and pressing Enter filtered the list instead of searching the service, and found
+  nothing on a new installation. Thanks to Arlen for finding it.
+- The Now Playing panel hides a few seconds after the media is closed and the list is updated
+  (#6). A question that is still waiting for an answer stays.
+
 ## 0.1.1
 
 - Build with GCC 15 and Qt 6.10, so that Fedora, openSUSE, Ubuntu and Debian can build Akyuu
