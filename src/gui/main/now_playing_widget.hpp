@@ -23,6 +23,7 @@
 #include <QLabel>
 #include <QPixmap>
 #include <QPushButton>
+#include <QTimer>
 #include <optional>
 
 #include "gui/common/clickable_label.hpp"
@@ -60,6 +61,7 @@ private:
   void refresh();
   void render(const std::optional<Content>& content);
   void updateVisibility();
+  bool shouldHideSoon() const;
 
   PosterWidget* m_posterWidget = nullptr;
   ClickableLabel* m_titleLabel = nullptr;
@@ -69,6 +71,7 @@ private:
   QWidget* m_actions = nullptr;
   QPushButton* m_acceptButton = nullptr;
   QPushButton* m_cancelButton = nullptr;
+  QTimer* m_hideTimer = nullptr;
 
   std::optional<Anime> m_anime;
   std::optional<track::Episode> m_episode;
