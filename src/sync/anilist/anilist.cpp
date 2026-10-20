@@ -25,6 +25,7 @@
 #include <QNetworkReply>
 #include <QRestReply>
 #include <QSet>
+#include <QTimer>
 #include <ranges>
 
 #include "akyuu/accounts.hpp"
@@ -55,6 +56,45 @@ Service* Service::instance() {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+// Past the rate limit AniList answers 429 for a minute and says in `Retry-After` how many seconds
+// to wait. Requests wait that long and go out again instead of failing, and the ones made in the
+// meantime wait with them.
+// https://docs.anilist.co/guide/rate-limiting
+QNetworkReply* Service::post(const QJsonDocument& data, const Callback& callback,
+                             const int attempt) {
+  constexpr int kMaxAttempts = 3;
+  constexpr int kDefaultRetryAfterSecs = 60;
+
+  const auto now = QDateTime::currentDateTimeUtc();
+  if (rateLimitedUntil_.isValid() && now < rateLimitedUntil_) {
+    QTimer::singleShot(now.msecsTo(rateLimitedUntil_), this,
+                       [this, data, callback, attempt]() { post(data, callback, attempt); });
+    return nullptr;
+  }
+
+  return manager_.post(
+      api_.createRequest(), data, this,
+      [this, data, callback, attempt](QRestReply& reply) {
+        if (reply.httpStatus() != 429 || attempt + 1 >= kMaxAttempts) {
+          callback(reply);
+          return;
+        }
+        bool ok = false;
+        auto seconds = reply.networkReply()->rawHeader("Retry-After").toInt(&ok);
+        if (!ok || seconds <= 0) seconds = kDefaultRetryAfterSecs;
+        const auto now = QDateTime::currentDateTimeUtc();
+        if (!rateLimitedUntil_.isValid() || now >= rateLimitedUntil_) {
+          emit errorOccurred(
+              u"AniList is limiting requests. Trying again in %1 seconds."_s.arg(seconds));
+        }
+        if (const auto until = now.addSecs(seconds);
+            !rateLimitedUntil_.isValid() || rateLimitedUntil_ < until) {
+          rateLimitedUntil_ = until;
+        }
+        post(data, callback, attempt + 1);
+      });
+}
+
 void Service::fetchAnime(const int id) {
   const QJsonDocument data{{
       {"query", gql("Media")},
@@ -82,7 +122,7 @@ void Service::fetchAnime(const int id) {
     anime::db.updateItem(*item);
   };
 
-  manager_.post(api_.createRequest(), data, this, callback);
+  post(data, callback);
 }
 
 // AniList keeps each anime's MyAnimeList ID as `idMal`. Nothing else here stores it, and the export
@@ -110,8 +150,7 @@ void Service::fetchMalIdBatch(QList<int> remaining, QMap<int, int> found,
       {"variables", QJsonObject{{"ids", variables}}},
   }};
 
-  manager_.post(api_.createRequest(), data, this,
-                [this, remaining, found, done](QRestReply& reply) mutable {
+  post(data, [this, remaining, found, done](QRestReply& reply) mutable {
                   if (isError(reply)) {
                     handleError(*this, reply);
                     done(std::nullopt);
@@ -186,7 +225,7 @@ void Service::search(const SearchParams& params, const int page) {
     }
   };
 
-  manager_.post(api_.createRequest(), data, this, callback);
+  post(data, callback);
 }
 
 void Service::fetchListEntries() {
@@ -240,7 +279,7 @@ void Service::fetchListEntries() {
     emit listEntriesFetched();
   };
 
-  const auto reply = manager_.post(api_.createRequest(), data, this, callback);
+  const auto reply = post(data, callback);
 
   connect(reply, &QNetworkReply::downloadProgress, this, &Service::transferProgress);
 }
@@ -269,7 +308,7 @@ void Service::deleteListEntry(const int id) {
     services::queue.complete(true);
   };
 
-  manager_.post(api_.createRequest(), data, this, callback);
+  post(data, callback);
 }
 
 void Service::updateListEntry(const int id, const anime::list::Fields dirty) {
@@ -332,7 +371,7 @@ void Service::updateListEntry(const int id, const anime::list::Fields dirty) {
     }
   };
 
-  manager_.post(api_.createRequest(), data, this, callback);
+  post(data, callback);
 }
 
 }  // namespace services::anilist

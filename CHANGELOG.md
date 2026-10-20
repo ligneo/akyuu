@@ -17,6 +17,8 @@
   light window.
 - The search page searches the service a moment after typing stops, not only on Enter. Typing
   without Enter filtered the results already on the page, and found nothing on a new installation.
+- AniList requests that hit the rate limit wait as long as AniList asks and are sent again,
+  instead of failing.
 
 ## 0.1.1
 
