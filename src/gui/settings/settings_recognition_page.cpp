@@ -44,7 +44,7 @@ RecognitionPage::RecognitionPage(QWidget* parent)
           new QCheckBox(tr("Ignore if episode number is greater than next episode"), this)),
       m_spinDelay(new QSpinBox(this)),
       m_checkPauseWhenUnfocused(
-          new QCheckBox(tr("Pause delay while player is paused or not in focus"), this)),
+          new QCheckBox(tr("Pause delay while player is not in focus"), this)),
       m_radioAfterDelay(new QRadioButton(tr("Update after delay"), this)),
       m_radioOnPlayerClose(new QRadioButton(tr("Update when media is closed (after delay)"), this)),
       m_checkAskToConfirm(new QCheckBox(tr("Ask for confirmation"), this)),

@@ -24,6 +24,8 @@
   "Operation timed out".
 - An episode whose title cannot be read says so in its notification and on Now Playing, which
   were blank.
+- The update delay waits while the player says it is paused, whether or not "Pause delay while
+  player is not in focus" is on. An episode opened and left paused counted as watched.
 - While the anime list is filtered, its tabs count the matches, so a title under another tab shows
   where it is.
 
