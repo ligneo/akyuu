@@ -198,8 +198,9 @@ SearchWidget::SearchWidget(QWidget* parent)
 
   // Typing only filtered the results already on the page, which are none on a new installation,
   // so a pause in typing searches the service as well.
+  // MyAnimeList answers "invalid q" to fewer than three characters
   constexpr int kTypingDelayMs = 700;
-  constexpr int kTypingMinLength = 2;
+  constexpr int kTypingMinLength = 3;
   m_typingTimer = new QTimer(this);
   m_typingTimer->setSingleShot(true);
   m_typingTimer->setInterval(kTypingDelayMs);

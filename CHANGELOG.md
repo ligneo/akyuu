@@ -15,8 +15,9 @@
 - The System style follows a picked Light or Dark color scheme with styles that come in a dark
   variant, such as Adwaita-Dark behind qt6ct, by using the other variant directly. Boxes such as
   the search filters stayed dark on a light window.
-- The search page searches the service a moment after typing stops, not only on Enter. Typing
-  without Enter filtered the results already on the page, and found nothing on a new installation.
+- The search page searches the service a moment after typing stops at three characters or more,
+  not only on Enter. Typing without Enter filtered the results already on the page, and found
+  nothing on a new installation.
 - AniList requests that hit the rate limit wait as long as AniList asks and are sent again,
   instead of failing.
 - Torrent feeds have 30 seconds to answer, up from 10. Slow feeds failed now and then with
