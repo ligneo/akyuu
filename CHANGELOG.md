@@ -23,6 +23,8 @@
   "Operation timed out".
 - An episode whose title cannot be read says so in its notification and on Now Playing, which
   were blank.
+- While the anime list is filtered, its tabs count the matches, so a title under another tab shows
+  where it is.
 
 ## 0.1.1
 

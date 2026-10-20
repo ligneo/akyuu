@@ -23,6 +23,8 @@
 #include <QSortFilterProxyModel>
 #include <optional>
 
+#include "media/anime.hpp"
+
 namespace gui {
 
 // v1 groups the Seasons page by airing status, list status or type (`dlg_season.cpp`). There the
@@ -70,6 +72,7 @@ public:
   void setStatusFilter(std::optional<int> status);
   void setListStatusFilter(AnimeListStatusFilter filter);
   void setTextFilter(const QString& text);
+  static bool matchesText(const Anime& anime, const QStringView text);
 
   QVariant data(const QModelIndex& index, int role) const override;
 

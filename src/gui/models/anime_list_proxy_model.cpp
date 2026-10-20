@@ -196,6 +196,17 @@ void AnimeListProxyModel::setTextFilter(const QString& text) {
   endFilterChange(QSortFilterProxyModel::Direction::Rows);
 }
 
+bool AnimeListProxyModel::matchesText(const Anime& anime, const QStringView text) {
+  static const auto contains = [](const std::string& str, const QStringView view) {
+    return QString::fromStdString(str).contains(view, Qt::CaseInsensitive);
+  };
+
+  return contains(anime.titles.romaji, text) || contains(anime.titles.english, text) ||
+         contains(anime.titles.japanese, text) ||
+         std::ranges::any_of(anime.titles.synonyms,
+                             [text](const std::string& str) { return contains(str, text); });
+}
+
 bool AnimeListProxyModel::filterAcceptsRow(int row, const QModelIndex& parent) const {
   const auto model = static_cast<AnimeListModel*>(sourceModel());
   if (!model) return false;
@@ -203,16 +214,6 @@ bool AnimeListProxyModel::filterAcceptsRow(int row, const QModelIndex& parent) c
   const auto anime = getAnime(index);
   if (!anime) return false;
   const auto entry = getListEntry(index);
-
-  static const auto contains = [](const std::string& str, const QStringView view) {
-    return QString::fromStdString(str).contains(view, Qt::CaseInsensitive);
-  };
-
-  static const auto list_contains = [](const std::vector<std::string>& list,
-                                       const QStringView view) {
-    return std::ranges::any_of(list,
-                               [view](const std::string& str) { return contains(str, view); });
-  };
 
   // Year
   if (m_filter.year) {
@@ -247,14 +248,7 @@ bool AnimeListProxyModel::filterAcceptsRow(int row, const QModelIndex& parent) c
   }
 
   // Titles
-  if (!m_filter.text.isEmpty()) {
-    if (!contains(anime->titles.romaji, m_filter.text) &&
-        !contains(anime->titles.english, m_filter.text) &&
-        !contains(anime->titles.japanese, m_filter.text) &&
-        !list_contains(anime->titles.synonyms, m_filter.text)) {
-      return false;
-    }
-  }
+  if (!m_filter.text.isEmpty() && !matchesText(*anime, m_filter.text)) return false;
 
   return true;
 }

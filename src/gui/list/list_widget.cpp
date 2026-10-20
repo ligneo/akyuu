@@ -20,6 +20,7 @@
 #include "list_widget.hpp"
 
 #include <QActionGroup>
+#include <QLineEdit>
 #include <QListView>
 #include <QMenu>
 #include <QSignalBlocker>
@@ -40,6 +41,7 @@
 #include "gui/models/anime_list_proxy_model.hpp"
 #include "gui/utils/format.hpp"
 #include "gui/utils/theme.hpp"
+#include "media/anime_db.hpp"
 #include "ui_main_window.h"
 
 namespace gui {
@@ -115,17 +117,36 @@ void ListWidget::initTabs() {
   });
 
   connect(mainWindow()->navigation(), &NavigationWidget::refreshed, this, &ListWidget::refreshTabs);
+  // Queued, so that the list has applied the text by then
+  connect(mainWindow()->searchBox(), &QLineEdit::textChanged, this, &ListWidget::refreshTabs,
+          Qt::QueuedConnection);
   refreshTabs();
 }
 
 void ListWidget::refreshTabs() {
   const auto navigation = mainWindow()->navigation();
 
+  // While the list is filtered, the tabs count what matches, so that a title found under another
+  // tab is not taken for one that is missing.
+  const auto& text = m_proxyModel->filters().text;
+  QMap<anime::list::Status, int> matches;
+  if (!text.isEmpty()) {
+    for (const auto& entry : anime::db.entries()) {
+      if (entry.pending_delete) continue;
+      if (const auto item = anime::db.item(entry.anime_id);
+          item && AnimeListProxyModel::matchesText(*item, text)) {
+        matches[entry.status] += 1;
+      }
+    }
+  }
+
   for (int i = 0; i < m_tabs->count(); ++i) {
     const auto status = m_tabs->tabData(i).value<anime::list::Status>();
     const auto item = navigation->findListStatusItem(status);
     const auto count =
-        item ? item->data(0, static_cast<int>(NavigationItemDataRole::Counter)).toInt() : 0;
+        !text.isEmpty() ? matches[status]
+        : item          ? item->data(0, static_cast<int>(NavigationItemDataRole::Counter)).toInt()
+                        : 0;
     m_tabs->setTabText(i, u"%1 (%2)"_s.arg(formatListStatus(status)).arg(count));
   }
 }
