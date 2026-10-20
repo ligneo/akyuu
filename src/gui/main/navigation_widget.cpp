@@ -43,7 +43,7 @@ namespace {
 
 constexpr int kWidth = 200;
 // How much wider than its labels the sidebar can be dragged
-constexpr int kMaxWidthFactor = 2;
+constexpr int kMaxWidthPercent = 150;
 
 }  // namespace
 
@@ -154,7 +154,7 @@ int NavigationWidget::naturalWidth() const {
 }
 
 void NavigationWidget::updateMaximumWidth() {
-  setMaximumWidth(naturalWidth() * kMaxWidthFactor);
+  setMaximumWidth(naturalWidth() * kMaxWidthPercent / 100);
 }
 
 void NavigationWidget::changeEvent(QEvent* event) {

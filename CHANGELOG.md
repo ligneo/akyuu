@@ -10,8 +10,8 @@
   until the next media as before, or show it only to ask for confirmation.
 - A poster whose download fails, for example on a dropped connection, is tried again a minute
   later. It stayed empty until the page was opened again or the media changed.
-- The sidebar can be dragged wider, up to twice the width of its labels, and keeps that width
-  the next time. It was held at 200 pixels.
+- The sidebar can be dragged wider, up to one and a half times the width of its labels, and
+  keeps that width the next time. It was held at 200 pixels.
 - The System style follows a picked Light or Dark color scheme with styles that come in a dark
   variant, such as Adwaita-Dark behind qt6ct, by using the other variant directly. Boxes such as
   the search filters stayed dark on a light window.
