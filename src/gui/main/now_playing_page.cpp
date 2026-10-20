@@ -145,7 +145,8 @@ QString NowPlayingPage::playingHtml() const {
 
   // v1 asked for help here; searching is the help we can offer.
   if (!anime) {
-    const auto title = QString::fromStdString(episode->element(anitomy::ElementKind::Title));
+    auto title = QString::fromStdString(episode->element(anitomy::ElementKind::Title));
+    if (title.isEmpty()) title = tr("Unknown title");
     return u"<h2>%1</h2><p>%2</p><p>%3</p>"_s.arg(
         title.toHtmlEscaped(), tr("Akyuu was unable to identify this title, and needs your help."),
         link(u"akyuu:search"_s, tr("Search for this title")));

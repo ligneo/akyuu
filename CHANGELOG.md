@@ -21,6 +21,8 @@
   instead of failing.
 - Torrent feeds have 30 seconds to answer, up from 10. Slow feeds failed now and then with
   "Operation timed out".
+- An episode whose title cannot be read says so in its notification and on Now Playing, which
+  were blank.
 
 ## 0.1.1
 

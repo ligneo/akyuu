@@ -1164,8 +1164,10 @@ void MainWindow::notifyEpisodeDetected(std::optional<track::Episode> episode) {
   } else {
     if (!akyuu::settings.syncNotifyNotRecognized()) return;
 
-    m_trayIcon->showMessage(tr("Episode not recognized"),
-                            QString::fromStdString(episode->element(anitomy::ElementKind::Title)));
+    // A title can come out empty, which sent a notification with nothing in it
+    auto title = QString::fromStdString(episode->element(anitomy::ElementKind::Title));
+    if (title.isEmpty()) title = tr("Akyuu could not read a title from this media.");
+    m_trayIcon->showMessage(tr("Episode not recognized"), title);
   }
 }
 
