@@ -135,8 +135,8 @@ void NavigationWidget::refresh() {
 
 // The splitter lays the sidebar out by its size hint, which would leave a gap next to it
 QSize NavigationWidget::sizeHint() const {
-  const int width = akyuu::session.sidebarWidth() > 0 ? akyuu::session.sidebarWidth()
-                                                       : naturalWidth();
+  const int savedWidth = akyuu::session.sidebarWidth();
+  const int width = savedWidth > 0 ? savedWidth : naturalWidth();
   return {std::min(width, maximumWidth()), QTreeWidget::sizeHint().height()};
 }
 
