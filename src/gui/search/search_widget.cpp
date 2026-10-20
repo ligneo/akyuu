@@ -192,7 +192,25 @@ SearchWidget::SearchWidget(QWidget* parent)
 
   // Search
   connect(mainWindow()->searchBox(), &QLineEdit::returnPressed, this, [this]() {
+    m_typingTimer->stop();
     if (isVisible()) performSearch();  // Enter on another page is not a search
+  });
+
+  // Typing only filtered the results already on the page, which are none on a new installation,
+  // so a pause in typing searches the service as well.
+  constexpr int kTypingDelayMs = 700;
+  constexpr int kTypingMinLength = 2;
+  m_typingTimer = new QTimer(this);
+  m_typingTimer->setSingleShot(true);
+  m_typingTimer->setInterval(kTypingDelayMs);
+  connect(m_typingTimer, &QTimer::timeout, this, &SearchWidget::performSearch);
+  connect(mainWindow()->searchBox(), &QLineEdit::textEdited, this, [this](const QString& text) {
+    if (!isVisible()) return;
+    if (text.trimmed().size() >= kTypingMinLength) {
+      m_typingTimer->start();
+    } else {
+      m_typingTimer->stop();
+    }
   });
 
   const QList<services::Service*> services{

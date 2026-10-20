@@ -15,6 +15,8 @@
 - The System style follows a picked Light or Dark color scheme with styles that come in a dark
   variant, such as Adwaita-Dark behind qt6ct. Boxes such as the search filters stayed dark on a
   light window.
+- The search page searches the service a moment after typing stops, not only on Enter. Typing
+  without Enter filtered the results already on the page, and found nothing on a new installation.
 
 ## 0.1.1
 

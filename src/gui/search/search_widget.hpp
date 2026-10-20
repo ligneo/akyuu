@@ -20,6 +20,7 @@
 #pragma once
 
 #include <QMenu>
+#include <QTimer>
 
 #include "gui/common/anime_list_view_base.hpp"
 #include "gui/common/combobox.hpp"
@@ -66,6 +67,7 @@ private:
   ListViewMode m_viewMode = ListViewMode::Cards;
   QMenu* m_sortMenu = nullptr;
   QMenu* m_viewMenu = nullptr;
+  QTimer* m_typingTimer = nullptr;
 };
 
 }  // namespace gui
