@@ -138,7 +138,7 @@ private:
   NavigationController* m_navigationController = nullptr;
   NavigationWidget* m_navigationWidget = nullptr;
   NowPlayingWidget* m_nowPlayingWidget = nullptr;
-  bool m_sidebarDragged = false;
+  int m_draggedSidebarWidth = 0;
   ProfileWidget* m_profileWidget = nullptr;
   QAction* m_actionZoomIn = nullptr;
   QAction* m_actionZoomOut = nullptr;

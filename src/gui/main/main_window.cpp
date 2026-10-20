@@ -371,7 +371,8 @@ void MainWindow::initNavigation() {
   // The page takes up the extra width and is the first to give it back
   ui_->splitter->setStretchFactor(0, 0);
   ui_->splitter->setStretchFactor(1, 1);
-  connect(ui_->splitter, &QSplitter::splitterMoved, this, [this]() { m_sidebarDragged = true; });
+  connect(ui_->splitter, &QSplitter::splitterMoved, this,
+          [this](const int pos) { m_draggedSidebarWidth = pos; });
 }
 
 void MainWindow::initNowPlaying() {
@@ -1094,8 +1095,8 @@ void MainWindow::closeEvent(QCloseEvent* event) {
 
 void MainWindow::saveSession() {
   akyuu::session.setMainWindowGeometry(saveGeometry());
-  // Only a width the sidebar was dragged to; a narrow window squeezing it is not a choice
-  if (m_sidebarDragged) akyuu::session.setSidebarWidth(m_navigationWidget->width());
+  // Only a width the sidebar was dragged to; a narrow window squeezing it later is not a choice
+  if (m_draggedSidebarWidth > 0) akyuu::session.setSidebarWidth(m_draggedSidebarWidth);
   if (m_listWidget) m_listWidget->saveState();
   if (m_searchWidget) m_searchWidget->saveState();
   if (m_seasonsWidget) m_seasonsWidget->saveState();
