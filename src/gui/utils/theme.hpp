@@ -52,6 +52,7 @@ private:
 
   QHash<QString, QIcon> m_icons;
   QString m_systemStyle;
+  QString m_systemBaseStyle;
   QPalette m_systemPalette;
   bool m_hasSystemPalette = false;
 };

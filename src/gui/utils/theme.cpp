@@ -22,6 +22,7 @@
 #include <QApplication>
 #include <QPalette>
 #include <QStyle>
+#include <QProxyStyle>
 #include <QStyleFactory>
 #include <QStyleHints>
 #include <memory>
@@ -179,6 +180,26 @@ QPalette darkPalette() {
   return palette;
 }
 
+// Dark variants such as Adwaita-Dark draw their own dark colors whatever the palette says, which
+// left dark boxes on a light window. A picked scheme switches to the other variant if installed.
+// `baseStyle` is the style behind a proxy such as qt6ct's.
+QString schemeStyle(const QString& style, const QString& baseStyle, const Qt::ColorScheme scheme) {
+  static const auto darkSuffix = u"-dark"_s;
+  const bool isDarkVariant = baseStyle.endsWith(darkSuffix, Qt::CaseInsensitive);
+
+  QString variant;
+  if (scheme == Qt::ColorScheme::Light && isDarkVariant) {
+    variant = baseStyle.chopped(darkSuffix.size());
+  } else if (scheme == Qt::ColorScheme::Dark && !isDarkVariant) {
+    variant = baseStyle + darkSuffix;
+  }
+
+  if (!variant.isEmpty() && QStyleFactory::keys().contains(variant, Qt::CaseInsensitive)) {
+    return variant;
+  }
+  return style;
+}
+
 }  // namespace
 
 bool Theme::isAkyuuStyle() const {
@@ -213,7 +234,11 @@ QPalette Theme::schemePalette() const {
 
 void Theme::applyStyle() {
   // Remember the platform's style and palette, so that they can be restored later on.
-  if (m_systemStyle.isEmpty()) m_systemStyle = qApp->style()->name();
+  if (m_systemStyle.isEmpty()) {
+    m_systemStyle = qApp->style()->name();
+    const auto proxy = qobject_cast<QProxyStyle*>(qApp->style());
+    m_systemBaseStyle = proxy && proxy->baseStyle() ? proxy->baseStyle()->name() : m_systemStyle;
+  }
   if (!m_hasSystemPalette) {
     m_systemPalette = qApp->palette();
     m_hasSystemPalette = true;
@@ -229,7 +254,7 @@ void Theme::applyStyle() {
 
   auto style = QString::fromStdString(akyuu::settings.appStyle());
   if (style.compare(akyuu::Settings::kAppStyleSystem, Qt::CaseInsensitive) == 0) {
-    style = m_systemStyle;
+    style = schemeStyle(m_systemStyle, m_systemBaseStyle, akyuu::settings.appColorScheme());
   } else if (akyuuStyle) {
     style = u"fusion"_s;
   }
