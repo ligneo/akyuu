@@ -19,6 +19,8 @@
   without Enter filtered the results already on the page, and found nothing on a new installation.
 - AniList requests that hit the rate limit wait as long as AniList asks and are sent again,
   instead of failing.
+- Torrent feeds have 30 seconds to answer, up from 10. Slow feeds failed now and then with
+  "Operation timed out".
 
 ## 0.1.1
 

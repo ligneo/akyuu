@@ -90,6 +90,9 @@ void Aggregator::fetch(const QString& requestedUrl, const bool automatic) {
 
   QNetworkRequest request{QUrl{url}};
   request.setHeaders(akyuu::NetworkAccessManager::commonHeaders());
+  // Feeds such as Tokyo Toshokan take 4 to 9 seconds to send their first byte, close to the usual
+  // 10, so a check failed now and then with "Operation timed out".
+  request.setTransferTimeout(std::chrono::seconds{30});
 
   manager_.get(request, this, [this, automatic](QRestReply& reply) {
     fetching_ = false;
