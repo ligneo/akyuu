@@ -44,6 +44,7 @@ public:
 
   void reset();
   void setPlaying(track::Episode episode);
+  void updateVisibility();
 
 private:
   struct Content {
@@ -60,7 +61,6 @@ private:
 
   void refresh();
   void render(const std::optional<Content>& content);
-  void updateVisibility();
   bool shouldHideSoon() const;
 
   PosterWidget* m_posterWidget = nullptr;

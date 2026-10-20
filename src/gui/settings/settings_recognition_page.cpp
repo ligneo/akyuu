@@ -29,6 +29,8 @@
 #include <QVBoxLayout>
 
 #include "akyuu/settings.hpp"
+#include "gui/main/main_window.hpp"
+#include "gui/main/now_playing_widget.hpp"
 #include "track/media.hpp"
 
 namespace gui {
@@ -147,6 +149,7 @@ void RecognitionPage::save() {
   akyuu::settings.setUpdateAskToConfirm(m_checkAskToConfirm->isChecked());
   akyuu::settings.setNowPlayingPanel(
       static_cast<akyuu::NowPlayingPanel>(m_comboNowPlayingPanel->currentData().toInt()));
+  mainWindow()->nowPlaying()->updateVisibility();
   akyuu::settings.setSyncNotifyRecognized(m_checkNotifyRecognized->isChecked());
   akyuu::settings.setSyncNotifyNotRecognized(m_checkNotifyNotRecognized->isChecked());
   akyuu::settings.setSyncGoToNowPlayingRecognized(m_checkGoToRecognized->isChecked());

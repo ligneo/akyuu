@@ -323,6 +323,8 @@ void NowPlayingWidget::updateVisibility() {
     setVisible(phase == track::UpdateState::Phase::Confirming);
     return;
   }
+  // After a switch away from the mode above, the panel comes back with what it already shows
+  if (m_episode) show();
 
   if (!shouldHideSoon()) {
     m_hideTimer->stop();
@@ -359,8 +361,9 @@ void NowPlayingWidget::refresh() {
     lines += u"<b>Group:</b> %1"_s.arg(releaseGroup);
   }
 
-  const auto title =
+  auto title =
       m_anime ? anime::preferredTitle(*m_anime) : m_episode->element(anitomy::ElementKind::Title);
+  if (title.empty()) title = tr("Unknown title").toStdString();
   const auto episodeNumber =
       formatEpisodeNumbers(m_episode->elements(anitomy::ElementKind::Episode));
   const auto episodeCount = formatNumber(m_anime ? m_anime->episode_count : 0, "?");

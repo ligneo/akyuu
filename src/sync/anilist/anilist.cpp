@@ -60,21 +60,23 @@ Service* Service::instance() {
 // to wait. Requests wait that long and go out again instead of failing, and the ones made in the
 // meantime wait with them.
 // https://docs.anilist.co/guide/rate-limiting
-QNetworkReply* Service::post(const QJsonDocument& data, const Callback& callback,
-                             const int attempt) {
+void Service::post(const QJsonDocument& data, const Callback& callback, const bool reportProgress,
+                   const int attempt) {
   constexpr int kMaxAttempts = 3;
   constexpr int kDefaultRetryAfterSecs = 60;
 
   const auto now = QDateTime::currentDateTimeUtc();
   if (rateLimitedUntil_.isValid() && now < rateLimitedUntil_) {
     QTimer::singleShot(now.msecsTo(rateLimitedUntil_), this,
-                       [this, data, callback, attempt]() { post(data, callback, attempt); });
-    return nullptr;
+                       [this, data, callback, reportProgress, attempt]() {
+                         post(data, callback, reportProgress, attempt);
+                       });
+    return;
   }
 
-  return manager_.post(
+  const auto reply = manager_.post(
       api_.createRequest(), data, this,
-      [this, data, callback, attempt](QRestReply& reply) {
+      [this, data, callback, reportProgress, attempt](QRestReply& reply) {
         if (reply.httpStatus() != 429 || attempt + 1 >= kMaxAttempts) {
           callback(reply);
           return;
@@ -91,8 +93,12 @@ QNetworkReply* Service::post(const QJsonDocument& data, const Callback& callback
             !rateLimitedUntil_.isValid() || rateLimitedUntil_ < until) {
           rateLimitedUntil_ = until;
         }
-        post(data, callback, attempt + 1);
+        post(data, callback, reportProgress, attempt + 1);
       });
+
+  if (reportProgress) {
+    connect(reply, &QNetworkReply::downloadProgress, this, &Service::transferProgress);
+  }
 }
 
 void Service::fetchAnime(const int id) {
@@ -279,9 +285,7 @@ void Service::fetchListEntries() {
     emit listEntriesFetched();
   };
 
-  const auto reply = post(data, callback);
-
-  connect(reply, &QNetworkReply::downloadProgress, this, &Service::transferProgress);
+  post(data, callback, true);
 }
 
 void Service::addListEntry(const int id, const anime::list::Fields dirty) {

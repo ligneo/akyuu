@@ -75,6 +75,9 @@ void ImageProvider::fetchPoster(const int id, const bool revalidate) {
   }
 
   m_manager->get(request, this, [this, id](QRestReply& reply) {
+    // The poster on disk is still current
+    if (reply.httpStatus() == 304) return;
+
     if (!reply.isHttpStatusSuccess() || reply.hasError()) {
       if (reply.httpStatus() == 404) {
         if (const auto item = anime::db.item(id)) {

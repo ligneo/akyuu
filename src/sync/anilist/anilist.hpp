@@ -49,7 +49,8 @@ public:
 private:
   using Callback = std::function<void(QRestReply&)>;
 
-  QNetworkReply* post(const QJsonDocument& data, const Callback& callback, const int attempt = 0);
+  void post(const QJsonDocument& data, const Callback& callback, const bool reportProgress = false,
+            const int attempt = 0);
   void fetchMalIdBatch(QList<int> remaining, QMap<int, int> found,
                        const std::function<void(std::optional<QMap<int, int>>)>& done);
 
