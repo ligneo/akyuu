@@ -47,6 +47,7 @@ public:
   Qt::SortOrder animeListSecondarySortOrder() const;
   gui::ListViewMode animeListViewMode() const;
   QByteArray mainWindowGeometry() const;
+  int sidebarWidth() const;
   QByteArray mediaDialogGeometry() const;
   QByteArray mediaDialogSplitterState() const;
   anime::Season season() const;
@@ -67,6 +68,7 @@ public:
   void setAnimeListSecondarySort(const int column, const Qt::SortOrder order) const;
   void setAnimeListViewMode(const gui::ListViewMode mode) const;
   void setMainWindowGeometry(const QByteArray& geometry) const;
+  void setSidebarWidth(const int width) const;
   void setMediaDialogGeometry(const QByteArray& geometry) const;
   void setMediaDialogSplitterState(const QByteArray& state) const;
   void setSeason(const anime::Season season) const;

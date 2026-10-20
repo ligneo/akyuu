@@ -85,6 +85,11 @@ QByteArray Session::mainWindowGeometry() const {
   return QByteArray::fromBase64(value("mainWindow.geometry", QByteArray{}).toByteArray());
 }
 
+// Zero until the sidebar is dragged to a width of its own
+int Session::sidebarWidth() const {
+  return value("mainWindow.sidebarWidth", 0).toInt();
+}
+
 QByteArray Session::mediaDialogGeometry() const {
   return QByteArray::fromBase64(value("mediaDialog.geometry", QByteArray{}).toByteArray());
 }
@@ -199,6 +204,10 @@ void Session::setAnimeListViewMode(const gui::ListViewMode mode) const {
 
 void Session::setMainWindowGeometry(const QByteArray& geometry) const {
   setValue("mainWindow.geometry", geometry.toBase64().toStdString());
+}
+
+void Session::setSidebarWidth(const int width) const {
+  setValue("mainWindow.sidebarWidth", width);
 }
 
 void Session::setMediaDialogGeometry(const QByteArray& geometry) const {

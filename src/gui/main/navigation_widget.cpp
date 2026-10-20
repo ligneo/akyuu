@@ -20,7 +20,11 @@
 #include "navigation_widget.hpp"
 
 #include <QMouseEvent>
+#include <QStyle>
+#include <algorithm>
 
+#include "akyuu/session.hpp"
+#include "base/string.hpp"
 #include "gui/main/main_window.hpp"
 #include "gui/main/navigation_item_delegate.hpp"
 #include "gui/utils/format.hpp"
@@ -38,6 +42,8 @@ namespace gui {
 namespace {
 
 constexpr int kWidth = 200;
+// How much wider than its labels the sidebar can be dragged
+constexpr int kMaxWidthFactor = 2;
 
 }  // namespace
 
@@ -45,7 +51,7 @@ NavigationWidget::NavigationWidget(QWidget* parent) : QTreeWidget(parent) {
   setObjectName("navigation");
   // Tiling compositors can make the window narrower than its minimum size. A fixed width would
   // then overlap the page, so the sidebar gives up its width once the page cannot shrink further.
-  setMaximumWidth(kWidth);
+  // It has a maximum width instead, which leaves room to drag it wider than its labels.
   setFrameShape(QFrame::Shape::NoFrame);
   setItemDelegate(new NavigationItemDelegate(this));
   setHeaderHidden(true);
@@ -122,13 +128,40 @@ void NavigationWidget::refresh() {
   addItem("Library", "folder", MainWindowPage::Library);
 
   setUpdatesEnabled(true);
+  updateMaximumWidth();
 
   emit refreshed();
 }
 
 // The splitter lays the sidebar out by its size hint, which would leave a gap next to it
 QSize NavigationWidget::sizeHint() const {
-  return {kWidth, QTreeWidget::sizeHint().height()};
+  const int width = akyuu::session.sidebarWidth() > 0 ? akyuu::session.sidebarWidth()
+                                                       : naturalWidth();
+  return {std::min(width, maximumWidth()), QTreeWidget::sizeHint().height()};
+}
+
+// Wide enough for the longest label with its icon and counter, which a larger font or another
+// language can push past the 200 pixels of v1.
+int NavigationWidget::naturalWidth() const {
+  int textWidth = 0;
+  for (QTreeWidgetItemIterator it(const_cast<NavigationWidget*>(this)); *it; ++it) {
+    if ((*it)->isHidden()) continue;
+    textWidth = std::max(textWidth, QFontMetrics((*it)->font(0)).horizontalAdvance((*it)->text(0)));
+  }
+  const int icon = style()->pixelMetric(QStyle::PM_SmallIconSize, nullptr, this);
+  const int counter = fontMetrics().horizontalAdvance(u"0000"_s);
+  return std::max(kWidth, textWidth + icon + counter + 48);
+}
+
+void NavigationWidget::updateMaximumWidth() {
+  setMaximumWidth(naturalWidth() * kMaxWidthFactor);
+}
+
+void NavigationWidget::changeEvent(QEvent* event) {
+  if (event->type() == QEvent::FontChange || event->type() == QEvent::StyleChange) {
+    updateMaximumWidth();
+  }
+  QTreeWidget::changeEvent(event);
 }
 
 void NavigationWidget::mouseMoveEvent(QMouseEvent* event) {

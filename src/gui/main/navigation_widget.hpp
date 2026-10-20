@@ -39,6 +39,7 @@ public:
   ~NavigationWidget() = default;
 
   QSize sizeHint() const override;
+  int naturalWidth() const;
 
   QTreeWidgetItem* findItemByPage(MainWindowPage page) const;
   QTreeWidgetItem* findListStatusItem(anime::list::Status status) const;
@@ -52,6 +53,7 @@ signals:
   void refreshed();
 
 protected:
+  void changeEvent(QEvent* event) override;
   void mouseMoveEvent(QMouseEvent* event) override;
 
 private:
@@ -59,6 +61,7 @@ private:
   QTreeWidgetItem* addChildItem(QTreeWidgetItem* parent, const QString& text);
   void addSeparator();
   void setItemData(QTreeWidgetItem* item, NavigationItemDataRole role, const QVariant& value);
+  void updateMaximumWidth();
 };
 
 }  // namespace gui
