@@ -19,6 +19,7 @@
 #include "settings_recognition_page.hpp"
 
 #include <QCheckBox>
+#include <QComboBox>
 #include <QFormLayout>
 #include <QGridLayout>
 #include <QGroupBox>
@@ -45,6 +46,7 @@ RecognitionPage::RecognitionPage(QWidget* parent)
       m_radioAfterDelay(new QRadioButton(tr("Update after delay"), this)),
       m_radioOnPlayerClose(new QRadioButton(tr("Update when media is closed (after delay)"), this)),
       m_checkAskToConfirm(new QCheckBox(tr("Ask for confirmation"), this)),
+      m_comboNowPlayingPanel(new QComboBox(this)),
       m_checkNotifyRecognized(new QCheckBox(tr("Notify me"), this)),
       m_checkNotifyNotRecognized(new QCheckBox(tr("Notify me"), this)),
       m_checkGoToRecognized(new QCheckBox(tr("Go to Now Playing"), this)),
@@ -97,6 +99,15 @@ RecognitionPage::RecognitionPage(QWidget* parent)
     groupLayout->addWidget(m_radioAfterDelay);
     groupLayout->addWidget(m_radioOnPlayerClose);
     groupLayout->addWidget(m_checkAskToConfirm);
+    m_comboNowPlayingPanel->addItem(tr("Hide a few seconds after the media is closed"),
+                                    static_cast<int>(akyuu::NowPlayingPanel::HideAfterClose));
+    m_comboNowPlayingPanel->addItem(tr("Keep until the next media"),
+                                    static_cast<int>(akyuu::NowPlayingPanel::KeepUntilNext));
+    m_comboNowPlayingPanel->addItem(tr("Show only to ask for confirmation"),
+                                    static_cast<int>(akyuu::NowPlayingPanel::ConfirmationsOnly));
+    const auto panelForm = new QFormLayout();
+    panelForm->addRow(tr("Now Playing panel:"), m_comboNowPlayingPanel);
+    groupLayout->addLayout(panelForm);
     layout->addWidget(group);
   }
 
@@ -116,6 +127,8 @@ void RecognitionPage::load() {
                                                                           : m_radioAfterDelay)
       ->setChecked(true);
   m_checkAskToConfirm->setChecked(akyuu::settings.updateAskToConfirm());
+  m_comboNowPlayingPanel->setCurrentIndex(
+      m_comboNowPlayingPanel->findData(static_cast<int>(akyuu::settings.nowPlayingPanel())));
   m_checkNotifyRecognized->setChecked(akyuu::settings.syncNotifyRecognized());
   m_checkNotifyNotRecognized->setChecked(akyuu::settings.syncNotifyNotRecognized());
   m_checkGoToRecognized->setChecked(akyuu::settings.syncGoToNowPlayingRecognized());
@@ -132,6 +145,8 @@ void RecognitionPage::save() {
                                        ? track::UpdateTrigger::OnPlayerClose
                                        : track::UpdateTrigger::AfterDelay);
   akyuu::settings.setUpdateAskToConfirm(m_checkAskToConfirm->isChecked());
+  akyuu::settings.setNowPlayingPanel(
+      static_cast<akyuu::NowPlayingPanel>(m_comboNowPlayingPanel->currentData().toInt()));
   akyuu::settings.setSyncNotifyRecognized(m_checkNotifyRecognized->isChecked());
   akyuu::settings.setSyncNotifyNotRecognized(m_checkNotifyNotRecognized->isChecked());
   akyuu::settings.setSyncGoToNowPlayingRecognized(m_checkGoToRecognized->isChecked());

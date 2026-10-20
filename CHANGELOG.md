@@ -6,7 +6,8 @@
   title there and pressing Enter filtered the list instead of searching the service, and found
   nothing on a new installation. Thanks to Arlen for finding it.
 - The Now Playing panel hides a few seconds after the media is closed and the list is updated
-  (#6). A question that is still waiting for an answer stays.
+  (#6). A question that is still waiting for an answer stays. Settings > Recognition can keep it
+  until the next media as before, or show it only to ask for confirmation.
 
 ## 0.1.1
 

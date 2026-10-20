@@ -32,6 +32,13 @@
 
 namespace akyuu {
 
+// When the Now Playing panel at the bottom of the window is shown (issue #6)
+enum class NowPlayingPanel {
+  HideAfterClose,
+  KeepUntilNext,
+  ConfirmationsOnly,
+};
+
 class Settings final : public base::Settings {
 public:
   static constexpr std::chrono::seconds kUpdateDelayMin{10};
@@ -83,6 +90,7 @@ public:
   std::string proxyUsername() const;
   std::string proxyPassword() const;
   bool sidebarVisible() const;
+  NowPlayingPanel nowPlayingPanel() const;
   int pageZoom(const QString& page) const;
   bool appAutoStart() const;
   bool appCloseToTray() const;
@@ -169,6 +177,7 @@ public:
   void setProxyUsername(const std::string& username) const;
   void setProxyPassword(const std::string& password) const;
   void setSidebarVisible(const bool visible) const;
+  void setNowPlayingPanel(const NowPlayingPanel panel) const;
   void setPageZoom(const QString& page, const int zoom) const;
   void setAppAutoStart(const bool enabled) const;
   void setAppCloseToTray(const bool enabled) const;

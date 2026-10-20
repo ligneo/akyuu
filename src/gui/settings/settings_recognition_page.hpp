@@ -21,6 +21,7 @@
 #include "gui/settings/settings_page.hpp"
 
 class QCheckBox;
+class QComboBox;
 class QRadioButton;
 class QSpinBox;
 
@@ -47,6 +48,7 @@ private:
   QRadioButton* m_radioAfterDelay = nullptr;
   QRadioButton* m_radioOnPlayerClose = nullptr;
   QCheckBox* m_checkAskToConfirm = nullptr;
+  QComboBox* m_comboNowPlayingPanel = nullptr;
   QCheckBox* m_checkNotifyRecognized = nullptr;
   QCheckBox* m_checkNotifyNotRecognized = nullptr;
   QCheckBox* m_checkGoToRecognized = nullptr;

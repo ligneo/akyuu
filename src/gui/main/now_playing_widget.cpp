@@ -28,6 +28,7 @@
 #include <optional>
 #include <utility>
 
+#include "akyuu/settings.hpp"
 #include "base/chrono.hpp"
 #include "base/string.hpp"
 #include "gui/media/media_dialog.hpp"
@@ -305,14 +306,21 @@ void NowPlayingWidget::setPlaying(track::Episode episode) {
   }
 
   refresh();
-  show();
+  if (akyuu::settings.nowPlayingPanel() != akyuu::NowPlayingPanel::ConfirmationsOnly) show();
 }
 
 void NowPlayingWidget::updateVisibility() {
   const bool isPlaying = track::media::detection()->getCurrentEpisode().has_value();
-  const bool hasUpdate = track::updateSession()->state().phase != track::UpdateState::Phase::Idle;
-  if (!isPlaying && !hasUpdate) {
+  const auto phase = track::updateSession()->state().phase;
+  if (!isPlaying && phase == track::UpdateState::Phase::Idle) {
     reset();
+    return;
+  }
+
+  // The panel holds the only buttons that answer a confirmation, so it can't stay hidden then.
+  if (akyuu::settings.nowPlayingPanel() == akyuu::NowPlayingPanel::ConfirmationsOnly) {
+    m_hideTimer->stop();
+    setVisible(phase == track::UpdateState::Phase::Confirming);
     return;
   }
 
@@ -326,6 +334,7 @@ void NowPlayingWidget::updateVisibility() {
 // The session keeps a committed update until the next media, but once the media is closed the
 // panel has nothing left to do. A question still waiting for an answer stays, as in v1.
 bool NowPlayingWidget::shouldHideSoon() const {
+  if (akyuu::settings.nowPlayingPanel() != akyuu::NowPlayingPanel::HideAfterClose) return false;
   const bool isPlaying = track::media::detection()->getCurrentEpisode().has_value();
   const auto phase = track::updateSession()->state().phase;
   return !isPlaying && phase == track::UpdateState::Phase::Committed;

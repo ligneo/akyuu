@@ -139,6 +139,13 @@ bool Settings::sidebarVisible() const {
   return value("app.sidebarVisible", true).toBool();
 }
 
+NowPlayingPanel Settings::nowPlayingPanel() const {
+  const auto panel = value("app.nowPlayingPanel", u"hideAfterClose"_s).toString();
+  if (panel == u"keepUntilNext") return NowPlayingPanel::KeepUntilNext;
+  if (panel == u"confirmationsOnly") return NowPlayingPanel::ConfirmationsOnly;
+  return NowPlayingPanel::HideAfterClose;
+}
+
 // In percent, for each page on its own. `statistics.zoom` was the first of them.
 int Settings::pageZoom(const QString& page) const {
   return value(u"%1.zoom"_s.arg(page), 100).toInt();
@@ -675,6 +682,13 @@ void Settings::setProxyPassword(const std::string& password) const {
 
 void Settings::setSidebarVisible(const bool visible) const {
   setValue("app.sidebarVisible", visible);
+}
+
+void Settings::setNowPlayingPanel(const NowPlayingPanel panel) const {
+  std::string slug = "hideAfterClose";
+  if (panel == NowPlayingPanel::KeepUntilNext) slug = "keepUntilNext";
+  if (panel == NowPlayingPanel::ConfirmationsOnly) slug = "confirmationsOnly";
+  setValue("app.nowPlayingPanel", slug);
 }
 
 void Settings::setPageZoom(const QString& page, const int zoom) const {
