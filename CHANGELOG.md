@@ -8,6 +8,8 @@
 - The Now Playing panel hides a few seconds after the media is closed and the list is updated
   (#6). A question that is still waiting for an answer stays. Settings > Recognition can keep it
   until the next media as before, or show it only to ask for confirmation.
+- A poster whose download fails, for example on a dropped connection, is tried again a minute
+  later. It stayed empty until the page was opened again or the media changed.
 
 ## 0.1.1
 

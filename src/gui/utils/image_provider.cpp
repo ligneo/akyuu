@@ -29,6 +29,7 @@
 #include <QNetworkRequest>
 #include <QPixmapCache>
 #include <QRestReply>
+#include <QTimer>
 #include <QUrl>
 #include <QtConcurrentRun>
 
@@ -44,6 +45,7 @@ namespace gui {
 namespace {
 
 constexpr int kPixmapCacheLimitKb = 200 * 1024;  // 200MB
+constexpr int kRetryCooldownSecs = 60;
 
 QString cacheKey(const int id) {
   return u"poster/%1"_s.arg(id);
@@ -80,7 +82,11 @@ void ImageProvider::fetchPoster(const int id, const bool revalidate) {
           updatedItem.image_url.clear();
           anime::db.updateItem(updatedItem);
         }
+        return;
       }
+      // Nothing asks for the poster again on its own, so a network error would leave it empty.
+      QTimer::singleShot(std::chrono::seconds{kRetryCooldownSecs}, this,
+                         [this, id]() { emit posterChanged(id); });
       return;
     }
 
@@ -180,7 +186,6 @@ bool ImageProvider::canRetry(const int id) const {
 }
 
 void ImageProvider::retryAfter(const int id) {
-  constexpr int kRetryCooldownSecs = 60;
   m_retryAfter[id] = QDateTime::currentDateTime().addSecs(kRetryCooldownSecs);
 }
 
