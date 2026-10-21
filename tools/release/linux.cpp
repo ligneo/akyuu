@@ -219,9 +219,11 @@ void prepareLinuxSdk(const QString& sdkPath) {
         "linuxdeploy-plugin-qt-x86_64.AppImage",
         "linuxdeploy-plugin-qt-x86_64.AppImage",
         "cfc1055b2b9dbc08412b579f20990b7b41a17b61beaa5847dc9477c96c9e9617");
+  // The `continuous` runtime is rebuilt in place, which broke its checksum, so it comes from a
+  // dated release.
   fetch(sdk,
-        "https://github.com/AppImage/type2-runtime/releases/download/continuous/runtime-x86_64",
-        "runtime-x86_64", "156f4bdbde9c52d01814600013e0a273f0118dc2de98975f3c8c63427ec79074");
+        "https://github.com/AppImage/type2-runtime/releases/download/20251108/runtime-x86_64",
+        "runtime-x86_64", "2fca8b443c92510f1483a883f60061ad09b46b978b2631c807cd873a47ec260d");
   for (const auto& name :
        {"linuxdeploy-x86_64.AppImage", "linuxdeploy-plugin-qt-x86_64.AppImage", "runtime-x86_64"}) {
     copyFile(sdk + "/cache/" + name, sdk + "/tools/" + name);
