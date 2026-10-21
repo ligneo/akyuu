@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.2.0
 
 - The search box says "Filter list" on the page Akyuu opens with. It said "Search", so typing a
   title there and pressing Enter filtered the list instead of searching the service, and found
@@ -8,14 +8,15 @@
 - The Now Playing panel hides a few seconds after the media is closed and the list is updated
   (#6). A question that is still waiting for an answer stays. Settings > Recognition can keep it
   until the next media as before, or show it only to ask for confirmation. Thanks to
-  stefanostrowiak for asking for it.
+  @stefanostrowiak for asking for it.
 - A poster whose download fails, for example on a dropped connection, is tried again a minute
   later. It stayed empty until the page was opened again or the media changed.
 - The sidebar can be dragged wider, up to one and a half times the width of its labels, and
   keeps that width the next time. It was held at 200 pixels.
 - The System style follows a picked Light or Dark color scheme with styles that come in a dark
   variant, such as Adwaita-Dark behind qt6ct, by using the other variant directly. Boxes such as
-  the search filters stayed dark on a light window.
+  the search filters stayed dark on a light window. The style is then used without the proxy
+  that qt6ct puts in front of it, so qt6ct's own adjustments do not apply to it.
 - The search page searches the service a moment after typing stops at three characters or more,
   not only on Enter. Typing without Enter filtered the results already on the page, and found
   nothing on a new installation.
