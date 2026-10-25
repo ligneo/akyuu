@@ -39,10 +39,13 @@ build() {
 	# the binary and makepkg reports "Package contains reference to $srcdir".
 	export CXXFLAGS="$CXXFLAGS -ffile-prefix-map=$srcdir/$_pkgname=."
 
+	# "system": the update notice says to update through the package manager instead of
+	# offering the release's own pacman package, which would bypass the AUR.
 	cmake -S . -B build -G Ninja \
 		-DCMAKE_BUILD_TYPE=None \
 		-DCMAKE_INSTALL_PREFIX=/usr \
-		-DAKYUU_PORTABLE=OFF
+		-DAKYUU_PORTABLE=OFF \
+		-DAKYUU_PACKAGE_FORMAT=system
 	cmake --build build
 }
 
