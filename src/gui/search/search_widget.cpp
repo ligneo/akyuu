@@ -20,7 +20,10 @@
 #include "search_widget.hpp"
 
 #include <QActionGroup>
+#include <QAbstractItemView>
 #include <QLineEdit>
+#include <QStyle>
+#include <QStyleOptionComboBox>
 #include <QToolBar>
 #include <QToolButton>
 
@@ -41,6 +44,26 @@
 #include "sync/service.hpp"
 
 namespace {
+
+// Let filters shrink to an ellipsis and arrow while keeping full labels in the popup.
+class SearchFilter final : public gui::ComboBox {
+public:
+  explicit SearchFilter(QWidget* parent) : ComboBox(parent) {}
+
+  QSize minimumSizeHint() const override {
+    QStyleOptionComboBox option;
+    initStyleOption(&option);
+    const auto size = style()->sizeFromContents(
+        QStyle::CT_ComboBox, &option,
+        {fontMetrics().horizontalAdvance(QStringLiteral("…")), fontMetrics().height()}, this);
+    return {size.width(), ComboBox::minimumSizeHint().height()};
+  }
+
+  void showPopup() override {
+    view()->setMinimumWidth(sizeHint().width());
+    ComboBox::showPopup();
+  }
+};
 
 std::optional<services::SearchSort> toSearchSort(gui::AnimeListModel::Column column) {
   // clang-format off
@@ -63,11 +86,11 @@ SearchWidget::SearchWidget(QWidget* parent)
     : PageWidget(parent),
       m_model(new AnimeListModel(this)),
       m_proxyModel(new AnimeListProxyModel(this)),
-      m_comboYear(new ComboBox(this)),
-      m_comboSeason(new ComboBox(this)),
-      m_comboType(new ComboBox(this)),
-      m_comboStatus(new ComboBox(this)),
-      m_comboListStatus(new ComboBox(this)),
+      m_comboYear(new SearchFilter(this)),
+      m_comboSeason(new SearchFilter(this)),
+      m_comboType(new SearchFilter(this)),
+      m_comboStatus(new SearchFilter(this)),
+      m_comboListStatus(new SearchFilter(this)),
       m_sortMenu(new QMenu(this)),
       m_viewMenu(new QMenu(this)) {
   m_proxyModel->sort(akyuu::session.searchListSortColumn(), akyuu::session.searchListSortOrder());

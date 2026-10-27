@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- The search filters can shrink in a narrow window or with a large font, so they do not
+  squeeze the sidebar down to its icons. Their dropdowns keep the full labels readable.
+
 ## 0.2.0
 
 - The search box says "Filter list" on the page Akyuu opens with. It said "Search", so typing a
