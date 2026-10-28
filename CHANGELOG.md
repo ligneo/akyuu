@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Keep the saved detection interval between one and sixty seconds, as in Settings.
+  A zero or negative value could make detection run continuously.
 - The search filters can shrink in a narrow window or with a large font, so they do not
   squeeze the sidebar down to its icons. Their dropdowns keep the full labels readable.
 

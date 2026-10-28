@@ -109,7 +109,7 @@ bool Settings::mediaDetectionEnabled() const {
 
 std::chrono::milliseconds Settings::mediaDetectionInterval() const {
   const auto interval = value("track.detection.interval", 3000).toInt();
-  return std::chrono::milliseconds{interval};
+  return std::chrono::milliseconds{std::clamp(interval, 1000, 60000)};
 }
 
 QNetworkProxy::ProxyType Settings::proxyType() const {
