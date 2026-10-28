@@ -67,7 +67,7 @@ void Service::post(const QJsonDocument& data, const Callback& callback, const bo
 
   const auto now = QDateTime::currentDateTimeUtc();
   if (rateLimitedUntil_.isValid() && now < rateLimitedUntil_) {
-    QTimer::singleShot(now.msecsTo(rateLimitedUntil_), this,
+    QTimer::singleShot(std::chrono::milliseconds{now.msecsTo(rateLimitedUntil_)}, this,
                        [this, data, callback, reportProgress, attempt]() {
                          post(data, callback, reportProgress, attempt);
                        });

@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Keep long AniList retry delays from overflowing into an immediate retry.
 - Keep the saved detection interval between one and sixty seconds, as in Settings.
   A zero or negative value could make detection run continuously.
 - The search filters can shrink in a narrow window or with a large font, so they do not
