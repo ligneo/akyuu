@@ -209,11 +209,13 @@ void prepareLinuxSdk(const QString& sdkPath) {
           name, hash);
     call("tar", {"-xf", sdk + "/cache/" + name, "-C", sdk + "/gcc", "--exclude=.*"});
   }
+  // Like the runtime below, the `continuous` linuxdeploy is rebuilt in place, so it comes from
+  // a dated release.
   fetch(sdk,
-        "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/"
+        "https://github.com/linuxdeploy/linuxdeploy/releases/download/1-alpha-20251107-1/"
         "linuxdeploy-x86_64.AppImage",
         "linuxdeploy-x86_64.AppImage",
-        "8aea8da0f7f7039d2a2cecb14657d752a222a5e1d3825caeef186c82f751cdd1");
+        "c20cd71e3a4e3b80c3483cef793cda3f4e990aca14014d23c544ca3ce1270b4d");
   fetch(sdk,
         "https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/"
         "linuxdeploy-plugin-qt-x86_64.AppImage",
