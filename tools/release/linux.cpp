@@ -322,6 +322,7 @@ void buildLinux(const QString& rootPath, const QString& outputPath) {
   writeFile(desktop,
             "[Desktop Entry]\nType=Application\nName=Akyuu release "
             "tooling\nExec=akyuu-release\nIcon=io.github.ligneo.Akyuu\nCategories=Development;\n");
+  environment.set("NO_STRIP", "1");
   environment.set("LDAI_OUTPUT", output + "/diagnostics/akyuu-release.AppImage");
   environment.set("LDAI_VERSION", releaseVersion);
   call(sdk + "/tools/linuxdeploy-x86_64.AppImage",
@@ -371,6 +372,9 @@ void packageAppImage(const QString& rootPath, const QString& buildPath, const QS
   environment.set("QMAKE", qmake);
   environment.set("LDAI_RUNTIME_FILE", runtime);
   environment.set("APPIMAGE_EXTRACT_AND_RUN", "1");
+  // The strip inside linuxdeploy cannot read GCC 16's libstdc++ (.relr.dyn), and the bundled
+  // libraries come stripped from their packages already
+  environment.set("NO_STRIP", "1");
   environment.set("EXTRA_QT_MODULES", "svg");
   environment.set("EXTRA_PLATFORM_PLUGINS", "libqwayland.so;libqoffscreen.so");
   const auto inheritedLibraries = qEnvironmentVariable("LD_LIBRARY_PATH");
