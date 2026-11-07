@@ -1,7 +1,15 @@
 # Changelog
 
-## Unreleased
+## 0.2.1
 
+- Akyuu builds on systems without systemd, such as Artix, with sd-bus from elogind or basu
+  (#9). Media control on Linux needs sd-bus, which was looked for in systemd only, so the build
+  failed unless media control was turned off. Packagers can pick the provider with
+  `-DANISTHESIA_SD_BUS_PROVIDER`. Thanks to @shingym00 for reporting it.
+- Media played from a USB stick or another removable drive is detected on Linux. Desktops
+  mount these drives under `/run/media`, which was skipped along with the rest of `/run`.
+- Detection on Linux takes about a third less time, as the player list is prepared once per
+  check and only the processes of known players are read further.
 - Keep long AniList retry delays from overflowing into an immediate retry.
 - Keep the saved detection interval between one and sixty seconds, as in Settings.
   A zero or negative value could make detection run continuously.
