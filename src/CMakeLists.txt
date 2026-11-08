@@ -123,6 +123,8 @@ target_sources(akyuu PRIVATE
 	akyuu/version.hpp
 
 	track/episode.cpp
+	track/availability.cpp
+	track/availability.hpp
 	track/library.cpp
 	track/library.hpp
 	track/feed.cpp
@@ -310,6 +312,14 @@ if (AKYUU_BUILD_TESTS AND BUILD_TESTING)
 	target_compile_definitions(akyuu-update-service-tests PRIVATE AKYUU_PACKAGE_FORMAT="source")
 	target_link_libraries(akyuu-update-service-tests PRIVATE Qt6::Core Qt6::Network semaver)
 	add_test(NAME update-service COMMAND akyuu-update-service-tests)
+	add_executable(akyuu-availability-tests
+		${CMAKE_SOURCE_DIR}/tests/availability.cpp
+		track/availability.cpp
+	)
+	set_target_properties(akyuu-availability-tests PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
+	target_include_directories(akyuu-availability-tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+	target_link_libraries(akyuu-availability-tests PRIVATE Qt6::Core)
+	add_test(NAME availability COMMAND akyuu-availability-tests)
 	add_executable(akyuu-deployment-tests ${CMAKE_SOURCE_DIR}/tests/deployment.cpp)
 	set_target_properties(akyuu-deployment-tests PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
 	target_link_libraries(akyuu-deployment-tests PRIVATE Qt6::Gui Qt6::Network Qt6::Sql Qt6::Svg)

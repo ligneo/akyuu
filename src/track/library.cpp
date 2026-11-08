@@ -27,6 +27,7 @@
 #include "base/log.hpp"
 #include "media/anime.hpp"
 #include "media/anime_db.hpp"
+#include "track/availability.hpp"
 #include "track/episode.hpp"
 #include "track/recognition.hpp"
 
@@ -56,20 +57,15 @@ void Library::walk(const QString& folder,
 
     if (animeId == anime::kUnknownId) continue;
 
-    const auto range = episode.episodeNumberRange();
-
-    // A file without an episode number is taken to be the first episode, as in v1.
-    const int first = range ? range->first : 1;
-    const int last = range ? range->second : 1;
-
     const auto item = anime::db.item(animeId);
+    const auto numbers = fileEpisodes(episode.episodeNumberRange(), item ? item->episode_count : 0);
 
-    // Anything beyond the known episode count is a misparse rather than a new episode.
-    const int limit = item && item->episode_count > 0 ? item->episode_count : anime::kMaxEpisodeCount;
-    if (last > limit) continue;
+    if (!numbers) continue;
 
     // One file can hold several episodes, and each of them is then present.
-    for (int number = first; number <= last; ++number) found(animeId, number, info.filePath());
+    for (int number = numbers->first; number <= numbers->second; ++number) {
+      found(animeId, number, info.filePath());
+    }
   }
 }
 
@@ -127,21 +123,9 @@ void Library::scan(const int animeId) {
   emit scanCompleted(episodeCount > 0 ? 1 : 0, episodeCount);
 }
 
-std::vector<std::pair<int, int>> Library::availableEpisodeRanges(const int animeId) const {
-  std::vector<std::pair<int, int>> ranges;
-
+std::vector<EpisodeRange> Library::availableEpisodeRanges(const int animeId) const {
   const auto it = episodes_.find(animeId);
-  if (it == episodes_.end()) return ranges;
-
-  for (const auto& [number, path] : it->second) {
-    if (!ranges.empty() && ranges.back().second == number - 1) {
-      ranges.back().second = number;
-    } else {
-      ranges.emplace_back(number, number);
-    }
-  }
-
-  return ranges;
+  return it != episodes_.end() ? episodeRanges(it->second) : std::vector<EpisodeRange>{};
 }
 
 // Until the library folders have been scanned once, nothing is known to be missing either.

@@ -106,8 +106,9 @@ void paintProgressBar(QPainter* painter, const QStyleOption& option, const Anime
 
   if (akyuu::settings.listShowAvailableEpisodes()) {
     // Each run is one rectangle, because the color is translucent and overlaps would show.
-    for (const auto& [first, last] : track::library()->availableEpisodeRanges(anime->id)) {
-      band(std::max(first - 1, watched), std::min(last, episodes), QColor{12, 164, 12, 64});
+    const auto ranges = track::library()->availableEpisodeRanges(anime->id);
+    for (const auto& [from, to] : track::progressBands(ranges, watched, episodes)) {
+      band(from, to, QColor{12, 164, 12, 64});
     }
   }
 
