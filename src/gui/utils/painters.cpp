@@ -99,13 +99,16 @@ void paintProgressBar(QPainter* painter, const QStyleOption& option, const Anime
     const auto width = static_cast<double>(barRect.width()) / episodes;
     QRectF rect{barRect};
     rect.setLeft(barRect.left() + width * from);
-    rect.setWidth(width * (to - from));
+    // In a long series an episode is narrower than a pixel, and would otherwise not be drawn.
+    rect.setWidth(std::max(1.0, width * (to - from)));
     painter->fillRect(rect, color);
   };
 
   if (akyuu::settings.listShowAvailableEpisodes()) {
-    const auto available = std::min(track::library()->availableEpisodeCount(anime->id), episodes);
-    band(watched, available, QColor{12, 164, 12, 64});
+    // Each run is one rectangle, because the color is translucent and overlaps would show.
+    for (const auto& [first, last] : track::library()->availableEpisodeRanges(anime->id)) {
+      band(std::max(first - 1, watched), std::min(last, episodes), QColor{12, 164, 12, 64});
+    }
   }
 
   if (akyuu::settings.listShowAiredEpisodes()) {

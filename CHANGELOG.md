@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- The availability bar shows which episodes are in the library folders (#11). It only counted
+  the files, so a gap in the middle of a series appeared at the end. Thanks to
+  @stefanostrowiak for reporting it.
+- A file that holds several episodes, such as `01-02`, counts for all of them. Only the last one
+  was marked as available.
+
 ## 0.2.1
 
 - Akyuu builds on systems without systemd, such as Artix, with sd-bus from elogind or basu

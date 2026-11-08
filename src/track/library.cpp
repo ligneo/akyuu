@@ -59,14 +59,17 @@ void Library::walk(const QString& folder,
     const auto range = episode.episodeNumberRange();
 
     // A file without an episode number is taken to be the first episode, as in v1.
-    const int number = range ? range->second : 1;
+    const int first = range ? range->first : 1;
+    const int last = range ? range->second : 1;
 
     const auto item = anime::db.item(animeId);
 
     // Anything beyond the known episode count is a misparse rather than a new episode.
-    if (item && item->episode_count > 0 && number > item->episode_count) continue;
+    const int limit = item && item->episode_count > 0 ? item->episode_count : anime::kMaxEpisodeCount;
+    if (last > limit) continue;
 
-    found(animeId, number, info.filePath());
+    // One file can hold several episodes, and each of them is then present.
+    for (int number = first; number <= last; ++number) found(animeId, number, info.filePath());
   }
 }
 
@@ -124,9 +127,21 @@ void Library::scan(const int animeId) {
   emit scanCompleted(episodeCount > 0 ? 1 : 0, episodeCount);
 }
 
-int Library::availableEpisodeCount(const int animeId) const {
+std::vector<std::pair<int, int>> Library::availableEpisodeRanges(const int animeId) const {
+  std::vector<std::pair<int, int>> ranges;
+
   const auto it = episodes_.find(animeId);
-  return it != episodes_.end() ? static_cast<int>(it->second.size()) : 0;
+  if (it == episodes_.end()) return ranges;
+
+  for (const auto& [number, path] : it->second) {
+    if (!ranges.empty() && ranges.back().second == number - 1) {
+      ranges.back().second = number;
+    } else {
+      ranges.emplace_back(number, number);
+    }
+  }
+
+  return ranges;
 }
 
 // Until the library folders have been scanned once, nothing is known to be missing either.

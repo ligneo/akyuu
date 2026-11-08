@@ -26,6 +26,8 @@
 #include <functional>
 #include <map>
 #include <unordered_map>
+#include <utility>
+#include <vector>
 
 namespace track {
 
@@ -44,7 +46,7 @@ public:
   void applyWatchSettings();
 
   bool hasScanned() const;
-  int availableEpisodeCount(const int animeId) const;
+  std::vector<std::pair<int, int>> availableEpisodeRanges(const int animeId) const;
   int lastAvailableEpisode(const int animeId) const;
   bool isEpisodeAvailable(const int animeId, const int number) const;
   QString episodePath(const int animeId, const int number) const;
