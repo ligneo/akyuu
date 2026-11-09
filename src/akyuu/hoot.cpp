@@ -29,15 +29,12 @@
 
 #ifdef Q_OS_WINDOWS
 #include <windows.h>
-#endif
-
-#ifdef AKYUU_HAS_MULTIMEDIA
-#include <QAudioFormat>
-#include <QAudioSink>
-#include <QBuffer>
-#include <QEventLoop>
-#include <QMediaDevices>
-#include <QTimer>
+#else
+#include <QByteArray>
+#include <QDir>
+#include <QProcess>
+#include <QStandardPaths>
+#include <QTemporaryFile>
 #endif
 
 namespace {
@@ -66,12 +63,12 @@ constexpr float get_duration(const float duration) {
   return 2220 * duration;  // a whole note, at about 108 bpm
 };
 
-#ifdef AKYUU_HAS_MULTIMEDIA
+#ifndef Q_OS_WINDOWS
 constexpr int kSampleRate = 44100;
 constexpr int kChannelCount = 2;
 
-// `Beep` takes a frequency and a length in milliseconds and plays a square wave; there is no Qt
-// equivalent, so the same notes are rendered into one buffer and handed to an audio sink. A sine
+// `Beep` takes a frequency and a length in milliseconds and plays a square wave; there is no such
+// call here, so the same notes are rendered into a WAV file for the system's own player. A sine
 // wave is used instead of a square wave because it is the same pitch without the harshness, and a
 // few milliseconds of fade on both ends keep the notes from clicking.
 QByteArray renderNotes() {
@@ -144,9 +141,39 @@ QByteArray renderNotes() {
 
   return data;
 }
+
+void appendLittleEndian(QByteArray& data, const quint32 value, const int size) {
+  for (int i = 0; i < size; ++i) {
+    data.append(static_cast<char>((value >> (8 * i)) & 0xff));
+  }
+}
+
+QByteArray makeWav(const QByteArray& samples) {
+  constexpr int kBytesPerSample = 2;
+  const auto size = static_cast<quint32>(samples.size());
+
+  QByteArray wav;
+  wav.reserve(44 + samples.size());
+  wav.append("RIFF");
+  appendLittleEndian(wav, 36 + size, 4);
+  wav.append("WAVEfmt ");
+  appendLittleEndian(wav, 16, 4);  // size of the format chunk
+  appendLittleEndian(wav, 1, 2);   // PCM
+  appendLittleEndian(wav, kChannelCount, 2);
+  appendLittleEndian(wav, kSampleRate, 4);
+  appendLittleEndian(wav, kSampleRate * kChannelCount * kBytesPerSample, 4);
+  appendLittleEndian(wav, kChannelCount * kBytesPerSample, 2);
+  appendLittleEndian(wav, 8 * kBytesPerSample, 2);
+  wav.append("data");
+  appendLittleEndian(wav, size, 4);
+  wav.append(samples);
+  return wav;
+}
 #endif
 
 }  // namespace
+
+using namespace Qt::StringLiterals;
 
 namespace akyuu {
 
@@ -164,38 +191,31 @@ void Hoot::run() {
     ::Beep(static_cast<DWORD>(get_frequency(note)), static_cast<DWORD>(get_duration(duration)));
   }
 
-#elif defined(AKYUU_HAS_MULTIMEDIA)
-  QAudioFormat format;
-  format.setSampleRate(kSampleRate);
-  format.setChannelCount(kChannelCount);
-  format.setSampleFormat(QAudioFormat::Int16);
+#else
+  QTemporaryFile file{QDir::tempPath() + u"/akyuu-hoot-XXXXXX.wav"_s};
+  if (!file.open() || file.write(makeWav(renderNotes())) < 0 || !file.flush()) return;
 
-  const auto device = QMediaDevices::defaultAudioOutput();
-  if (device.isNull() || !device.isFormatSupported(format)) return;
+  // One of these comes with every usual sound setup. Without any of them the tune stays silent.
+  for (const auto& name : {u"pw-play"_s, u"paplay"_s, u"aplay"_s}) {
+    const auto program = QStandardPaths::findExecutable(name);
+    if (program.isEmpty()) continue;
 
-  QBuffer buffer;
-  buffer.setData(renderNotes());
+    QProcess player;
+    player.setStandardOutputFile(QProcess::nullDevice());
+    player.setStandardErrorFile(QProcess::nullDevice());
+    player.start(program, {file.fileName()});
+    if (!player.waitForStarted()) continue;
 
-  if (!buffer.open(QIODevice::ReadOnly)) return;
+    while (!player.waitForFinished(50) && player.state() != QProcess::NotRunning) {
+      if (isInterruptionRequested()) {
+        player.kill();
+        player.waitForFinished();
+        return;
+      }
+    }
 
-  QAudioSink sink{device, format};
-  QEventLoop loop;
-
-  connect(&sink, &QAudioSink::stateChanged, &loop, [&loop](QAudio::State state) {
-    if (state == QAudio::IdleState || state == QAudio::StoppedState) loop.quit();
-  });
-
-  // The thread has no other way out of the loop; closing the dialog asks it to stop.
-  QTimer timer;
-  connect(&timer, &QTimer::timeout, &loop, [this, &sink, &loop]() {
-    if (!isInterruptionRequested()) return;
-    sink.stop();
-    loop.quit();
-  });
-  timer.start(std::chrono::milliseconds{50});
-
-  sink.start(&buffer);
-  loop.exec();
+    if (player.exitStatus() == QProcess::NormalExit && player.exitCode() == 0) return;
+  }
 #endif
 }
 

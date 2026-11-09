@@ -7,6 +7,11 @@
   @stefanostrowiak for reporting it.
 - A file that holds several episodes, such as `01-02`, counts for all of them. Only the last one
   was marked as available.
+- Media control on Linux reads the session bus with its own small D-Bus client, so Akyuu no
+  longer needs libsystemd, elogind or basu, and one package works with or without systemd.
+  `-DANISTHESIA_SD_BUS_PROVIDER` is gone.
+- The owl's tune on Linux is played with `pw-play`, `paplay` or `aplay`, so Qt Multimedia and
+  the media backend it brings along are no longer needed.
 
 ## 0.2.1
 

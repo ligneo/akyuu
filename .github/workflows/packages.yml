@@ -159,7 +159,7 @@ jobs:
       - name: Install build dependencies
         shell: nu {0}
         run: |
-          ^pacman -Syu --noconfirm git cmake ninja qt6-base qt6-svg qt6-multimedia qt6-tools systemd-libs hicolor-icon-theme
+          ^pacman -Syu --noconfirm git cmake ninja qt6-base qt6-svg qt6-tools hicolor-icon-theme
           if $env.LAST_EXIT_CODE != 0 { error make {msg: 'Installing Arch build dependencies failed.'} }
           ^useradd --create-home builder
           if $env.LAST_EXIT_CODE != 0 { error make {msg: 'Creating the build user failed.'} }

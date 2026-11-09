@@ -208,17 +208,6 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
 	set_target_properties(akyuu PROPERTIES WIN32_EXECUTABLE ON)
 endif()
 
-# The Hoot easter egg needs a way to play its notes; Windows has `Beep`, everywhere else it
-# takes an audio sink. Qt Multimedia pulls in a whole media backend, so it stays optional: without
-# it the easter egg is silent and nothing else changes.
-if (NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
-	find_package(Qt6 QUIET COMPONENTS Multimedia)
-	if (Qt6Multimedia_FOUND)
-		target_link_libraries(akyuu PRIVATE Qt6::Multimedia)
-		target_compile_definitions(akyuu PRIVATE AKYUU_HAS_MULTIMEDIA)
-	endif()
-endif()
-
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
 	find_package(Qt6 REQUIRED COMPONENTS DBus)
 	target_sources(akyuu PRIVATE
@@ -300,6 +289,17 @@ if (AKYUU_BUILD_TESTS AND BUILD_TESTING)
 	# same definitions as Akyuu (UNICODE and the rest)
 	target_link_libraries(akyuu-media-candidates-tests PRIVATE anisthesia akyuu-config)
 	add_test(NAME media-candidates COMMAND akyuu-media-candidates-tests)
+	if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+		add_executable(akyuu-dbus-wire-tests
+			${CMAKE_SOURCE_DIR}/tests/dbus_wire.cpp
+			${CMAKE_SOURCE_DIR}/deps/anisthesia/src/lin_dbus.cpp
+		)
+		set_target_properties(akyuu-dbus-wire-tests PROPERTIES
+			RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests
+		)
+		target_include_directories(akyuu-dbus-wire-tests PRIVATE ${CMAKE_SOURCE_DIR}/deps/anisthesia/include)
+		add_test(NAME dbus-wire COMMAND akyuu-dbus-wire-tests)
+	endif()
 	add_executable(akyuu-update-service-tests
 		${CMAKE_SOURCE_DIR}/tests/update_service.cpp
 		akyuu/update_service.cpp

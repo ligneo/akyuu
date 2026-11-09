@@ -113,7 +113,7 @@ nu tools/release.nu package-appimage build AppDir licenses output
 The tool requires a new AppDir, includes Qt's SQLite driver, X11 and Wayland plugins, and
 keeps screen drivers on the host. `licenses` contains third-party copyright notices, full
 license texts and a source inventory. Include the corresponding Qt, compiler runtime,
-FFmpeg, ICU, system library and AppImage runtime sources alongside the release, with their
+ICU, system library and AppImage runtime sources alongside the release, with their
 checksums. Users may extract an AppImage and replace its dynamic libraries; no installation
 key or locked runtime is required. Akyuu's full-source archive is separate from this
 third-party source archive.

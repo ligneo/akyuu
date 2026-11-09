@@ -235,7 +235,7 @@ void prepareLinuxSdk(const QString& sdkPath) {
   call(sdk + "/aqt/bin/pip", {"install", "aqtinstall==3.3.0"}, {}, 600000);
   call(sdk + "/aqt/bin/aqt",
        {"install-qt", "linux", "desktop", "6.11.2", "linux_gcc_64", "--outputdir", sdk + "/Qt",
-        "-m", "qtmultimedia", "qtimageformats"},
+        "-m", "qtimageformats"},
        {}, 1800000);
   fetch(sdk,
         "https://github.com/ligneo/akyuu/releases/download/v0.1.0-beta.3/"
@@ -473,7 +473,7 @@ pkgdesc='Anime list tracker with player and browser detection'
 arch=('x86_64')
 url='https://github.com/ligneo/akyuu'
 license=('GPL-3.0-or-later')
-depends=('qt6-base' 'qt6-multimedia' 'qt6-svg' 'systemd-libs' 'hicolor-icon-theme')
+depends=('qt6-base' 'qt6-svg' 'hicolor-icon-theme')
 makedepends=('cmake' 'ninja' 'gcc' 'qt6-tools')
 source=('https://github.com/ligneo/akyuu/releases/download/v%2/%3')
 sha256sums=('%4')

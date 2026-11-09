@@ -7,7 +7,6 @@
   ninja,
   pkg-config,
   qt6,
-  systemd,
   xdg-utils,
   src,
 }:
@@ -52,8 +51,6 @@ stdenv.mkDerivation {
     qt6.qtbase
     qt6.qtsvg
     qt6.qtwayland
-    qt6.qtmultimedia
-    systemd
   ];
   cmakeFlags = [
     (lib.cmakeBool "AKYUU_BUILD_TESTS" true)
