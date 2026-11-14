@@ -72,6 +72,7 @@ SeasonsWidget::SeasonsWidget(QWidget* parent)
       m_viewMenu(new QMenu(this)) {
   m_proxyModel->setSourceModel(m_model);
   m_proxyModel->setGroupBy(akyuu::session.seasonsGroupBy());
+  m_proxyModel->setNsfwFilter(akyuu::session.seasonsHideNsfw());
   m_proxyModel->sort(akyuu::session.seasonsSortColumn(), akyuu::session.seasonsSortOrder());
 
   // Toolbar
@@ -150,6 +151,7 @@ void SeasonsWidget::saveState() {
   akyuu::session.setSeasonsSortColumn(m_proxyModel->sortColumn());
   akyuu::session.setSeasonsSortOrder(m_proxyModel->sortOrder());
   akyuu::session.setSeasonsViewMode(m_viewMode);
+  akyuu::session.setSeasonsHideNsfw(m_proxyModel->filters().hideNsfw);
 }
 
 void SeasonsWidget::setSeason(const anime::Season season) {
@@ -286,6 +288,18 @@ void SeasonsWidget::initViewMenu() {
     action->setChecked(mode == m_viewMode);
     actionGroup->addAction(action);
   }
+
+  // Adult here means what `anime::isNsfw` says: rated R18, or tagged Hentai when the service gives
+  // no age rating (AniList gives none).
+  m_viewMenu->addSeparator();
+  const auto actionHideNsfw =
+      m_viewMenu->addAction(tr("Hide adult titles"), this, [this](bool checked) {
+        m_proxyModel->setNsfwFilter(checked);
+        akyuu::session.setSeasonsHideNsfw(checked);
+        updateStatus();
+      });
+  actionHideNsfw->setCheckable(true);
+  actionHideNsfw->setChecked(m_proxyModel->filters().hideNsfw);
 }
 
 void SeasonsWidget::setViewMode(ListViewMode mode) {

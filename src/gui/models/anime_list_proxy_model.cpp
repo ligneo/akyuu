@@ -196,6 +196,13 @@ void AnimeListProxyModel::setTextFilter(const QString& text) {
   endFilterChange(QSortFilterProxyModel::Direction::Rows);
 }
 
+void AnimeListProxyModel::setNsfwFilter(const bool hide) {
+  if (m_filter.hideNsfw == hide) return;
+  beginFilterChange();
+  m_filter.hideNsfw = hide;
+  endFilterChange(QSortFilterProxyModel::Direction::Rows);
+}
+
 bool AnimeListProxyModel::matchesText(const Anime& anime, const QStringView text) {
   static const auto contains = [](const std::string& str, const QStringView view) {
     return QString::fromStdString(str).contains(view, Qt::CaseInsensitive);
@@ -246,6 +253,9 @@ bool AnimeListProxyModel::filterAcceptsRow(int row, const QModelIndex& parent) c
       if (static_cast<int>(status) != *m_filter.listStatus.status) return false;
     }
   }
+
+  // Adult titles
+  if (m_filter.hideNsfw && anime::isNsfw(*anime)) return false;
 
   // Titles
   if (!m_filter.text.isEmpty() && !matchesText(*anime, m_filter.text)) return false;
