@@ -1,5 +1,9 @@
 FROM ubuntu:24.04@sha256:008173c23f95b170204355c12626cb5a965d779a7e1283b09e9cffbb1bf33ca3
-RUN sed -i 's/^Types: deb$/Types: deb deb-src/' /etc/apt/sources.list.d/ubuntu.sources && apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+# The pinned base image falls behind the archive, which keeps the source of the current versions
+# only. Upgrading first lets the license step download the source of every bundled library.
+RUN sed -i 's/^Types: deb$/Types: deb deb-src/' /etc/apt/sources.list.d/ubuntu.sources && apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get upgrade -y --no-install-recommends && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     ca-certificates curl python3-venv cmake ninja-build git g++ qt6-base-dev pkg-config libc6-dev linux-libc-dev \
     libgmp10 libmpfr6 libmpc3 libisl23 libzstd1 zlib1g libjansson4 \
     libglvnd-dev libopengl0 libglx0 libgl1 libegl1 libxkbcommon-x11-0 libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 libxcb-shape0 libwayland-cursor0 \
