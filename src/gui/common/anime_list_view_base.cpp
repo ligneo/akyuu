@@ -47,9 +47,12 @@
 
 namespace gui {
 
-ListViewBase::ListViewBase(QWidget* parent, QAbstractItemView* view, AnimeListModel* model,
+// Owned by the view rather than by the page: a page that switches between the list and the cards
+// deletes the old view, and a helper left behind would still answer the shared search box with a
+// pointer to it (the crash in `filterByText`).
+ListViewBase::ListViewBase(QAbstractItemView* view, AnimeListModel* model,
                            AnimeListProxyModel* proxyModel, AnimeListContext context)
-    : QObject(parent), m_view(view), m_model(model), m_proxyModel(proxyModel), m_context(context) {
+    : QObject(view), m_view(view), m_model(model), m_proxyModel(proxyModel), m_context(context) {
   m_view->setContextMenuPolicy(Qt::CustomContextMenu);
   m_view->setSelectionMode(QAbstractItemView::SelectionMode::ExtendedSelection);
 

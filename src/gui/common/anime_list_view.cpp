@@ -67,7 +67,7 @@ void saveHiddenColumns(const AnimeListContext context, const QList<int>& columns
 
 ListView::ListView(QWidget* parent, AnimeListModel* model, AnimeListProxyModel* proxyModel,
                    AnimeListContext context)
-    : m_base(new ListViewBase(parent, this, model, proxyModel, context)) {
+    : QTreeView(parent), m_base(new ListViewBase(this, model, proxyModel, context)) {
   setObjectName("animeList");
 
   setFrameShape(QFrame::Shape::NoFrame);
