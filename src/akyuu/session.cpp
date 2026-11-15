@@ -134,8 +134,9 @@ gui::ListViewMode Session::seasonsViewMode() const {
       value("seasons.viewMode", static_cast<int>(gui::ListViewMode::Cards)).toInt());
 }
 
-bool Session::seasonsHideNsfw() const {
-  return value("seasons.hideNsfw", true).toBool();
+std::optional<bool> Session::seasonsHideNsfw() const {
+  const auto hide = value("seasons.hideNsfw");
+  return hide.isValid() ? std::make_optional(hide.toBool()) : std::nullopt;
 }
 
 gui::AnimeListProxyModelFilter Session::searchListFilters() const {
@@ -245,10 +246,6 @@ void Session::setSeasonsSortOrder(const Qt::SortOrder order) const {
 
 void Session::setSeasonsViewMode(const gui::ListViewMode mode) const {
   setValue("seasons.viewMode", static_cast<int>(mode));
-}
-
-void Session::setSeasonsHideNsfw(const bool hide) const {
-  setValue("seasons.hideNsfw", hide);
 }
 
 void Session::setSearchListFilters(const gui::AnimeListProxyModelFilter& filters) const {

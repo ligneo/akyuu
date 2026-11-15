@@ -416,6 +416,44 @@ std::vector<std::string> Settings::externalLinks() const {
          std::ranges::to<std::vector>();
 }
 
+namespace {
+
+std::vector<std::string> toStrings(const QVariant& value) {
+  return value.toJsonArray().toVariantList() |
+         std::views::transform([](const QVariant& v) { return v.toString().toStdString(); }) |
+         std::ranges::to<std::vector>();
+}
+
+QJsonArray fromStrings(const std::vector<std::string>& strings) {
+  return QJsonArray::fromStringList(
+      strings |
+      std::views::transform([](const std::string& s) { return QString::fromStdString(s); }) |
+      std::ranges::to<QList>());
+}
+
+}  // namespace
+
+// v1 always left adult titles out of Seasons (`anime_season_db.cpp`), which is why hiding them is
+// the default.
+AdultTitles Settings::adultTitles() const {
+  const auto mode = value("content.adultTitles", u"hide"_s).toString();
+  if (mode == u"show") return AdultTitles::Show;
+  if (mode == u"blur") return AdultTitles::Blur;
+  return AdultTitles::Hide;
+}
+
+bool Settings::hasAdultTitles() const {
+  return value("content.adultTitles").isValid();
+}
+
+std::vector<std::string> Settings::requiredGenres() const {
+  return toStrings(value("content.requiredGenres"));
+}
+
+std::vector<std::string> Settings::excludedGenres() const {
+  return toStrings(value("content.excludedGenres"));
+}
+
 std::vector<std::string> Settings::disabledStreamingProviders() const {
   return value("recognition.streaming.disabledProviders").toJsonArray().toVariantList() |
          std::views::transform([](const QVariant& v) { return v.toString().toStdString(); }) |
@@ -753,6 +791,21 @@ void Settings::setListShowAiredEpisodes(const bool show) const {
 
 void Settings::setListShowAvailableEpisodes(const bool show) const {
   setValue("animeList.progress.showAvailable", show);
+}
+
+void Settings::setAdultTitles(const AdultTitles mode) const {
+  std::string slug = "hide";
+  if (mode == AdultTitles::Show) slug = "show";
+  if (mode == AdultTitles::Blur) slug = "blur";
+  setValue("content.adultTitles", slug);
+}
+
+void Settings::setRequiredGenres(std::vector<std::string> genres) const {
+  setValue("content.requiredGenres", fromStrings(genres));
+}
+
+void Settings::setExcludedGenres(std::vector<std::string> genres) const {
+  setValue("content.excludedGenres", fromStrings(genres));
 }
 
 void Settings::setStreamingMediaEnabled(const bool enabled) const {

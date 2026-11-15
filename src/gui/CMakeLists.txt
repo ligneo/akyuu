@@ -21,6 +21,8 @@ target_sources(akyuu-gui PRIVATE
 	common/clickable_label.hpp
 	common/combobox.cpp
 	common/combobox.hpp
+	common/genre_rules_widget.cpp
+	common/genre_rules_widget.hpp
 	common/page_widget.cpp
 	common/page_widget.hpp
 	common/poster_widget.cpp
@@ -102,6 +104,8 @@ target_sources(akyuu-gui PRIVATE
 	settings/settings_http_page.cpp
 	settings/settings_http_page.hpp
 	settings/settings_discord_page.hpp
+	settings/settings_content_page.cpp
+	settings/settings_content_page.hpp
 	settings/settings_dialog.cpp
 	settings/settings_dialog.hpp
 	settings/settings_library_page.cpp
@@ -128,6 +132,8 @@ target_sources(akyuu-gui PRIVATE
 	settings/settings_streaming_page.cpp
 	settings/settings_streaming_page.hpp
 
+	utils/content_filter.cpp
+	utils/content_filter.hpp
 	utils/format.cpp
 	utils/format.hpp
 	utils/image_provider.cpp

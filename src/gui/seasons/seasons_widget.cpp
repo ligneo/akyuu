@@ -30,8 +30,10 @@
 #include "gui/common/anime_list_context.hpp"
 #include "gui/common/anime_list_view.hpp"
 #include "gui/common/anime_list_view_cards.hpp"
+#include "gui/common/genre_rules_widget.hpp"
 #include "gui/models/anime_list_model.hpp"
 #include "gui/models/anime_list_proxy_model.hpp"
+#include "gui/utils/content_filter.hpp"
 #include "gui/utils/format.hpp"
 #include "gui/utils/theme.hpp"
 #include "media/anime.hpp"
@@ -72,7 +74,7 @@ SeasonsWidget::SeasonsWidget(QWidget* parent)
       m_viewMenu(new QMenu(this)) {
   m_proxyModel->setSourceModel(m_model);
   m_proxyModel->setGroupBy(akyuu::session.seasonsGroupBy());
-  m_proxyModel->setNsfwFilter(akyuu::session.seasonsHideNsfw());
+  m_proxyModel->setContentFilter(true);
   m_proxyModel->sort(akyuu::session.seasonsSortColumn(), akyuu::session.seasonsSortOrder());
 
   // Toolbar
@@ -82,6 +84,7 @@ SeasonsWidget::SeasonsWidget(QWidget* parent)
     m_actionGroup = new QAction(theme.getIcon("lists"), tr("Group by"), this);
     const auto actionSort = new QAction(theme.getIcon("sort"), tr("Sort by"), this);
     const auto actionView = new QAction(theme.getIcon("grid_view"), tr("View"), this);
+    const auto actionGenres = new QAction(theme.getIcon("filter_list"), tr("Genres"), this);
 
     // v1 puts refreshing between two separators (`dlg_season.cpp:84-92`), but here it ends up
     // wedged between the season button and the three menus, with no separator to lean on: not
@@ -97,6 +100,7 @@ SeasonsWidget::SeasonsWidget(QWidget* parent)
     m_toolbar->addAction(m_actionGroup);
     m_toolbar->addAction(actionSort);
     m_toolbar->addAction(actionView);
+    m_toolbar->addAction(actionGenres);
 
     // v1 labels this button "Refresh data", but here the three menus next to it already carry
     // their current value in their text; adding a fourth label pushes Sort by and View into the
@@ -105,7 +109,8 @@ SeasonsWidget::SeasonsWidget(QWidget* parent)
     for (const auto& [action, menu] : {std::pair{m_actionSeason, m_seasonMenu},
                                        {m_actionGroup, m_groupMenu},
                                        {actionSort, m_sortMenu},
-                                       {actionView, m_viewMenu}}) {
+                                       {actionView, m_viewMenu},
+                                       {actionGenres, createGenresMenu(this)}}) {
       const auto button = static_cast<QToolButton*>(m_toolbar->widgetForAction(action));
       button->setPopupMode(QToolButton::InstantPopup);
       button->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
@@ -123,6 +128,7 @@ SeasonsWidget::SeasonsWidget(QWidget* parent)
   connect(m_seasonMenu, &QMenu::aboutToShow, this, &SeasonsWidget::initSeasonMenu);
   connect(m_sortMenu, &QMenu::aboutToShow, this, &SeasonsWidget::initSortMenu);
   connect(m_viewMenu, &QMenu::aboutToShow, this, &SeasonsWidget::initViewMenu);
+  connect(&contentFilter(), &ContentFilter::changed, this, &SeasonsWidget::updateStatus);
 
   setGroupBy(akyuu::session.seasonsGroupBy());
   setViewMode(akyuu::session.seasonsViewMode());
@@ -151,7 +157,6 @@ void SeasonsWidget::saveState() {
   akyuu::session.setSeasonsSortColumn(m_proxyModel->sortColumn());
   akyuu::session.setSeasonsSortOrder(m_proxyModel->sortOrder());
   akyuu::session.setSeasonsViewMode(m_viewMode);
-  akyuu::session.setSeasonsHideNsfw(m_proxyModel->filters().hideNsfw);
 }
 
 void SeasonsWidget::setSeason(const anime::Season season) {
@@ -171,8 +176,15 @@ void SeasonsWidget::refresh() {
 }
 
 void SeasonsWidget::updateStatus() {
-  m_labelStatus->setText(
-      tr("%1 · %2 titles").arg(formatSeason(m_season)).arg(m_proxyModel->rowCount()));
+  // Saying how many were hidden keeps a short season from looking like missing data
+  const auto hidden = m_proxyModel->contentHiddenCount();
+  m_labelStatus->setText(hidden > 0 ? tr("%1 · %2 titles (%3 hidden)")
+                                          .arg(formatSeason(m_season))
+                                          .arg(m_proxyModel->rowCount())
+                                          .arg(hidden)
+                                    : tr("%1 · %2 titles")
+                                          .arg(formatSeason(m_season))
+                                          .arg(m_proxyModel->rowCount()));
 
   // The cards cannot carry a group header, so the breakdown goes in the tooltip. It does not go
   // in the label itself: with five groups the text is long enough to squeeze the toolbar into its
@@ -292,14 +304,7 @@ void SeasonsWidget::initViewMenu() {
   // Adult here means what `anime::isNsfw` says: rated R18, or tagged Hentai when the service gives
   // no age rating (AniList gives none).
   m_viewMenu->addSeparator();
-  const auto actionHideNsfw =
-      m_viewMenu->addAction(tr("Hide adult titles"), this, [this](bool checked) {
-        m_proxyModel->setNsfwFilter(checked);
-        akyuu::session.setSeasonsHideNsfw(checked);
-        updateStatus();
-      });
-  actionHideNsfw->setCheckable(true);
-  actionHideNsfw->setChecked(m_proxyModel->filters().hideNsfw);
+  addAdultTitlesMenu(m_viewMenu);
 }
 
 void SeasonsWidget::setViewMode(ListViewMode mode) {

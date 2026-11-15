@@ -25,6 +25,7 @@
 #include "akyuu/settings.hpp"
 #include "base/string.hpp"
 #include "gui/models/anime_list_model.hpp"
+#include "gui/utils/content_filter.hpp"
 #include "gui/utils/format.hpp"
 #include "media/anime.hpp"
 #include "media/anime_list.hpp"
@@ -97,6 +98,12 @@ AnimeListProxyModel::AnimeListProxyModel(QObject* parent) : QSortFilterProxyMode
   // A scan changes which anime have a new episode, and with it the highlight and its place
   connect(track::library(), &track::Library::availabilityChanged, this, [this]() {
     if (akyuu::settings.listHighlightNewEpisodes()) invalidate();
+  });
+
+  connect(&contentFilter(), &ContentFilter::changed, this, [this]() {
+    if (!m_filter.content) return;
+    beginFilterChange();
+    endFilterChange(QSortFilterProxyModel::Direction::Rows);
   });
 }
 
@@ -196,11 +203,22 @@ void AnimeListProxyModel::setTextFilter(const QString& text) {
   endFilterChange(QSortFilterProxyModel::Direction::Rows);
 }
 
-void AnimeListProxyModel::setNsfwFilter(const bool hide) {
-  if (m_filter.hideNsfw == hide) return;
+void AnimeListProxyModel::setContentFilter(const bool enabled) {
+  if (m_filter.content == enabled) return;
   beginFilterChange();
-  m_filter.hideNsfw = hide;
+  m_filter.content = enabled;
   endFilterChange(QSortFilterProxyModel::Direction::Rows);
+}
+
+// How many titles the content filters took away from what the other filters let through, so that
+// the page can say something is missing.
+int AnimeListProxyModel::contentHiddenCount() const {
+  if (!m_filter.content || !sourceModel()) return 0;
+  int count = 0;
+  for (int row = 0; row < sourceModel()->rowCount(); ++row) {
+    if (acceptsRow(row, {}, false) && !acceptsRow(row, {}, true)) ++count;
+  }
+  return count;
 }
 
 bool AnimeListProxyModel::matchesText(const Anime& anime, const QStringView text) {
@@ -215,6 +233,10 @@ bool AnimeListProxyModel::matchesText(const Anime& anime, const QStringView text
 }
 
 bool AnimeListProxyModel::filterAcceptsRow(int row, const QModelIndex& parent) const {
+  return acceptsRow(row, parent, m_filter.content);
+}
+
+bool AnimeListProxyModel::acceptsRow(int row, const QModelIndex& parent, const bool content) const {
   const auto model = static_cast<AnimeListModel*>(sourceModel());
   if (!model) return false;
   const auto index = model->index(row, 0, parent);
@@ -254,8 +276,8 @@ bool AnimeListProxyModel::filterAcceptsRow(int row, const QModelIndex& parent) c
     }
   }
 
-  // Adult titles
-  if (m_filter.hideNsfw && anime::isNsfw(*anime)) return false;
+  // Adult titles and genres
+  if (content && !contentFilter().accepts(*anime)) return false;
 
   // Titles
   if (!m_filter.text.isEmpty() && !matchesText(*anime, m_filter.text)) return false;

@@ -55,6 +55,8 @@ target_sources(akyuu PRIVATE
 	media/anime_stats.hpp
 	media/anime_utils.cpp
 	media/anime_utils.hpp
+	media/genre_rules.cpp
+	media/genre_rules.hpp
 	media/anime.hpp
 
 	sync/anilist/anilist.cpp
@@ -277,6 +279,13 @@ if (AKYUU_BUILD_TESTS AND BUILD_TESTING)
 	target_include_directories(akyuu-episode-compare-tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 	target_link_libraries(akyuu-episode-compare-tests PRIVATE Qt6::Core anitomy nstd)
 	add_test(NAME episode-compare COMMAND akyuu-episode-compare-tests)
+	add_executable(akyuu-genre-rules-tests
+		${CMAKE_SOURCE_DIR}/tests/genre_rules.cpp
+		media/genre_rules.cpp
+	)
+	set_target_properties(akyuu-genre-rules-tests PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
+	target_include_directories(akyuu-genre-rules-tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+	add_test(NAME genre-rules COMMAND akyuu-genre-rules-tests)
 	add_executable(akyuu-media-candidates-tests
 		${CMAKE_SOURCE_DIR}/tests/media_candidates.cpp
 		track/media_candidates.cpp

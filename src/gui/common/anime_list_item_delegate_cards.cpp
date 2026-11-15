@@ -27,6 +27,7 @@
 
 #include "base/string.hpp"
 #include "gui/models/anime_list_model.hpp"
+#include "gui/utils/content_filter.hpp"
 #include "gui/utils/format.hpp"
 #include "gui/utils/page_zoom.hpp"
 #include "gui/utils/painter_state_saver.hpp"
@@ -47,6 +48,10 @@ ListItemDelegateCards::ListItemDelegateCards(QObject* parent) : QStyledItemDeleg
   connect(&m_timerSpinner, &QTimer::timeout, this, &ListItemDelegateCards::advanceSpinner);
 }
 
+void ListItemDelegateCards::setContentFilter(const bool enabled) {
+  m_contentFilter = enabled;
+}
+
 void ListItemDelegateCards::paint(QPainter* painter, const QStyleOptionViewItem& option,
                                   const QModelIndex& index) const {
   const PainterStateSaver painterStateSaver(painter);
@@ -62,6 +67,8 @@ void ListItemDelegateCards::paint(QPainter* painter, const QStyleOptionViewItem&
 
   QStyleOptionViewItem opt = option;
   QRect rect = opt.rect;
+
+  const bool blurred = m_contentFilter && item && contentFilter().blurs(*item);
 
   QPainterPath path;
   path.addRoundedRect(rect, 4, 4);
@@ -107,7 +114,15 @@ void ListItemDelegateCards::paint(QPainter* painter, const QStyleOptionViewItem&
         sourceRect.adjust(0, half * scale, 0, -half * scale);
       }
 
-      painter->drawPixmap(posterRect, pixmap, sourceRect);
+      if (blurred) {
+        // Shrinking the poster to a few pixels and stretching it back leaves only its colors
+        const auto tiny = pixmap.copy(sourceRect).scaled(QSize{6, 9}, Qt::IgnoreAspectRatio,
+                                                         Qt::SmoothTransformation);
+        painter->drawPixmap(posterRect, tiny.scaled(posterRect.size(), Qt::IgnoreAspectRatio,
+                                                    Qt::SmoothTransformation));
+      } else {
+        painter->drawPixmap(posterRect, pixmap, sourceRect);
+      }
     } else if (!item->image_url.empty()) {
       m_loadingIndices.insert(index);
       if (!m_timerSpinner.isActive()) {
@@ -117,6 +132,17 @@ void ListItemDelegateCards::paint(QPainter* painter, const QStyleOptionViewItem&
       paintSpinner(painter, m_spinnerPixmap, posterRect.center(), m_angle);
     } else {
       m_loadingIndices.remove(index);
+    }
+
+    if (blurred) {
+      painter->fillRect(posterRect, QColor{0, 0, 0, 96});
+      auto badgeFont = font;
+      badgeFont.setPointSizeF(14 * scale);
+      badgeFont.setWeight(QFont::Weight::Bold);
+      painter->setFont(badgeFont);
+      painter->setPen(Qt::white);
+      painter->drawText(posterRect, Qt::AlignCenter, u"18+"_s);
+      painter->setFont(font);
     }
   }
 
@@ -203,6 +229,8 @@ void ListItemDelegateCards::paint(QPainter* painter, const QStyleOptionViewItem&
     synopsis.replace("<br>", "\n");
     removeHtmlTags(synopsis);
     synopsis = synopsis.simplified();
+    // The synopsis of an adult title says as much as its cover
+    if (blurred) synopsis = tr("Click to reveal the cover and the synopsis.");
 
     painter->setPen(opt.palette.placeholderText().color());
 

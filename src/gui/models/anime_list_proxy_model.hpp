@@ -49,8 +49,9 @@ struct AnimeListProxyModelFilter {
   std::optional<int> status;
   AnimeListStatusFilter listStatus;
   QString text;
-  // v1 always left adult titles out of Seasons (`anime_season_db.cpp`); here it is a choice.
-  bool hideNsfw = false;
+  // The adult title mode and the genre rules, see `ContentFilter`. The anime list leaves them out,
+  // as everything there was added on purpose.
+  bool content = false;
 };
 
 class AnimeListProxyModel final : public QSortFilterProxyModel {
@@ -74,7 +75,8 @@ public:
   void setStatusFilter(std::optional<int> status);
   void setListStatusFilter(AnimeListStatusFilter filter);
   void setTextFilter(const QString& text);
-  void setNsfwFilter(bool hide);
+  void setContentFilter(bool enabled);
+  int contentHiddenCount() const;
   static bool matchesText(const Anime& anime, const QStringView text);
 
   QVariant data(const QModelIndex& index, int role) const override;
@@ -92,6 +94,7 @@ protected:
   bool lessThan(const QModelIndex& lhs, const QModelIndex& rhs) const override;
 
 private:
+  bool acceptsRow(int row, const QModelIndex& parent, bool content) const;
   bool lessThanByColumn(int column, const QModelIndex& lhs, const QModelIndex& rhs) const;
 
   AnimeListProxyModelFilter m_filter;

@@ -39,6 +39,13 @@ enum class NowPlayingPanel {
   ConfirmationsOnly,
 };
 
+// What the Seasons and Search pages do with adult titles (issue #12)
+enum class AdultTitles {
+  Show,
+  Blur,
+  Hide,
+};
+
 class Settings final : public base::Settings {
 public:
   static constexpr std::chrono::seconds kUpdateDelayMin{10};
@@ -103,6 +110,10 @@ public:
   bool listHighlightedOnTop() const;
   bool listShowAiredEpisodes() const;
   bool listShowAvailableEpisodes() const;
+  AdultTitles adultTitles() const;
+  bool hasAdultTitles() const;
+  std::vector<std::string> requiredGenres() const;
+  std::vector<std::string> excludedGenres() const;
   bool streamingMediaEnabled() const;
   bool sharingEnabled() const;
   bool httpShareEnabled() const;
@@ -190,6 +201,9 @@ public:
   void setListHighlightedOnTop(const bool onTop) const;
   void setListShowAiredEpisodes(const bool show) const;
   void setListShowAvailableEpisodes(const bool show) const;
+  void setAdultTitles(const AdultTitles mode) const;
+  void setRequiredGenres(std::vector<std::string> genres) const;
+  void setExcludedGenres(std::vector<std::string> genres) const;
   void setStreamingMediaEnabled(const bool enabled) const;
   void setSharingEnabled(const bool enabled) const;
   void setHttpShareEnabled(const bool enabled) const;

@@ -27,6 +27,7 @@
 #include "gui/settings/settings_anime_list_page.hpp"
 #include "gui/settings/settings_application_page.hpp"
 #include "gui/settings/settings_cache_page.hpp"
+#include "gui/settings/settings_content_page.hpp"
 #include "gui/settings/settings_discord_page.hpp"
 #include "gui/settings/settings_http_page.hpp"
 #include "gui/settings/settings_irc_page.hpp"
@@ -84,6 +85,7 @@ SettingsDialog::SettingsDialog(QWidget* parent) : QDialog(parent), ui_(new Ui::S
 
   addPage(library, "Folders", new LibraryPage(this));
   addPage(application, "Anime list", new AnimeListPage(this));
+  addPage(application, "Content", new ContentPage(this));
   addPage(application, "General", new ApplicationPage(this));
   addPage(recognition, "General", new RecognitionPage(this));
   addPage(recognition, "Media players", new MediaPlayersPage(this));

@@ -1,6 +1,7 @@
 /**
  * Akyuu
  * Copyright (C) 2010-2026, Eren Okka
+ * Copyright (C) 2026, cenky <cenkkgl@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,6 +40,9 @@ public:
 
   QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
+  // Seasons and Search follow the adult title mode; the anime list shows its covers as they are
+  void setContentFilter(bool enabled);
+
 protected:
   void initStyleOption(QStyleOptionViewItem* option, const QModelIndex& index) const override;
 
@@ -46,6 +50,7 @@ private:
   QSize itemSize() const;
   void advanceSpinner();
 
+  bool m_contentFilter = false;
   QPixmap m_spinnerPixmap;
   qreal m_angle = 0.0;
   mutable QTimer m_timerSpinner;

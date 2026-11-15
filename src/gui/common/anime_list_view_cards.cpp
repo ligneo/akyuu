@@ -28,6 +28,7 @@
 #include "gui/common/anime_list_view_base.hpp"
 #include "gui/models/anime_list_model.hpp"
 #include "gui/models/anime_list_proxy_model.hpp"
+#include "gui/utils/content_filter.hpp"
 #include "gui/utils/painters.hpp"
 
 namespace gui {
@@ -37,7 +38,12 @@ ListViewCards::ListViewCards(QWidget* parent, AnimeListModel* model,
     : QListView(parent), m_base(new ListViewBase(this, model, proxyModel, context)) {
   setFrameShape(QFrame::Shape::NoFrame);
 
-  setItemDelegate(new ListItemDelegateCards(this));
+  const auto delegate = new ListItemDelegateCards(this);
+  delegate->setContentFilter(context == AnimeListContext::Search);
+  setItemDelegate(delegate);
+
+  connect(&contentFilter(), &ContentFilter::changed, viewport(), qOverload<>(&QWidget::update));
+  connect(&contentFilter(), &ContentFilter::revealed, viewport(), qOverload<>(&QWidget::update));
 
   setViewMode(QListView::ViewMode::IconMode);
   setResizeMode(QListView::ResizeMode::Adjust);
@@ -62,6 +68,14 @@ void ListViewCards::keyPressEvent(QKeyEvent* event) {
 }
 
 void ListViewCards::mousePressEvent(QMouseEvent* event) {
+  if (event->button() == Qt::MouseButton::LeftButton &&
+      m_base->context() == AnimeListContext::Search) {
+    const auto index = indexAt(event->pos());
+    const auto anime =
+        index.data(static_cast<int>(AnimeListItemDataRole::Anime)).value<const Anime*>();
+    if (anime && contentFilter().blurs(*anime)) contentFilter().reveal(anime->id);
+  }
+
   if (event->button() == Qt::MouseButton::MiddleButton) {
     const QModelIndex index = indexAt(event->pos());
     if (index.isValid()) {

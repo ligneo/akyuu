@@ -31,9 +31,11 @@
 #include "gui/common/anime_list_context.hpp"
 #include "gui/common/anime_list_view.hpp"
 #include "gui/common/anime_list_view_cards.hpp"
+#include "gui/common/genre_rules_widget.hpp"
 #include "gui/main/main_window.hpp"
 #include "gui/models/anime_list_model.hpp"
 #include "gui/models/anime_list_proxy_model.hpp"
+#include "gui/utils/content_filter.hpp"
 #include "gui/utils/format.hpp"
 #include "gui/utils/theme.hpp"
 #include "media/anime.hpp"
@@ -93,6 +95,7 @@ SearchWidget::SearchWidget(QWidget* parent)
       m_comboListStatus(new SearchFilter(this)),
       m_sortMenu(new QMenu(this)),
       m_viewMenu(new QMenu(this)) {
+  m_proxyModel->setContentFilter(true);
   m_proxyModel->sort(akyuu::session.searchListSortColumn(), akyuu::session.searchListSortOrder());
 
   // Search starts unfiltered. Filters left over from a previous run would quietly turn a general
@@ -187,6 +190,18 @@ SearchWidget::SearchWidget(QWidget* parent)
       });
     });
     filtersLayout->addWidget(m_comboListStatus);
+  }
+
+  // Genres, kept with the settings rather than reset like the filters above: they say what to
+  // leave out everywhere, not what to look for this time
+  {
+    const auto button = new QToolButton(this);
+    button->setIcon(theme.getIcon("filter_list"));
+    button->setText(tr("Genres"));
+    button->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    button->setPopupMode(QToolButton::InstantPopup);
+    button->setMenu(createGenresMenu(this));
+    filtersLayout->addWidget(button);
   }
 
   // Toolbar
@@ -314,6 +329,9 @@ void SearchWidget::initViewMenu() {
     action->setChecked(mode == m_viewMode);
     actionGroup->addAction(action);
   }
+
+  m_viewMenu->addSeparator();
+  addAdultTitlesMenu(m_viewMenu);
 }
 
 void SearchWidget::setViewMode(ListViewMode mode) {

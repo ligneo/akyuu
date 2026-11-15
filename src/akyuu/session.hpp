@@ -55,7 +55,8 @@ public:
   int seasonsSortColumn() const;
   Qt::SortOrder seasonsSortOrder() const;
   gui::ListViewMode seasonsViewMode() const;
-  bool seasonsHideNsfw() const;
+  // 0.3.0's switch, read once to carry it over to `content.adultTitles`
+  std::optional<bool> seasonsHideNsfw() const;
   gui::AnimeListProxyModelFilter searchListFilters() const;
   std::optional<QList<int>> searchListHiddenColumns() const;
   int searchListSortColumn() const;
@@ -78,7 +79,6 @@ public:
   void setOwlsWoken(const int count) const;
   void setSeasonsSortOrder(const Qt::SortOrder order) const;
   void setSeasonsViewMode(const gui::ListViewMode mode) const;
-  void setSeasonsHideNsfw(const bool hide) const;
   void setSearchListFilters(const gui::AnimeListProxyModelFilter& filters) const;
   void setSearchListHiddenColumns(const QList<int>& columns) const;
   void setSearchListSortColumn(const int column) const;
