@@ -24,6 +24,9 @@
 #include <QMenu>
 #include <QPalette>
 #include <QPushButton>
+#include <QResizeEvent>
+#include <QScrollArea>
+#include <QScrollBar>
 #include <QStyle>
 #include <QToolButton>
 #include <QVBoxLayout>
@@ -111,6 +114,9 @@ QString chipStyle(const QPalette& palette) {
         .name();
   };
   return uR"(
+QScrollArea#genreScroll, QScrollArea#genreScroll > QWidget > QWidget {
+  background: transparent;
+}
 QToolButton#genreChip {
   border: 1px solid %1;
   border-radius: 11px;
@@ -153,9 +159,19 @@ GenreRulesWidget::GenreRulesWidget(QWidget* parent)
   hint->setEnabled(false);
   layout->addWidget(hint);
 
-  const auto chips = new QWidget(this);
+  // MyAnimeList sends its themes and demographics as genres too, which makes for dozens of
+  // chips. Past a few rows they scroll rather than stretch the menu down the screen.
+  m_scroll = new QScrollArea(this);
+  m_scroll->setFrameShape(QFrame::NoFrame);
+  m_scroll->setWidgetResizable(true);
+  m_scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+  m_scroll->setObjectName("genreScroll");
+  m_scroll->viewport()->setAutoFillBackground(false);
+  const auto chips = new QWidget(m_scroll);
+  chips->setAutoFillBackground(false);
   m_chips = new FlowLayout(chips, 6);
-  layout->addWidget(chips);
+  m_scroll->setWidget(chips);
+  layout->addWidget(m_scroll);
 
   m_labelEmpty->setEnabled(false);
   layout->addWidget(m_labelEmpty);
@@ -226,7 +242,34 @@ void GenreRulesWidget::reload() {
   }
 
   m_labelEmpty->setVisible(genres.isEmpty());
-  updateGeometry();
+  fitHeight();
+}
+
+void GenreRulesWidget::resizeEvent(QResizeEvent* event) {
+  QWidget::resizeEvent(event);
+  fitHeight();
+}
+
+void GenreRulesWidget::fitHeight() {
+  constexpr int kMaxRows = 6;
+  // From this widget's own width: the scroll area is laid out after this runs, so its viewport
+  // still has the old width and the chips seemed to need more rows than they do.
+  const auto margins = layout()->contentsMargins();
+  const int available = width() - margins.left() - margins.right();
+  int needed = m_chips->heightForWidth(available);
+  const int row = m_buttons.isEmpty() ? 0 : m_buttons.first()->sizeHint().height() + 6;
+  const int maxHeight = row > 0 ? (row * kMaxRows) - 6 : needed;
+  // Scrolling takes the width of the scroll bar from the chips
+  if (needed > maxHeight) {
+    needed = m_chips->heightForWidth(available - m_scroll->verticalScrollBar()->sizeHint().width());
+  }
+  const int height = std::min(needed, maxHeight);
+  if (m_scroll->height() != height) {
+    m_scroll->setFixedHeight(height);
+    m_scroll->setVerticalScrollBarPolicy(needed > height ? Qt::ScrollBarAsNeeded
+                                                         : Qt::ScrollBarAlwaysOff);
+    updateGeometry();
+  }
 }
 
 void GenreRulesWidget::updateChip(QToolButton* chip, const State state) const {
@@ -238,17 +281,14 @@ void GenreRulesWidget::updateChip(QToolButton* chip, const State state) const {
   switch (state) {
     case State::None:
       chip->setText(genre);
-      chip->setToolTip(tr("Any"));
       chip->setProperty("state", u"none"_s);
       break;
     case State::Required:
       chip->setText(u"✓ %1"_s.arg(genre));
-      chip->setToolTip(tr("Required"));
       chip->setProperty("state", u"required"_s);
       break;
     case State::Excluded:
       chip->setText(u"✕ %1"_s.arg(genre));
-      chip->setToolTip(tr("Excluded"));
       chip->setProperty("state", u"excluded"_s);
       break;
   }
@@ -273,7 +313,8 @@ QMenu* createGenresMenu(QWidget* parent) {
     widget->setRules(contentFilter().genreRules());
     // The menu asks for one height and does not follow the wrapping, so it is given the height
     // the chips need at this width
-    widget->setFixedHeight(widget->layout()->heightForWidth(widget->width()));
+    widget->fitHeight();
+    widget->setFixedHeight(widget->sizeHint().height());
   });
   QObject::connect(widget, &GenreRulesWidget::rulesChanged, widget,
                    [widget]() { contentFilter().setGenreRules(widget->rules()); });

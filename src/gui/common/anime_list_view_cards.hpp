@@ -44,6 +44,7 @@ public:
 
 protected:
   bool event(QEvent* event) override;
+  bool viewportEvent(QEvent* event) override;
   void keyPressEvent(QKeyEvent* event) override;
   void mousePressEvent(QMouseEvent* event) override;
   void paintEvent(QPaintEvent* event) override;

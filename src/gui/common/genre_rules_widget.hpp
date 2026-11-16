@@ -26,6 +26,7 @@
 class QLabel;
 class QLayout;
 class QMenu;
+class QScrollArea;
 class QToolButton;
 
 namespace gui {
@@ -45,9 +46,14 @@ public:
 
   // The genres come from the titles Akyuu knows, which grow with every season or search
   void reload();
+  // The chips take the rows they need, up to a few, and scroll past them
+  void fitHeight();
 
 signals:
   void rulesChanged();
+
+protected:
+  void resizeEvent(QResizeEvent* event) override;
 
 private:
   enum class State {
@@ -59,6 +65,7 @@ private:
   void updateChip(QToolButton* chip, State state) const;
 
   QLayout* m_chips = nullptr;
+  QScrollArea* m_scroll = nullptr;
   QLabel* m_labelEmpty = nullptr;
   QMap<QString, State> m_states;
   QMap<QString, QToolButton*> m_buttons;

@@ -61,6 +61,17 @@ bool ListViewCards::event(QEvent* event) {
   return QListView::event(event);
 }
 
+// The title tooltip carries what the narrow list columns cut off, and a card shows all of it
+// already. Its poster also made it big enough to open over the cursor on Wayland, which hid it
+// at once and showed it again, over and over.
+bool ListViewCards::viewportEvent(QEvent* event) {
+  if (event->type() == QEvent::ToolTip) {
+    event->ignore();
+    return true;
+  }
+  return QListView::viewportEvent(event);
+}
+
 void ListViewCards::keyPressEvent(QKeyEvent* event) {
   if (m_base->handleKeyPress(event)) return;
 
