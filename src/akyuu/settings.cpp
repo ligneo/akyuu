@@ -418,10 +418,16 @@ std::vector<std::string> Settings::externalLinks() const {
 
 namespace {
 
+// Anything but a non-empty string is left out. An empty name from a hand-edited or damaged file
+// would be a genre no title has, and as a required one it hid every title.
 std::vector<std::string> toStrings(const QVariant& value) {
-  return value.toJsonArray().toVariantList() |
-         std::views::transform([](const QVariant& v) { return v.toString().toStdString(); }) |
-         std::ranges::to<std::vector>();
+  std::vector<std::string> strings;
+  for (const auto& item : value.toJsonArray()) {
+    if (item.isString() && !item.toString().isEmpty()) {
+      strings.push_back(item.toString().toStdString());
+    }
+  }
+  return strings;
 }
 
 QJsonArray fromStrings(const std::vector<std::string>& strings) {

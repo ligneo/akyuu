@@ -285,7 +285,8 @@ void GenreRulesWidget::fitHeight() {
 }
 
 void GenreRulesWidget::updateChip(QToolButton* chip, const State state) const {
-  const auto genre = chip->property("genre").toString();
+  // A button takes "&" for a shortcut marker, so a name with one is doubled to keep it
+  const auto genre = chip->property("genre").toString().replace(u'&', u"&&"_s);
   auto font = chip->font();
   font.setStrikeOut(state == State::Excluded);
   chip->setFont(font);
