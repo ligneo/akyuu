@@ -154,10 +154,10 @@ GenreRulesWidget::GenreRulesWidget(QWidget* parent)
   const auto layout = new QVBoxLayout(this);
   layout->setSpacing(10);
 
-  const auto hint = new QLabel(tr("Click a genre once to require it, twice to exclude it."), this);
-  hint->setWordWrap(true);
-  hint->setEnabled(false);
-  layout->addWidget(hint);
+  m_labelHint = new QLabel(tr("Click a genre once to require it, twice to exclude it."), this);
+  m_labelHint->setWordWrap(true);
+  m_labelHint->setEnabled(false);
+  layout->addWidget(m_labelHint);
 
   // MyAnimeList sends its themes and demographics as genres too, which makes for dozens of
   // chips. Past a few rows they scroll rather than stretch the menu down the screen.
@@ -175,15 +175,6 @@ GenreRulesWidget::GenreRulesWidget(QWidget* parent)
 
   m_labelEmpty->setEnabled(false);
   layout->addWidget(m_labelEmpty);
-
-  m_labelTemporary = new QLabel(
-      tr("These last until Akyuu is closed. The defaults are in Settings > Application > "
-         "Content."),
-      this);
-  m_labelTemporary->setWordWrap(true);
-  m_labelTemporary->setEnabled(false);
-  m_labelTemporary->hide();
-  layout->addWidget(m_labelTemporary);
 
   const auto buttons = new QHBoxLayout();
   m_buttonDefaults = new QPushButton(tr("Back to default"), this);
@@ -259,10 +250,11 @@ void GenreRulesWidget::reload() {
   fitHeight();
 }
 
+// The menu keeps to the chips: its button already says when the rules differ from the
+// defaults, and the way back only shows up then.
 void GenreRulesWidget::setTemporary(const bool temporary) {
-  m_labelTemporary->setVisible(temporary);
-  m_buttonDefaults->setVisible(temporary);
-  m_buttonDefaults->setEnabled(temporary && contentFilter().genreRulesChanged());
+  m_labelHint->setVisible(!temporary);
+  m_buttonDefaults->setVisible(temporary && contentFilter().genreRulesChanged());
 }
 
 void GenreRulesWidget::resizeEvent(QResizeEvent* event) {

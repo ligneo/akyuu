@@ -50,8 +50,8 @@ public:
   // The chips take the rows they need, up to a few, and scroll past them
   void fitHeight();
 
-  // In a toolbar menu the rules last until Akyuu is closed, which the widget then says, with a
-  // way back to the defaults in the settings
+  // In a toolbar menu the rules last until Akyuu is closed. The hint stays with the settings,
+  // and a way back to the defaults shows up once they differ.
   void setTemporary(bool temporary);
 
 signals:
@@ -73,7 +73,7 @@ private:
   QLayout* m_chips = nullptr;
   QScrollArea* m_scroll = nullptr;
   QLabel* m_labelEmpty = nullptr;
-  QLabel* m_labelTemporary = nullptr;
+  QLabel* m_labelHint = nullptr;
   QPushButton* m_buttonDefaults = nullptr;
   QMap<QString, State> m_states;
   QMap<QString, QToolButton*> m_buttons;
