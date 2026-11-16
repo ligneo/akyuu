@@ -72,21 +72,6 @@ QString getAboutDialogText(QWidget* parent) {
   };
   // clang-format on
 
-  // clang-format off
-  const QStringList donators{
-      u"Farfie"_s,
-      u"snickler"_s,
-      u"Nydaleclya"_s,
-      u"WizardTim"_s,
-      u"Kinzer"_s,
-      u"MeGaNeKo"_s,
-      u"WhatsCPS"_s,
-      u"Jerico64"_s,
-      u"Xen the Greedy"_s,
-      parent->tr("and other anonymous supporters"),
-  };
-  // clang-format on
-
   const QStringList components{
       u"Material Symbols"_s,
       u"Qt %1"_s.arg(QT_VERSION_STR),
@@ -106,7 +91,6 @@ QString getAboutDialogText(QWidget* parent) {
   addSection(parent->tr("Based on"),
              u"Taiga by Eren Okka (erengy) · %1"_s.arg(taigaLinks.join(" · ")));
   addSection(parent->tr("Taiga contributors"), contributors.join(", "));
-  addSection(parent->tr("Taiga donators"), donators.join(", "));
   addSection(parent->tr("Third-party components"), components.join(", "));
 
   // GPLv3 section 5 asks a modified version to say so, with a date, and section 0 asks an
