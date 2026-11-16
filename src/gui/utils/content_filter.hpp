@@ -30,8 +30,10 @@ class QMenu;
 namespace gui {
 
 // The Seasons and Search pages share one set of content filters: what to do with adult titles
-// and which genres to require or exclude. Both live in the settings, and every page that changes
-// them goes through here, so the other pages follow at once.
+// and which genres to require or exclude. The settings hold the defaults, which Akyuu starts
+// with. The Genres button and the View menu change the filters in use until Akyuu is closed:
+// a look at "only Sports" should not quietly narrow every season from then on, and an adult
+// mode switched to Show for a moment goes back to the default by itself.
 class ContentFilter final : public QObject {
   Q_OBJECT
   Q_DISABLE_COPY_MOVE(ContentFilter)
@@ -39,10 +41,20 @@ class ContentFilter final : public QObject {
 public:
   static ContentFilter& instance();
 
+  // In use, possibly changed for now
   akyuu::AdultTitles adultTitles() const;
   const anime::GenreRules& genreRules() const;
   void setAdultTitles(akyuu::AdultTitles mode);
   void setGenreRules(const anime::GenreRules& rules);
+
+  // Kept in the settings. Setting them applies them at once as well.
+  akyuu::AdultTitles defaultAdultTitles() const;
+  anime::GenreRules defaultGenreRules() const;
+  void setDefaults(akyuu::AdultTitles mode, const anime::GenreRules& rules);
+
+  bool adultTitlesChanged() const;
+  bool genreRulesChanged() const;
+  void resetToDefaults();
 
   bool accepts(const Anime& anime) const;
   bool blurs(const Anime& anime) const;

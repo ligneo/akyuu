@@ -6,7 +6,8 @@
   can be shown, blurred until clicked, or hidden, and the View menu of both pages has the same
   choice. Each genre can be required or excluded, from the same tab or from the new Genres
   button, whose label counts the rules in use. Seasons and Search say how many titles were
-  hidden.
+  hidden. The settings hold the defaults; the Genres button and the View menu change them until
+  Akyuu is closed, marked with a dot and a way back to the default.
 - The title count of Seasons follows the search box.
 - Switching Search or Seasons between the list and the cards no longer crashes Akyuu the next
   time the search box changes.

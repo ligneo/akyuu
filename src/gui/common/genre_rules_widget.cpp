@@ -176,11 +176,25 @@ GenreRulesWidget::GenreRulesWidget(QWidget* parent)
   m_labelEmpty->setEnabled(false);
   layout->addWidget(m_labelEmpty);
 
+  m_labelTemporary = new QLabel(
+      tr("These last until Akyuu is closed. The defaults are in Settings > Application > "
+         "Content."),
+      this);
+  m_labelTemporary->setWordWrap(true);
+  m_labelTemporary->setEnabled(false);
+  m_labelTemporary->hide();
+  layout->addWidget(m_labelTemporary);
+
   const auto buttons = new QHBoxLayout();
+  m_buttonDefaults = new QPushButton(tr("Back to default"), this);
+  m_buttonDefaults->hide();
+  buttons->addWidget(m_buttonDefaults);
   buttons->addStretch();
   const auto reset = new QPushButton(tr("Reset"), this);
   buttons->addWidget(reset);
   layout->addLayout(buttons);
+
+  connect(m_buttonDefaults, &QPushButton::clicked, this, &GenreRulesWidget::defaultsRequested);
 
   connect(reset, &QPushButton::clicked, this, [this]() {
     for (auto it = m_states.begin(); it != m_states.end(); ++it) {
@@ -243,6 +257,12 @@ void GenreRulesWidget::reload() {
 
   m_labelEmpty->setVisible(genres.isEmpty());
   fitHeight();
+}
+
+void GenreRulesWidget::setTemporary(const bool temporary) {
+  m_labelTemporary->setVisible(temporary);
+  m_buttonDefaults->setVisible(temporary);
+  m_buttonDefaults->setEnabled(temporary && contentFilter().genreRulesChanged());
 }
 
 void GenreRulesWidget::resizeEvent(QResizeEvent* event) {
@@ -311,20 +331,31 @@ QMenu* createGenresMenu(QWidget* parent) {
   // Another page or the settings may have changed the rules since the menu was last open
   QObject::connect(menu, &QMenu::aboutToShow, widget, [widget]() {
     widget->setRules(contentFilter().genreRules());
+    widget->setTemporary(true);
     // The menu asks for one height and does not follow the wrapping, so it is given the height
     // the chips need at this width
     widget->fitHeight();
     widget->setFixedHeight(widget->sizeHint().height());
   });
-  QObject::connect(widget, &GenreRulesWidget::rulesChanged, widget,
-                   [widget]() { contentFilter().setGenreRules(widget->rules()); });
+  QObject::connect(widget, &GenreRulesWidget::rulesChanged, widget, [widget]() {
+    contentFilter().setGenreRules(widget->rules());
+    widget->setTemporary(true);
+  });
+  QObject::connect(widget, &GenreRulesWidget::defaultsRequested, widget, [widget]() {
+    contentFilter().setGenreRules(contentFilter().defaultGenreRules());
+    widget->setRules(contentFilter().genreRules());
+    widget->setTemporary(true);
+  });
 
   return menu;
 }
 
 QString genresButtonText(const anime::GenreRules& rules) {
   const auto count = rules.required.size() + rules.excluded.size();
-  return count > 0 ? QObject::tr("Genres (%1)").arg(count) : QObject::tr("Genres");
+  auto text = count > 0 ? QObject::tr("Genres (%1)").arg(count) : QObject::tr("Genres");
+  // A dot says the rules are changed for now, away from the ones in the settings
+  if (contentFilter().genreRulesChanged()) text += u" •"_s;
+  return text;
 }
 
 }  // namespace gui

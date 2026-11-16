@@ -22,6 +22,7 @@
 #include <QCollator>
 #include <QMenu>
 #include <QSet>
+#include <QTimer>
 
 #include "akyuu/session.hpp"
 #include "media/anime.hpp"
@@ -41,12 +42,17 @@ ContentFilter::ContentFilter() {
     akyuu::settings.setAdultTitles(akyuu::AdultTitles::Show);
   }
 
-  m_adultTitles = akyuu::settings.adultTitles();
-  m_genreRules = {
-      .required = akyuu::settings.requiredGenres(),
-      .excluded = akyuu::settings.excludedGenres(),
-  };
+  m_adultTitles = defaultAdultTitles();
+  m_genreRules = defaultGenreRules();
 }
+
+namespace {
+
+bool sameRules(const anime::GenreRules& a, const anime::GenreRules& b) {
+  return a.required == b.required && a.excluded == b.excluded;
+}
+
+}  // namespace
 
 akyuu::AdultTitles ContentFilter::adultTitles() const {
   return m_adultTitles;
@@ -59,15 +65,46 @@ const anime::GenreRules& ContentFilter::genreRules() const {
 void ContentFilter::setAdultTitles(const akyuu::AdultTitles mode) {
   if (m_adultTitles == mode) return;
   m_adultTitles = mode;
-  akyuu::settings.setAdultTitles(mode);
   emit changed();
 }
 
 void ContentFilter::setGenreRules(const anime::GenreRules& rules) {
-  if (m_genreRules.required == rules.required && m_genreRules.excluded == rules.excluded) return;
+  if (sameRules(m_genreRules, rules)) return;
   m_genreRules = rules;
+  emit changed();
+}
+
+akyuu::AdultTitles ContentFilter::defaultAdultTitles() const {
+  return akyuu::settings.adultTitles();
+}
+
+anime::GenreRules ContentFilter::defaultGenreRules() const {
+  return {
+      .required = akyuu::settings.requiredGenres(),
+      .excluded = akyuu::settings.excludedGenres(),
+  };
+}
+
+void ContentFilter::setDefaults(const akyuu::AdultTitles mode, const anime::GenreRules& rules) {
+  akyuu::settings.setAdultTitles(mode);
   akyuu::settings.setRequiredGenres(rules.required);
   akyuu::settings.setExcludedGenres(rules.excluded);
+  m_adultTitles = mode;
+  m_genreRules = rules;
+  emit changed();
+}
+
+bool ContentFilter::adultTitlesChanged() const {
+  return m_adultTitles != defaultAdultTitles();
+}
+
+bool ContentFilter::genreRulesChanged() const {
+  return !sameRules(m_genreRules, defaultGenreRules());
+}
+
+void ContentFilter::resetToDefaults() {
+  m_adultTitles = defaultAdultTitles();
+  m_genreRules = defaultGenreRules();
   emit changed();
 }
 
@@ -116,15 +153,30 @@ void addAdultTitlesMenu(QMenu* menu) {
   for (const auto& [text, mode] : modes) {
     if (mode == contentFilter().adultTitles()) current = text;
   }
-  const auto submenu = menu->addMenu(QObject::tr("Adult titles: %1").arg(current));
+  // A dot says the mode is changed for now, away from the one in the settings
+  const auto submenu = menu->addMenu(
+      contentFilter().adultTitlesChanged() ? QObject::tr("Adult titles: %1 •").arg(current)
+                                           : QObject::tr("Adult titles: %1").arg(current));
   const auto group = new QActionGroup(submenu);
   for (const auto& [text, mode] : modes) {
+    // Applied once the menu is gone. Filtering the page right away kept the menu on screen with
+    // the new mark drawn and the old one not yet cleared, and Hyprland's fade-out showed that
+    // frame: two choices seemed to be checked.
     const auto action = submenu->addAction(text, submenu, [mode]() {
-      contentFilter().setAdultTitles(mode);
+      QTimer::singleShot(0, &contentFilter(), [mode]() { contentFilter().setAdultTitles(mode); });
     });
     action->setCheckable(true);
     action->setChecked(contentFilter().adultTitles() == mode);
     group->addAction(action);
+  }
+
+  if (contentFilter().adultTitlesChanged()) {
+    submenu->addSeparator();
+    submenu->addAction(QObject::tr("Back to default"), submenu, []() {
+      QTimer::singleShot(0, &contentFilter(), []() {
+        contentFilter().setAdultTitles(contentFilter().defaultAdultTitles());
+      });
+    });
   }
 }
 

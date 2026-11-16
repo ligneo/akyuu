@@ -87,9 +87,10 @@ ContentPage::ContentPage(QWidget* parent)
     layout->addWidget(group);
   }
 
-  const auto note =
-      new QLabel(tr("These apply to Seasons and Search. Your anime list always shows everything."),
-                 this);
+  const auto note = new QLabel(
+      tr("These are the defaults for Seasons and Search. The Genres button and the View menu "
+         "change them until Akyuu is closed. Your anime list always shows everything."),
+      this);
   note->setWordWrap(true);
   note->setEnabled(false);
   layout->addWidget(note);
@@ -97,15 +98,24 @@ ContentPage::ContentPage(QWidget* parent)
   layout->addStretch();
 }
 
+// The page shows and saves the defaults, not what the Genres button or the View menu changed for
+// now. Saving applies them at once as well, so the change is seen without a restart.
 void ContentPage::load() {
-  m_groupAdult->button(static_cast<int>(contentFilter().adultTitles()))->setChecked(true);
+  m_groupAdult->button(static_cast<int>(contentFilter().defaultAdultTitles()))->setChecked(true);
   updateDescription();
-  m_genres->setRules(contentFilter().genreRules());
+  m_genres->setRules(contentFilter().defaultGenreRules());
 }
 
 void ContentPage::save() {
-  contentFilter().setAdultTitles(static_cast<akyuu::AdultTitles>(m_groupAdult->checkedId()));
-  contentFilter().setGenreRules(m_genres->rules());
+  const auto mode = static_cast<akyuu::AdultTitles>(m_groupAdult->checkedId());
+  const auto rules = m_genres->rules();
+  // Unchanged defaults leave what was changed for now alone
+  const auto defaults = contentFilter().defaultGenreRules();
+  if (mode == contentFilter().defaultAdultTitles() && rules.required == defaults.required &&
+      rules.excluded == defaults.excluded) {
+    return;
+  }
+  contentFilter().setDefaults(mode, rules);
 }
 
 void ContentPage::updateDescription() {
