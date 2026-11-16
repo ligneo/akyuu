@@ -22,6 +22,7 @@
 #include <QLabel>
 #include <QLayout>
 #include <QMenu>
+#include <QPalette>
 #include <QPushButton>
 #include <QStyle>
 #include <QToolButton>
@@ -96,11 +97,22 @@ private:
   int m_spacing = 0;
 };
 
-// Drawn from the palette, so the chips follow the light and dark themes. Excluded genres keep a
-// warning color of their own, as the palette has none.
-const auto kChipStyle = uR"(
+// Drawn from the palette, so the chips follow the light and dark themes. The border is mixed from
+// the text and the background: `palette(mid)` matched the background in some color schemes and
+// left the chips without an outline. Excluded genres keep a warning color of their own, as the
+// palette has none.
+QString chipStyle(const QPalette& palette) {
+  const auto text = palette.color(QPalette::WindowText);
+  const auto base = palette.color(QPalette::Window);
+  const auto mix = [&](double t) {
+    return QColor::fromRgbF(base.redF() + (text.redF() - base.redF()) * t,
+                            base.greenF() + (text.greenF() - base.greenF()) * t,
+                            base.blueF() + (text.blueF() - base.blueF()) * t)
+        .name();
+  };
+  return uR"(
 QToolButton#genreChip {
-  border: 1px solid palette(mid);
+  border: 1px solid %1;
   border-radius: 11px;
   padding: 3px 10px;
   background: transparent;
@@ -117,7 +129,8 @@ QToolButton#genreChip[state="excluded"] {
   border-color: #c4505c;
   color: #e0737f;
 }
-)"_s;
+)"_s.arg(mix(0.35));
+}
 
 std::vector<std::string> toStrings(const QStringList& list) {
   std::vector<std::string> strings;
@@ -130,12 +143,13 @@ std::vector<std::string> toStrings(const QStringList& list) {
 GenreRulesWidget::GenreRulesWidget(QWidget* parent)
     : QWidget(parent),
       m_labelEmpty(new QLabel(tr("Genres appear here once a season or a search is loaded."), this)) {
-  setStyleSheet(kChipStyle);
+  setStyleSheet(chipStyle(palette()));
 
   const auto layout = new QVBoxLayout(this);
   layout->setSpacing(10);
 
   const auto hint = new QLabel(tr("Click a genre once to require it, twice to exclude it."), this);
+  hint->setWordWrap(true);
   hint->setEnabled(false);
   layout->addWidget(hint);
 
@@ -247,8 +261,9 @@ void GenreRulesWidget::updateChip(QToolButton* chip, const State state) const {
 QMenu* createGenresMenu(QWidget* parent) {
   const auto menu = new QMenu(parent);
   const auto widget = new GenreRulesWidget(menu);
-  // Without a width, the chips would line up in one row as wide as the screen
-  widget->setFixedWidth(440);
+  // Without a width, the chips would line up in one row as wide as the screen. It follows the
+  // font, as a fixed one cut the hint short at larger sizes.
+  widget->setFixedWidth(widget->fontMetrics().averageCharWidth() * 56);
   const auto action = new QWidgetAction(menu);
   action->setDefaultWidget(widget);
   menu->addAction(action);
