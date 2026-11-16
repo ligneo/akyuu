@@ -25,6 +25,8 @@
 #include <QLabel>
 #include <QMessageBox>
 #include <QMouseEvent>
+#include <QScreen>
+#include <algorithm>
 
 #include "akyuu/hoot.hpp"
 #include "akyuu/session.hpp"
@@ -128,6 +130,14 @@ void displayAboutDialog(QWidget* parent) {
   msgBox->setIconPixmap(parent->windowIcon().pixmap(QSize(64, 64), msgBox->devicePixelRatio()));
   msgBox->setText(getAboutDialogText(parent));
   msgBox->setWindowTitle(parent->tr("About Akyuu"));
+
+  // The message box keeps its text narrow, so the lists of names wrapped into a column that ran
+  // past the bottom of a laptop screen with a larger font. A wider text, in step with the font
+  // and within the screen, keeps the dialog short.
+  if (const auto label = msgBox->findChild<QLabel*>(u"qt_msgbox_label"_s)) {
+    const auto screen = parent->screen() ? parent->screen()->availableGeometry().width() : 1280;
+    label->setMinimumWidth(std::min(label->fontMetrics().averageCharWidth() * 72, screen * 6 / 10));
+  }
 
   if (const auto iconLabel = msgBox->findChild<QLabel*>()) {
     const auto handler = new AboutDialogHandler(msgBox);
