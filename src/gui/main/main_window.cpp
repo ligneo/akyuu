@@ -228,6 +228,28 @@ PageZoom* MainWindow::currentPageZoom() const {
 }
 
 bool MainWindow::eventFilter(QObject* watched, QEvent* event) {
+  // A choice with a check mark, pressed: the menu draws the pressed item with its radio button
+  // filled, next to the mark of the current choice. Hyprland fades a closing menu out from its
+  // last frame, so for a moment two choices seemed checked (seen at 240 fps, in every such menu).
+  // The press never reaches the menu, and the release closes the menus before the choice is
+  // checked, so the fade-out shows the frame from before the click.
+  if (event->type() == QEvent::MouseButtonPress || event->type() == QEvent::MouseButtonRelease) {
+    if (const auto menu = qobject_cast<QMenu*>(watched)) {
+      const auto mouseEvent = static_cast<QMouseEvent*>(event);
+      const auto action = menu->actionAt(mouseEvent->position().toPoint());
+      if (mouseEvent->button() == Qt::LeftButton && action && action->isCheckable() &&
+          action->isEnabled() && !action->menu()) {
+        if (event->type() == QEvent::MouseButtonRelease) {
+          for (auto parent = menu; parent; parent = qobject_cast<QMenu*>(parent->parentWidget())) {
+            parent->hide();
+          }
+          QTimer::singleShot(0, action, [action]() { action->trigger(); });
+        }
+        return true;
+      }
+    }
+  }
+
   if (event->type() == QEvent::Wheel) {
     const auto wheelEvent = static_cast<QWheelEvent*>(event);
     const auto widget = qobject_cast<QWidget*>(watched);
