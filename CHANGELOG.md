@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.4.0
 
 - Settings > Application > Content decides what Seasons and Search show (#13). Adult titles
   can be shown, blurred until clicked, or hidden, and the View menu of both pages has the same
@@ -11,6 +11,12 @@
 - The title count of Seasons follows the search box.
 - Switching Search or Seasons between the list and the cards no longer crashes Akyuu the next
   time the search box changes.
+- Cards no longer show the title tooltip, which repeated what the card says and could open and
+  close over and over under the cursor on Wayland.
+- Settings: 0.3.0's View > Hide adult titles is read once. Whoever turned it off starts with
+  adult titles shown; otherwise they stay hidden, which is the default.
+- Known limitation: a signed in AniList or Kitsu account receives adult titles only when the
+  account allows 18+ content, so Show and Blur have nothing to show otherwise.
 
 ## 0.3.0
 
