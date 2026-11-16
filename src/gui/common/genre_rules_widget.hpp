@@ -23,14 +23,14 @@
 
 #include "media/genre_rules.hpp"
 
-class QGridLayout;
-class QMenu;
 class QLabel;
+class QLayout;
+class QMenu;
 class QToolButton;
 
 namespace gui {
 
-// One button per genre. A click requires the genre, a second click excludes it and a third
+// One chip per genre. A click requires the genre, a second click excludes it and a third
 // leaves it alone again.
 class GenreRulesWidget final : public QWidget {
   Q_OBJECT
@@ -56,16 +56,20 @@ private:
     Excluded,
   };
 
-  void updateButton(QToolButton* button, State state) const;
+  void updateChip(QToolButton* chip, State state) const;
 
-  QGridLayout* m_grid = nullptr;
+  QLayout* m_chips = nullptr;
   QLabel* m_labelEmpty = nullptr;
   QMap<QString, State> m_states;
   QMap<QString, QToolButton*> m_buttons;
 };
 
-// The genre buttons in a toolbar menu. A change applies at once, and the menu stays open for the
+// The genre chips in a toolbar menu. A change applies at once, and the menu stays open for the
 // next one.
 QMenu* createGenresMenu(QWidget* parent);
+
+// "Genres" with the number of genres that are required or excluded, so that a rule left on is
+// not forgotten
+QString genresButtonText(const anime::GenreRules& rules);
 
 }  // namespace gui

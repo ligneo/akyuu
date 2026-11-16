@@ -18,11 +18,12 @@
 
 #include "genre_rules_widget.hpp"
 
-#include <QGridLayout>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QLayout>
 #include <QMenu>
 #include <QPushButton>
+#include <QStyle>
 #include <QToolButton>
 #include <QVBoxLayout>
 #include <QWidgetAction>
@@ -35,7 +36,88 @@ using namespace Qt::StringLiterals;
 
 namespace {
 
-constexpr int kColumns = 4;
+// Chips take the width of their text and wrap like words. A grid stretched every genre to its
+// column, so short names sat in wide boxes.
+class FlowLayout final : public QLayout {
+public:
+  explicit FlowLayout(QWidget* parent, int spacing) : QLayout(parent), m_spacing(spacing) {
+    setContentsMargins(0, 0, 0, 0);
+  }
+  ~FlowLayout() override {
+    while (const auto item = takeAt(0)) delete item;
+  }
+
+  void addItem(QLayoutItem* item) override { m_items.push_back(item); }
+  int count() const override { return m_items.size(); }
+  QLayoutItem* itemAt(int index) const override { return m_items.value(index); }
+  QLayoutItem* takeAt(int index) override {
+    return index >= 0 && index < m_items.size() ? m_items.takeAt(index) : nullptr;
+  }
+
+  Qt::Orientations expandingDirections() const override { return {}; }
+  bool hasHeightForWidth() const override { return true; }
+  int heightForWidth(int width) const override { return arrange({0, 0, width, 0}, true); }
+  // Wrapped at the width the layout has, or at a usual one before it has any
+  QSize sizeHint() const override {
+    const int width = geometry().width() > 0 ? geometry().width() : 400;
+    return {minimumSize().width(), heightForWidth(width)};
+  }
+  QSize minimumSize() const override {
+    QSize size;
+    for (const auto item : m_items) size = size.expandedTo(item->minimumSize());
+    return size;
+  }
+
+  void setGeometry(const QRect& rect) override {
+    QLayout::setGeometry(rect);
+    arrange(rect, false);
+  }
+
+private:
+  int arrange(const QRect& rect, bool measureOnly) const {
+    int x = rect.x();
+    int y = rect.y();
+    int lineHeight = 0;
+    for (const auto item : m_items) {
+      const auto size = item->sizeHint();
+      if (x + size.width() > rect.right() + 1 && lineHeight > 0) {
+        x = rect.x();
+        y += lineHeight + m_spacing;
+        lineHeight = 0;
+      }
+      if (!measureOnly) item->setGeometry({QPoint{x, y}, size});
+      x += size.width() + m_spacing;
+      lineHeight = std::max(lineHeight, size.height());
+    }
+    return y + lineHeight - rect.y();
+  }
+
+  QList<QLayoutItem*> m_items;
+  int m_spacing = 0;
+};
+
+// Drawn from the palette, so the chips follow the light and dark themes. Excluded genres keep a
+// warning color of their own, as the palette has none.
+const auto kChipStyle = uR"(
+QToolButton#genreChip {
+  border: 1px solid palette(mid);
+  border-radius: 11px;
+  padding: 3px 10px;
+  background: transparent;
+}
+QToolButton#genreChip:hover {
+  border-color: palette(highlight);
+}
+QToolButton#genreChip[state="required"] {
+  background: palette(highlight);
+  border-color: palette(highlight);
+  color: palette(highlighted-text);
+}
+QToolButton#genreChip[state="excluded"] {
+  border-color: #c4505c;
+  color: #e0737f;
+}
+)"_s;
 
 std::vector<std::string> toStrings(const QStringList& list) {
   std::vector<std::string> strings;
@@ -47,16 +129,19 @@ std::vector<std::string> toStrings(const QStringList& list) {
 
 GenreRulesWidget::GenreRulesWidget(QWidget* parent)
     : QWidget(parent),
-      m_grid(new QGridLayout()),
       m_labelEmpty(new QLabel(tr("Genres appear here once a season or a search is loaded."), this)) {
+  setStyleSheet(kChipStyle);
+
   const auto layout = new QVBoxLayout(this);
+  layout->setSpacing(10);
 
   const auto hint = new QLabel(tr("Click a genre once to require it, twice to exclude it."), this);
   hint->setEnabled(false);
   layout->addWidget(hint);
 
-  m_grid->setSpacing(4);
-  layout->addLayout(m_grid);
+  const auto chips = new QWidget(this);
+  m_chips = new FlowLayout(chips, 6);
+  layout->addWidget(chips);
 
   m_labelEmpty->setEnabled(false);
   layout->addWidget(m_labelEmpty);
@@ -70,7 +155,7 @@ GenreRulesWidget::GenreRulesWidget(QWidget* parent)
   connect(reset, &QPushButton::clicked, this, [this]() {
     for (auto it = m_states.begin(); it != m_states.end(); ++it) {
       it.value() = State::None;
-      updateButton(m_buttons.value(it.key()), State::None);
+      if (const auto chip = m_buttons.value(it.key())) updateChip(chip, State::None);
     }
     emit rulesChanged();
   });
@@ -96,77 +181,94 @@ void GenreRulesWidget::setRules(const anime::GenreRules& rules) {
 }
 
 void GenreRulesWidget::reload() {
-  for (const auto button : std::as_const(m_buttons)) {
-    m_grid->removeWidget(button);
-    button->deleteLater();
+  for (const auto chip : std::as_const(m_buttons)) {
+    m_chips->removeWidget(chip);
+    chip->deleteLater();
   }
   m_buttons.clear();
 
   const auto genres = contentFilter().knownGenres();
+  const auto parent = m_chips->parentWidget();
 
-  int index = 0;
   for (const auto& genre : genres) {
     if (!m_states.contains(genre)) m_states[genre] = State::None;
 
-    const auto button = new QToolButton(this);
-    button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    button->setAutoRaise(false);
-    button->setProperty("genre", genre);
-    updateButton(button, m_states.value(genre));
-    m_grid->addWidget(button, index / kColumns, index % kColumns);
-    m_buttons[genre] = button;
-    ++index;
+    const auto chip = new QToolButton(parent);
+    chip->setObjectName("genreChip");
+    chip->setCursor(Qt::PointingHandCursor);
+    chip->setProperty("genre", genre);
+    updateChip(chip, m_states.value(genre));
+    m_chips->addWidget(chip);
+    m_buttons[genre] = chip;
 
-    connect(button, &QToolButton::clicked, this, [this, genre, button]() {
+    connect(chip, &QToolButton::clicked, this, [this, genre, chip]() {
       auto& state = m_states[genre];
       state = state == State::None       ? State::Required
               : state == State::Required ? State::Excluded
                                          : State::None;
-      updateButton(button, state);
+      updateChip(chip, state);
       emit rulesChanged();
     });
   }
 
   m_labelEmpty->setVisible(genres.isEmpty());
+  updateGeometry();
 }
 
-void GenreRulesWidget::updateButton(QToolButton* button, const State state) const {
-  const auto genre = button->property("genre").toString();
-  auto font = button->font();
-  font.setBold(state == State::Required);
+void GenreRulesWidget::updateChip(QToolButton* chip, const State state) const {
+  const auto genre = chip->property("genre").toString();
+  auto font = chip->font();
   font.setStrikeOut(state == State::Excluded);
-  button->setFont(font);
+  chip->setFont(font);
 
   switch (state) {
     case State::None:
-      button->setText(genre);
-      button->setToolTip(tr("Any"));
+      chip->setText(genre);
+      chip->setToolTip(tr("Any"));
+      chip->setProperty("state", u"none"_s);
       break;
     case State::Required:
-      button->setText(u"✓ %1"_s.arg(genre));
-      button->setToolTip(tr("Required"));
+      chip->setText(u"✓ %1"_s.arg(genre));
+      chip->setToolTip(tr("Required"));
+      chip->setProperty("state", u"required"_s);
       break;
     case State::Excluded:
-      button->setText(u"✕ %1"_s.arg(genre));
-      button->setToolTip(tr("Excluded"));
+      chip->setText(u"✕ %1"_s.arg(genre));
+      chip->setToolTip(tr("Excluded"));
+      chip->setProperty("state", u"excluded"_s);
       break;
   }
+
+  // A dynamic property only restyles the widget once the style looks at it again
+  chip->style()->unpolish(chip);
+  chip->style()->polish(chip);
 }
 
 QMenu* createGenresMenu(QWidget* parent) {
   const auto menu = new QMenu(parent);
   const auto widget = new GenreRulesWidget(menu);
+  // Without a width, the chips would line up in one row as wide as the screen
+  widget->setFixedWidth(440);
   const auto action = new QWidgetAction(menu);
   action->setDefaultWidget(widget);
   menu->addAction(action);
 
   // Another page or the settings may have changed the rules since the menu was last open
-  QObject::connect(menu, &QMenu::aboutToShow, widget,
-                   [widget]() { widget->setRules(contentFilter().genreRules()); });
+  QObject::connect(menu, &QMenu::aboutToShow, widget, [widget]() {
+    widget->setRules(contentFilter().genreRules());
+    // The menu asks for one height and does not follow the wrapping, so it is given the height
+    // the chips need at this width
+    widget->setFixedHeight(widget->layout()->heightForWidth(widget->width()));
+  });
   QObject::connect(widget, &GenreRulesWidget::rulesChanged, widget,
                    [widget]() { contentFilter().setGenreRules(widget->rules()); });
 
   return menu;
+}
+
+QString genresButtonText(const anime::GenreRules& rules) {
+  const auto count = rules.required.size() + rules.excluded.size();
+  return count > 0 ? QObject::tr("Genres (%1)").arg(count) : QObject::tr("Genres");
 }
 
 }  // namespace gui

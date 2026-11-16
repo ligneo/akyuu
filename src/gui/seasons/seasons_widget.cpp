@@ -84,7 +84,12 @@ SeasonsWidget::SeasonsWidget(QWidget* parent)
     m_actionGroup = new QAction(theme.getIcon("lists"), tr("Group by"), this);
     const auto actionSort = new QAction(theme.getIcon("sort"), tr("Sort by"), this);
     const auto actionView = new QAction(theme.getIcon("grid_view"), tr("View"), this);
-    const auto actionGenres = new QAction(theme.getIcon("filter_list"), tr("Genres"), this);
+    const auto actionGenres = new QAction(theme.getIcon("filter_list"), {}, this);
+    const auto updateGenres = [actionGenres]() {
+      actionGenres->setText(genresButtonText(contentFilter().genreRules()));
+    };
+    updateGenres();
+    connect(&contentFilter(), &ContentFilter::changed, actionGenres, updateGenres);
 
     // v1 puts refreshing between two separators (`dlg_season.cpp:84-92`), but here it ends up
     // wedged between the season button and the three menus, with no separator to lean on: not
@@ -129,6 +134,10 @@ SeasonsWidget::SeasonsWidget(QWidget* parent)
   connect(m_sortMenu, &QMenu::aboutToShow, this, &SeasonsWidget::initSortMenu);
   connect(m_viewMenu, &QMenu::aboutToShow, this, &SeasonsWidget::initViewMenu);
   connect(&contentFilter(), &ContentFilter::changed, this, &SeasonsWidget::updateStatus);
+  // Typing in the search box narrows the season as well, and the count should say so
+  connect(m_proxyModel, &QAbstractItemModel::rowsInserted, this, &SeasonsWidget::updateStatus);
+  connect(m_proxyModel, &QAbstractItemModel::rowsRemoved, this, &SeasonsWidget::updateStatus);
+  connect(m_proxyModel, &QAbstractItemModel::modelReset, this, &SeasonsWidget::updateStatus);
 
   setGroupBy(akyuu::session.seasonsGroupBy());
   setViewMode(akyuu::session.seasonsViewMode());

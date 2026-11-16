@@ -64,6 +64,15 @@ ContentPage::ContentPage(QWidget* parent)
     m_labelAdult->setEnabled(false);
     groupLayout->addWidget(m_labelAdult);
 
+    // A signed in AniList account only gets adult titles with 18+ content turned on, and then
+    // Show and Blur seem to do nothing.
+    const auto anilistNote = new QLabel(
+        tr("AniList sends adult titles only if 18+ content is turned on in your AniList settings."),
+        group);
+    anilistNote->setWordWrap(true);
+    anilistNote->setEnabled(false);
+    groupLayout->addWidget(anilistNote);
+
     connect(m_groupAdult, &QButtonGroup::idClicked, this, &ContentPage::updateDescription);
 
     layout->addWidget(group);

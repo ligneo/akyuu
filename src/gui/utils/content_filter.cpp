@@ -104,14 +104,20 @@ QStringList ContentFilter::knownGenres() const {
 }
 
 void addAdultTitlesMenu(QMenu* menu) {
-  const auto submenu = menu->addMenu(QObject::tr("Adult titles"));
-  const auto group = new QActionGroup(submenu);
-
   const QList<QPair<QString, akyuu::AdultTitles>> modes{
       {QObject::tr("Show"), akyuu::AdultTitles::Show},
       {QObject::tr("Blur"), akyuu::AdultTitles::Blur},
       {QObject::tr("Hide"), akyuu::AdultTitles::Hide},
   };
+
+  // The current mode is in the title, so that its mark is not mistaken for a second choice of
+  // the menu it opens from (List or Cards)
+  QString current;
+  for (const auto& [text, mode] : modes) {
+    if (mode == contentFilter().adultTitles()) current = text;
+  }
+  const auto submenu = menu->addMenu(QObject::tr("Adult titles: %1").arg(current));
+  const auto group = new QActionGroup(submenu);
   for (const auto& [text, mode] : modes) {
     const auto action = submenu->addAction(text, submenu, [mode]() {
       contentFilter().setAdultTitles(mode);

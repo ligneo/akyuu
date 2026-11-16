@@ -5,7 +5,9 @@
 - Settings > Application > Content decides what Seasons and Search show (#13). Adult titles
   can be shown, blurred until clicked, or hidden, and the View menu of both pages has the same
   choice. Each genre can be required or excluded, from the same tab or from the new Genres
-  button. Seasons says how many titles were hidden.
+  button, whose label counts the rules in use. Seasons and Search say how many titles were
+  hidden.
+- The title count of Seasons follows the search box.
 - Switching Search or Seasons between the list and the cards no longer crashes Akyuu the next
   time the search box changes.
 

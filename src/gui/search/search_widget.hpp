@@ -22,6 +22,8 @@
 #include <QMenu>
 #include <QTimer>
 
+class QLabel;
+
 #include "gui/common/anime_list_view_base.hpp"
 #include "gui/common/combobox.hpp"
 #include "gui/common/page_widget.hpp"
@@ -67,6 +69,7 @@ private:
   ListViewMode m_viewMode = ListViewMode::Cards;
   QMenu* m_sortMenu = nullptr;
   QMenu* m_viewMenu = nullptr;
+  QLabel* m_labelHidden = nullptr;
   QTimer* m_typingTimer = nullptr;
 };
 

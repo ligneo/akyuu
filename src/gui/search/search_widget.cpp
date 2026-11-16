@@ -21,6 +21,7 @@
 
 #include <QActionGroup>
 #include <QAbstractItemView>
+#include <QLabel>
 #include <QLineEdit>
 #include <QStyle>
 #include <QStyleOptionComboBox>
@@ -197,11 +198,27 @@ SearchWidget::SearchWidget(QWidget* parent)
   {
     const auto button = new QToolButton(this);
     button->setIcon(theme.getIcon("filter_list"));
-    button->setText(tr("Genres"));
     button->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     button->setPopupMode(QToolButton::InstantPopup);
     button->setMenu(createGenresMenu(this));
     filtersLayout->addWidget(button);
+
+    // A title left out by the content settings would otherwise just be missing from the results
+    m_labelHidden = new QLabel(this);
+    m_labelHidden->setEnabled(false);
+    m_labelHidden->setToolTip(tr("Hidden by Settings > Application > Content"));
+    filtersLayout->addWidget(m_labelHidden);
+
+    const auto update = [this, button]() {
+      button->setText(genresButtonText(contentFilter().genreRules()));
+      const auto hidden = m_proxyModel->contentHiddenCount();
+      m_labelHidden->setText(hidden > 0 ? tr("%1 hidden").arg(hidden) : QString{});
+    };
+    update();
+    connect(&contentFilter(), &ContentFilter::changed, this, update);
+    connect(m_proxyModel, &QAbstractItemModel::rowsInserted, this, update);
+    connect(m_proxyModel, &QAbstractItemModel::rowsRemoved, this, update);
+    connect(m_proxyModel, &QAbstractItemModel::modelReset, this, update);
   }
 
   // Toolbar
