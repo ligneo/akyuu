@@ -63,5 +63,27 @@ int main() {
   require(matchesGenreRules(std::vector<std::string>{"Sports"}, sportsNoDrama),
           "a required genre without the excluded one should stay");
 
+  using anime::Type;
+  using anime::matchesTypes;
+  using anime::slugsFromTypes;
+  using anime::typesFromSlugs;
+
+  require(matchesTypes(Type::Movie, {}), "no hidden types should keep every title");
+  const std::vector<Type> noMovies{Type::Movie};
+  require(!matchesTypes(Type::Movie, noMovies), "a hidden type should hide the title");
+  require(matchesTypes(Type::Tv, noMovies), "other types should stay");
+  require(matchesTypes(Type::Unknown, {Type::Unknown}), "an unknown type has no chip to hide it");
+  std::vector<Type> allTypes{anime::kTypes.begin(), anime::kTypes.end()};
+  require(matchesTypes(Type::Unknown, allTypes), "an unknown type should stay with all hidden");
+
+  require(typesFromSlugs(slugsFromTypes(allTypes)) == allTypes,
+          "every type should come back from its name");
+  for (const auto type : anime::kTypes) {
+    require(!anime::typeSlug(type).empty(), "every type with a chip needs a name");
+  }
+  require(typesFromSlugs({"", "TV", "unknown", "tv_short", "42", "movie", "movie"}) == noMovies,
+          "damaged names should be left out and a name should count once");
+  require(slugsFromTypes({Type::Unknown}).empty(), "the unknown type should not be saved");
+
   return EXIT_SUCCESS;
 }

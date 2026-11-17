@@ -21,8 +21,8 @@ target_sources(akyuu-gui PRIVATE
 	common/clickable_label.hpp
 	common/combobox.cpp
 	common/combobox.hpp
-	common/genre_rules_widget.cpp
-	common/genre_rules_widget.hpp
+	common/content_rules_widget.cpp
+	common/content_rules_widget.hpp
 	common/page_widget.cpp
 	common/page_widget.hpp
 	common/poster_widget.cpp

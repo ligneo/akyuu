@@ -21,6 +21,8 @@
 #include <QMap>
 #include <QWidget>
 
+#include <vector>
+
 #include "media/genre_rules.hpp"
 
 class QLabel;
@@ -32,18 +34,20 @@ class QToolButton;
 
 namespace gui {
 
-// One chip per genre. A click requires the genre, a second click excludes it and a third
-// leaves it alone again.
-class GenreRulesWidget final : public QWidget {
+// One chip per type above one chip per genre. A click on a type hides it and a second shows it
+// again: a title has a single type, so there is nothing to require. A click on a genre requires
+// it, a second click excludes it and a third leaves it alone again.
+class ContentRulesWidget final : public QWidget {
   Q_OBJECT
-  Q_DISABLE_COPY_MOVE(GenreRulesWidget)
+  Q_DISABLE_COPY_MOVE(ContentRulesWidget)
 
 public:
-  GenreRulesWidget(QWidget* parent);
-  ~GenreRulesWidget() override = default;
+  ContentRulesWidget(QWidget* parent);
+  ~ContentRulesWidget() override = default;
 
   anime::GenreRules rules() const;
-  void setRules(const anime::GenreRules& rules);
+  std::vector<anime::Type> hiddenTypes() const;
+  void setFilters(const anime::GenreRules& rules, const std::vector<anime::Type>& types);
 
   // The genres come from the titles Akyuu knows, which grow with every season or search
   void reload();
@@ -70,6 +74,8 @@ private:
 
   void updateChip(QToolButton* chip, State state) const;
 
+  QMap<anime::Type, State> m_typeStates;
+  QMap<anime::Type, QToolButton*> m_typeButtons;
   QLayout* m_chips = nullptr;
   QScrollArea* m_scroll = nullptr;
   QLabel* m_labelEmpty = nullptr;
@@ -79,12 +85,12 @@ private:
   QMap<QString, QToolButton*> m_buttons;
 };
 
-// The genre chips in a toolbar menu. A change applies at once, and the menu stays open for the
-// next one.
-QMenu* createGenresMenu(QWidget* parent);
+// The type and genre chips in a toolbar menu. A change applies at once, and the menu stays open
+// for the next one.
+QMenu* createFiltersMenu(QWidget* parent);
 
-// "Genres" with the number of genres that are required or excluded, so that a rule left on is
-// not forgotten
-QString genresButtonText(const anime::GenreRules& rules);
+// "Filters" with the number of hidden types and of required or excluded genres, so that a rule
+// left on is not forgotten
+QString filtersButtonText();
 
 }  // namespace gui

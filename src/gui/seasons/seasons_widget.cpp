@@ -30,7 +30,7 @@
 #include "gui/common/anime_list_context.hpp"
 #include "gui/common/anime_list_view.hpp"
 #include "gui/common/anime_list_view_cards.hpp"
-#include "gui/common/genre_rules_widget.hpp"
+#include "gui/common/content_rules_widget.hpp"
 #include "gui/models/anime_list_model.hpp"
 #include "gui/models/anime_list_proxy_model.hpp"
 #include "gui/utils/content_filter.hpp"
@@ -85,9 +85,7 @@ SeasonsWidget::SeasonsWidget(QWidget* parent)
     const auto actionSort = new QAction(theme.getIcon("sort"), tr("Sort by"), this);
     const auto actionView = new QAction(theme.getIcon("grid_view"), tr("View"), this);
     const auto actionGenres = new QAction(theme.getIcon("filter_list"), {}, this);
-    const auto updateGenres = [actionGenres]() {
-      actionGenres->setText(genresButtonText(contentFilter().genreRules()));
-    };
+    const auto updateGenres = [actionGenres]() { actionGenres->setText(filtersButtonText()); };
     updateGenres();
     connect(&contentFilter(), &ContentFilter::changed, actionGenres, updateGenres);
 
@@ -115,7 +113,7 @@ SeasonsWidget::SeasonsWidget(QWidget* parent)
                                        {m_actionGroup, m_groupMenu},
                                        {actionSort, m_sortMenu},
                                        {actionView, m_viewMenu},
-                                       {actionGenres, createGenresMenu(this)}}) {
+                                       {actionGenres, createFiltersMenu(this)}}) {
       const auto button = static_cast<QToolButton*>(m_toolbar->widgetForAction(action));
       button->setPopupMode(QToolButton::InstantPopup);
       button->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);

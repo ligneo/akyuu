@@ -29,6 +29,7 @@
 #include "akyuu/version.hpp"
 #include "base/string.hpp"
 #include "compat/settings.hpp"
+#include "media/genre_rules.hpp"
 #include "sync/service.hpp"
 
 namespace akyuu {
@@ -460,6 +461,10 @@ std::vector<std::string> Settings::excludedGenres() const {
   return toStrings(value("content.excludedGenres"));
 }
 
+std::vector<anime::Type> Settings::hiddenTypes() const {
+  return anime::typesFromSlugs(toStrings(value("content.hiddenTypes")));
+}
+
 std::vector<std::string> Settings::disabledStreamingProviders() const {
   return value("recognition.streaming.disabledProviders").toJsonArray().toVariantList() |
          std::views::transform([](const QVariant& v) { return v.toString().toStdString(); }) |
@@ -812,6 +817,10 @@ void Settings::setRequiredGenres(std::vector<std::string> genres) const {
 
 void Settings::setExcludedGenres(std::vector<std::string> genres) const {
   setValue("content.excludedGenres", fromStrings(genres));
+}
+
+void Settings::setHiddenTypes(const std::vector<anime::Type>& types) const {
+  setValue("content.hiddenTypes", fromStrings(anime::slugsFromTypes(types)));
 }
 
 void Settings::setStreamingMediaEnabled(const bool enabled) const {

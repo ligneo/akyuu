@@ -32,7 +32,7 @@
 #include "gui/common/anime_list_context.hpp"
 #include "gui/common/anime_list_view.hpp"
 #include "gui/common/anime_list_view_cards.hpp"
-#include "gui/common/genre_rules_widget.hpp"
+#include "gui/common/content_rules_widget.hpp"
 #include "gui/main/main_window.hpp"
 #include "gui/models/anime_list_model.hpp"
 #include "gui/models/anime_list_proxy_model.hpp"
@@ -193,14 +193,15 @@ SearchWidget::SearchWidget(QWidget* parent)
     filtersLayout->addWidget(m_comboListStatus);
   }
 
-  // Genres, kept with the settings rather than reset like the filters above: they say what to
-  // leave out everywhere, not what to look for this time
+  // Types and genres, kept with the settings rather than reset like the filters above: they say
+  // what to leave out everywhere, not what to look for this time. The Type box asks the service
+  // for one type, these hide what came back, so the two can leave nothing and "N hidden" says why.
   {
     const auto button = new QToolButton(this);
     button->setIcon(theme.getIcon("filter_list"));
     button->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     button->setPopupMode(QToolButton::InstantPopup);
-    button->setMenu(createGenresMenu(this));
+    button->setMenu(createFiltersMenu(this));
     filtersLayout->addWidget(button);
 
     // A title left out by the content settings would otherwise just be missing from the results
@@ -210,7 +211,7 @@ SearchWidget::SearchWidget(QWidget* parent)
     filtersLayout->addWidget(m_labelHidden);
 
     const auto update = [this, button]() {
-      button->setText(genresButtonText(contentFilter().genreRules()));
+      button->setText(filtersButtonText());
       const auto hidden = m_proxyModel->contentHiddenCount();
       m_labelHidden->setText(hidden > 0 ? tr("%1 hidden").arg(hidden) : QString{});
     };

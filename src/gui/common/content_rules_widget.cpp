@@ -16,8 +16,11 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "genre_rules_widget.hpp"
+#include "content_rules_widget.hpp"
 
+#include <algorithm>
+
+#include <QFrame>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QLayout>
@@ -33,6 +36,7 @@
 #include <QWidgetAction>
 
 #include "gui/utils/content_filter.hpp"
+#include "gui/utils/format.hpp"
 
 namespace gui {
 
@@ -146,13 +150,43 @@ std::vector<std::string> toStrings(const QStringList& list) {
 
 }  // namespace
 
-GenreRulesWidget::GenreRulesWidget(QWidget* parent)
+ContentRulesWidget::ContentRulesWidget(QWidget* parent)
     : QWidget(parent),
       m_labelEmpty(new QLabel(tr("Genres appear here once a season or a search is loaded."), this)) {
   setStyleSheet(chipStyle(palette()));
 
   const auto layout = new QVBoxLayout(this);
   layout->setSpacing(10);
+
+  // Types first: there are only a few, they never change and they need no scrolling
+  {
+    const auto types = new QWidget(this);
+    const auto flow = new FlowLayout(types, 6);
+    for (const auto type : anime::kTypes) {
+      m_typeStates[type] = State::None;
+      const auto chip = new QToolButton(types);
+      chip->setObjectName("genreChip");
+      chip->setCursor(Qt::PointingHandCursor);
+      chip->setProperty("label", formatType(type));
+      updateChip(chip, State::None);
+      flow->addWidget(chip);
+      m_typeButtons[type] = chip;
+
+      connect(chip, &QToolButton::clicked, this, [this, type, chip]() {
+        auto& state = m_typeStates[type];
+        state = state == State::None ? State::Excluded : State::None;
+        updateChip(chip, state);
+        emit rulesChanged();
+      });
+    }
+    layout->addWidget(types);
+
+    const auto line = new QFrame(this);
+    line->setFrameShape(QFrame::HLine);
+    line->setFrameShadow(QFrame::Plain);
+    line->setEnabled(false);
+    layout->addWidget(line);
+  }
 
   m_labelHint = new QLabel(tr("Click a genre once to require it, twice to exclude it."), this);
   m_labelHint->setWordWrap(true);
@@ -185,20 +219,24 @@ GenreRulesWidget::GenreRulesWidget(QWidget* parent)
   buttons->addWidget(reset);
   layout->addLayout(buttons);
 
-  connect(m_buttonDefaults, &QPushButton::clicked, this, &GenreRulesWidget::defaultsRequested);
+  connect(m_buttonDefaults, &QPushButton::clicked, this, &ContentRulesWidget::defaultsRequested);
 
   connect(reset, &QPushButton::clicked, this, [this]() {
     for (auto it = m_states.begin(); it != m_states.end(); ++it) {
       it.value() = State::None;
       if (const auto chip = m_buttons.value(it.key())) updateChip(chip, State::None);
     }
+    for (auto it = m_typeStates.begin(); it != m_typeStates.end(); ++it) {
+      it.value() = State::None;
+      updateChip(m_typeButtons.value(it.key()), State::None);
+    }
     emit rulesChanged();
   });
 
-  setRules(contentFilter().genreRules());
+  setFilters(contentFilter().genreRules(), contentFilter().hiddenTypes());
 }
 
-anime::GenreRules GenreRulesWidget::rules() const {
+anime::GenreRules ContentRulesWidget::rules() const {
   QStringList required;
   QStringList excluded;
   for (const auto& [genre, state] : m_states.asKeyValueRange()) {
@@ -208,14 +246,29 @@ anime::GenreRules GenreRulesWidget::rules() const {
   return {.required = toStrings(required), .excluded = toStrings(excluded)};
 }
 
-void GenreRulesWidget::setRules(const anime::GenreRules& rules) {
+std::vector<anime::Type> ContentRulesWidget::hiddenTypes() const {
+  std::vector<anime::Type> types;
+  for (const auto type : anime::kTypes) {
+    if (m_typeStates.value(type) == State::Excluded) types.push_back(type);
+  }
+  return types;
+}
+
+void ContentRulesWidget::setFilters(const anime::GenreRules& rules,
+                                    const std::vector<anime::Type>& types) {
+  for (const auto type : anime::kTypes) {
+    const auto state = std::ranges::contains(types, type) ? State::Excluded : State::None;
+    m_typeStates[type] = state;
+    updateChip(m_typeButtons.value(type), state);
+  }
+
   m_states.clear();
   for (const auto& genre : rules.required) m_states[QString::fromStdString(genre)] = State::Required;
   for (const auto& genre : rules.excluded) m_states[QString::fromStdString(genre)] = State::Excluded;
   reload();
 }
 
-void GenreRulesWidget::reload() {
+void ContentRulesWidget::reload() {
   for (const auto chip : std::as_const(m_buttons)) {
     m_chips->removeWidget(chip);
     chip->deleteLater();
@@ -231,7 +284,7 @@ void GenreRulesWidget::reload() {
     const auto chip = new QToolButton(parent);
     chip->setObjectName("genreChip");
     chip->setCursor(Qt::PointingHandCursor);
-    chip->setProperty("genre", genre);
+    chip->setProperty("label", genre);
     updateChip(chip, m_states.value(genre));
     m_chips->addWidget(chip);
     m_buttons[genre] = chip;
@@ -252,17 +305,17 @@ void GenreRulesWidget::reload() {
 
 // The menu keeps to the chips: its button already says when the rules differ from the
 // defaults, and the way back only shows up then.
-void GenreRulesWidget::setTemporary(const bool temporary) {
+void ContentRulesWidget::setTemporary(const bool temporary) {
   m_labelHint->setVisible(!temporary);
-  m_buttonDefaults->setVisible(temporary && contentFilter().genreRulesChanged());
+  m_buttonDefaults->setVisible(temporary && contentFilter().filtersChanged());
 }
 
-void GenreRulesWidget::resizeEvent(QResizeEvent* event) {
+void ContentRulesWidget::resizeEvent(QResizeEvent* event) {
   QWidget::resizeEvent(event);
   fitHeight();
 }
 
-void GenreRulesWidget::fitHeight() {
+void ContentRulesWidget::fitHeight() {
   constexpr int kMaxRows = 6;
   // From this widget's own width: the scroll area is laid out after this runs, so its viewport
   // still has the old width and the chips seemed to need more rows than they do.
@@ -284,9 +337,9 @@ void GenreRulesWidget::fitHeight() {
   }
 }
 
-void GenreRulesWidget::updateChip(QToolButton* chip, const State state) const {
+void ContentRulesWidget::updateChip(QToolButton* chip, const State state) const {
   // A button takes "&" for a shortcut marker, so a name with one is doubled to keep it
-  const auto genre = chip->property("genre").toString().replace(u'&', u"&&"_s);
+  const auto genre = chip->property("label").toString().replace(u'&', u"&&"_s);
   auto font = chip->font();
   font.setStrikeOut(state == State::Excluded);
   chip->setFont(font);
@@ -311,9 +364,9 @@ void GenreRulesWidget::updateChip(QToolButton* chip, const State state) const {
   chip->style()->polish(chip);
 }
 
-QMenu* createGenresMenu(QWidget* parent) {
+QMenu* createFiltersMenu(QWidget* parent) {
   const auto menu = new QMenu(parent);
-  const auto widget = new GenreRulesWidget(menu);
+  const auto widget = new ContentRulesWidget(menu);
   // Without a width, the chips would line up in one row as wide as the screen. It follows the
   // font, as a fixed one cut the hint short at larger sizes.
   widget->setFixedWidth(widget->fontMetrics().averageCharWidth() * 56);
@@ -323,31 +376,35 @@ QMenu* createGenresMenu(QWidget* parent) {
 
   // Another page or the settings may have changed the rules since the menu was last open
   QObject::connect(menu, &QMenu::aboutToShow, widget, [widget]() {
-    widget->setRules(contentFilter().genreRules());
+    widget->setFilters(contentFilter().genreRules(), contentFilter().hiddenTypes());
     widget->setTemporary(true);
     // The menu asks for one height and does not follow the wrapping, so it is given the height
-    // the chips need at this width
+    // the chips need at this width. The size hint guessed the width of the type chips before they
+    // had one and left a gap under them.
     widget->fitHeight();
-    widget->setFixedHeight(widget->sizeHint().height());
+    widget->setFixedHeight(widget->heightForWidth(widget->width()));
   });
-  QObject::connect(widget, &GenreRulesWidget::rulesChanged, widget, [widget]() {
-    contentFilter().setGenreRules(widget->rules());
+  QObject::connect(widget, &ContentRulesWidget::rulesChanged, widget, [widget]() {
+    contentFilter().setFilters(widget->rules(), widget->hiddenTypes());
     widget->setTemporary(true);
   });
-  QObject::connect(widget, &GenreRulesWidget::defaultsRequested, widget, [widget]() {
-    contentFilter().setGenreRules(contentFilter().defaultGenreRules());
-    widget->setRules(contentFilter().genreRules());
+  QObject::connect(widget, &ContentRulesWidget::defaultsRequested, widget, [widget]() {
+    contentFilter().setFilters(contentFilter().defaultGenreRules(),
+                               contentFilter().defaultHiddenTypes());
+    widget->setFilters(contentFilter().genreRules(), contentFilter().hiddenTypes());
     widget->setTemporary(true);
   });
 
   return menu;
 }
 
-QString genresButtonText(const anime::GenreRules& rules) {
-  const auto count = rules.required.size() + rules.excluded.size();
-  auto text = count > 0 ? QObject::tr("Genres (%1)").arg(count) : QObject::tr("Genres");
+QString filtersButtonText() {
+  const auto& rules = contentFilter().genreRules();
+  const auto count =
+      contentFilter().hiddenTypes().size() + rules.required.size() + rules.excluded.size();
+  auto text = count > 0 ? QObject::tr("Filters (%1)").arg(count) : QObject::tr("Filters");
   // A dot says the rules are changed for now, away from the ones in the settings
-  if (contentFilter().genreRulesChanged()) text += u" •"_s;
+  if (contentFilter().filtersChanged()) text += u" •"_s;
   return text;
 }
 

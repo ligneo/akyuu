@@ -37,4 +37,39 @@ bool matchesGenreRules(const std::vector<std::string>& genres, const GenreRules&
   return true;
 }
 
+bool matchesTypes(const Type type, const std::vector<Type>& hidden) {
+  return type == Type::Unknown || !std::ranges::contains(hidden, type);
+}
+
+std::string_view typeSlug(const Type type) {
+  switch (type) {
+    case Type::Tv: return "tv";
+    case Type::Ova: return "ova";
+    case Type::Movie: return "movie";
+    case Type::Special: return "special";
+    case Type::Ona: return "ona";
+    case Type::Music: return "music";
+    case Type::Unknown: break;
+  }
+  return "";
+}
+
+std::vector<Type> typesFromSlugs(const std::vector<std::string>& slugs) {
+  std::vector<Type> types;
+  for (const auto& slug : slugs) {
+    for (const auto type : kTypes) {
+      if (typeSlug(type) == slug && !std::ranges::contains(types, type)) types.push_back(type);
+    }
+  }
+  return types;
+}
+
+std::vector<std::string> slugsFromTypes(const std::vector<Type>& types) {
+  std::vector<std::string> slugs;
+  for (const auto type : types) {
+    if (type != Type::Unknown) slugs.emplace_back(typeSlug(type));
+  }
+  return slugs;
+}
+
 }  // namespace anime

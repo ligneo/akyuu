@@ -19,7 +19,10 @@
 #pragma once
 
 #include <string>
+#include <string_view>
 #include <vector>
+
+#include "media/anime.hpp"
 
 namespace anime {
 
@@ -36,5 +39,16 @@ struct GenreRules {
 // A title is left out when it has an excluded genre, or when some genres are required and it has
 // none of them.
 bool matchesGenreRules(const std::vector<std::string>& genres, const GenreRules& rules);
+
+// Types are only shown or hidden: a title has one type, so requiring one is the same as hiding
+// the others. A title of unknown type has no chip to hide it with and always stays.
+bool matchesTypes(Type type, const std::vector<Type>& hidden);
+
+// The names kept in the settings file. The labels on the chips may change, these do not.
+std::string_view typeSlug(Type type);
+// Unknown names, duplicates and the unknown type itself are left out, so a hand-edited or damaged
+// file cannot hide what it does not name.
+std::vector<Type> typesFromSlugs(const std::vector<std::string>& slugs);
+std::vector<std::string> slugsFromTypes(const std::vector<Type>& types);
 
 }  // namespace anime

@@ -26,7 +26,7 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 
-#include "gui/common/genre_rules_widget.hpp"
+#include "gui/common/content_rules_widget.hpp"
 #include "gui/utils/content_filter.hpp"
 
 namespace gui {
@@ -35,7 +35,7 @@ ContentPage::ContentPage(QWidget* parent)
     : SettingsPage(parent),
       m_groupAdult(new QButtonGroup(this)),
       m_labelAdult(new QLabel(this)),
-      m_genres(new GenreRulesWidget(this)) {
+      m_genres(new ContentRulesWidget(this)) {
   const auto layout = new QVBoxLayout(this);
 
   // Adult titles
@@ -78,9 +78,9 @@ ContentPage::ContentPage(QWidget* parent)
     layout->addWidget(group);
   }
 
-  // Genres
+  // Types and genres
   {
-    const auto group = new QGroupBox(tr("Genres"), this);
+    const auto group = new QGroupBox(tr("Types and genres"), this);
     const auto groupLayout = new QVBoxLayout(group);
     groupLayout->setContentsMargins(0, 0, 0, 0);
     groupLayout->addWidget(m_genres);
@@ -88,7 +88,7 @@ ContentPage::ContentPage(QWidget* parent)
   }
 
   const auto note = new QLabel(
-      tr("These are the defaults for Seasons and Search. The Genres button and the View menu "
+      tr("These are the defaults for Seasons and Search. The Filters button and the View menu "
          "change them until Akyuu is closed. Your anime list always shows everything."),
       this);
   note->setWordWrap(true);
@@ -98,24 +98,26 @@ ContentPage::ContentPage(QWidget* parent)
   layout->addStretch();
 }
 
-// The page shows and saves the defaults, not what the Genres button or the View menu changed for
+// The page shows and saves the defaults, not what the Filters button or the View menu changed for
 // now. Saving applies them at once as well, so the change is seen without a restart.
 void ContentPage::load() {
   m_groupAdult->button(static_cast<int>(contentFilter().defaultAdultTitles()))->setChecked(true);
   updateDescription();
-  m_genres->setRules(contentFilter().defaultGenreRules());
+  m_genres->setFilters(contentFilter().defaultGenreRules(), contentFilter().defaultHiddenTypes());
 }
 
 void ContentPage::save() {
   const auto mode = static_cast<akyuu::AdultTitles>(m_groupAdult->checkedId());
   const auto rules = m_genres->rules();
-  // Unchanged defaults leave what was changed for now alone
+  const auto types = m_genres->hiddenTypes();
+  // Unchanged defaults leave what was changed for now alone. The widget lists hidden types in the
+  // order of the chips, as the settings do.
   const auto defaults = contentFilter().defaultGenreRules();
   if (mode == contentFilter().defaultAdultTitles() && rules.required == defaults.required &&
-      rules.excluded == defaults.excluded) {
+      rules.excluded == defaults.excluded && types == contentFilter().defaultHiddenTypes()) {
     return;
   }
-  contentFilter().setDefaults(mode, rules);
+  contentFilter().setDefaults(mode, rules, types);
 }
 
 void ContentPage::updateDescription() {

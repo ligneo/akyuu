@@ -25,9 +25,9 @@ class QLabel;
 
 namespace gui {
 
-class GenreRulesWidget;
+class ContentRulesWidget;
 
-// Adult titles and genres for the Seasons and Search pages (issue #12)
+// Adult titles, types and genres for the Seasons and Search pages (issue #12)
 class ContentPage final : public SettingsPage {
   Q_OBJECT
   Q_DISABLE_COPY_MOVE(ContentPage)
@@ -44,7 +44,7 @@ private:
 
   QButtonGroup* m_groupAdult = nullptr;
   QLabel* m_labelAdult = nullptr;
-  GenreRulesWidget* m_genres = nullptr;
+  ContentRulesWidget* m_genres = nullptr;
 };
 
 }  // namespace gui
