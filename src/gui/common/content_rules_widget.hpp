@@ -21,8 +21,6 @@
 #include <QMap>
 #include <QWidget>
 
-#include <vector>
-
 #include "media/genre_rules.hpp"
 
 class QLabel;
@@ -34,9 +32,8 @@ class QToolButton;
 
 namespace gui {
 
-// One chip per type above one chip per genre. A click on a type hides it and a second shows it
-// again: a title has a single type, so there is nothing to require. A click on a genre requires
-// it, a second click excludes it and a third leaves it alone again.
+// One chip per type above one chip per genre. A click requires the type or genre, a second click
+// excludes it and a third leaves it alone again.
 class ContentRulesWidget final : public QWidget {
   Q_OBJECT
   Q_DISABLE_COPY_MOVE(ContentRulesWidget)
@@ -46,8 +43,8 @@ public:
   ~ContentRulesWidget() override = default;
 
   anime::GenreRules rules() const;
-  std::vector<anime::Type> hiddenTypes() const;
-  void setFilters(const anime::GenreRules& rules, const std::vector<anime::Type>& types);
+  anime::TypeRules typeRules() const;
+  void setFilters(const anime::GenreRules& rules, const anime::TypeRules& types);
 
   // The genres come from the titles Akyuu knows, which grow with every season or search
   void reload();
@@ -72,6 +69,8 @@ private:
     Excluded,
   };
 
+  static State nextState(State state);
+  QToolButton* createChip(QWidget* parent, const QString& label) const;
   void updateChip(QToolButton* chip, State state) const;
 
   QMap<anime::Type, State> m_typeStates;
@@ -89,7 +88,7 @@ private:
 // for the next one.
 QMenu* createFiltersMenu(QWidget* parent);
 
-// "Filters" with the number of hidden types and of required or excluded genres, so that a rule
+// "Filters" with the number of types and genres that are required or excluded, so that a rule
 // left on is not forgotten
 QString filtersButtonText();
 

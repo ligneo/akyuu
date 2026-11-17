@@ -114,7 +114,8 @@ public:
   bool hasAdultTitles() const;
   std::vector<std::string> requiredGenres() const;
   std::vector<std::string> excludedGenres() const;
-  std::vector<anime::Type> hiddenTypes() const;
+  std::vector<anime::Type> requiredTypes() const;
+  std::vector<anime::Type> excludedTypes() const;
   bool streamingMediaEnabled() const;
   bool sharingEnabled() const;
   bool httpShareEnabled() const;
@@ -205,7 +206,8 @@ public:
   void setAdultTitles(const AdultTitles mode) const;
   void setRequiredGenres(std::vector<std::string> genres) const;
   void setExcludedGenres(std::vector<std::string> genres) const;
-  void setHiddenTypes(const std::vector<anime::Type>& types) const;
+  void setRequiredTypes(const std::vector<anime::Type>& types) const;
+  void setExcludedTypes(const std::vector<anime::Type>& types) const;
   void setStreamingMediaEnabled(const bool enabled) const;
   void setSharingEnabled(const bool enabled) const;
   void setHttpShareEnabled(const bool enabled) const;

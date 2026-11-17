@@ -37,8 +37,14 @@ bool matchesGenreRules(const std::vector<std::string>& genres, const GenreRules&
   return true;
 }
 
-bool matchesTypes(const Type type, const std::vector<Type>& hidden) {
-  return type == Type::Unknown || !std::ranges::contains(hidden, type);
+bool TypeRules::empty() const {
+  return required.empty() && excluded.empty();
+}
+
+bool matchesTypeRules(const Type type, const TypeRules& rules) {
+  if (std::ranges::contains(rules.excluded, type)) return false;
+  if (!rules.required.empty() && !std::ranges::contains(rules.required, type)) return false;
+  return true;
 }
 
 std::string_view typeSlug(const Type type) {

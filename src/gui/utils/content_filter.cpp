@@ -46,7 +46,7 @@ ContentFilter::ContentFilter() {
 
   m_adultTitles = defaultAdultTitles();
   m_genreRules = defaultGenreRules();
-  m_hiddenTypes = defaultHiddenTypes();
+  m_typeRules = defaultTypeRules();
 }
 
 namespace {
@@ -62,6 +62,10 @@ bool sameTypes(const std::vector<anime::Type>& a, const std::vector<anime::Type>
   });
 }
 
+bool sameTypeRules(const anime::TypeRules& a, const anime::TypeRules& b) {
+  return sameTypes(a.required, b.required) && sameTypes(a.excluded, b.excluded);
+}
+
 }  // namespace
 
 akyuu::AdultTitles ContentFilter::adultTitles() const {
@@ -72,8 +76,8 @@ const anime::GenreRules& ContentFilter::genreRules() const {
   return m_genreRules;
 }
 
-const std::vector<anime::Type>& ContentFilter::hiddenTypes() const {
-  return m_hiddenTypes;
+const anime::TypeRules& ContentFilter::typeRules() const {
+  return m_typeRules;
 }
 
 void ContentFilter::setAdultTitles(const akyuu::AdultTitles mode) {
@@ -88,15 +92,10 @@ void ContentFilter::setGenreRules(const anime::GenreRules& rules) {
   emit changed();
 }
 
-void ContentFilter::setHiddenTypes(const std::vector<anime::Type>& types) {
-  setFilters(m_genreRules, types);
-}
-
-void ContentFilter::setFilters(const anime::GenreRules& rules,
-                               const std::vector<anime::Type>& types) {
-  if (sameRules(m_genreRules, rules) && sameTypes(m_hiddenTypes, types)) return;
-  m_genreRules = rules;
-  m_hiddenTypes = types;
+void ContentFilter::setFilters(const anime::GenreRules& genres, const anime::TypeRules& types) {
+  if (sameRules(m_genreRules, genres) && sameTypeRules(m_typeRules, types)) return;
+  m_genreRules = genres;
+  m_typeRules = types;
   emit changed();
 }
 
@@ -111,19 +110,23 @@ anime::GenreRules ContentFilter::defaultGenreRules() const {
   };
 }
 
-std::vector<anime::Type> ContentFilter::defaultHiddenTypes() const {
-  return akyuu::settings.hiddenTypes();
+anime::TypeRules ContentFilter::defaultTypeRules() const {
+  return {
+      .required = akyuu::settings.requiredTypes(),
+      .excluded = akyuu::settings.excludedTypes(),
+  };
 }
 
-void ContentFilter::setDefaults(const akyuu::AdultTitles mode, const anime::GenreRules& rules,
-                                const std::vector<anime::Type>& types) {
+void ContentFilter::setDefaults(const akyuu::AdultTitles mode, const anime::GenreRules& genres,
+                                const anime::TypeRules& types) {
   akyuu::settings.setAdultTitles(mode);
-  akyuu::settings.setRequiredGenres(rules.required);
-  akyuu::settings.setExcludedGenres(rules.excluded);
-  akyuu::settings.setHiddenTypes(types);
+  akyuu::settings.setRequiredGenres(genres.required);
+  akyuu::settings.setExcludedGenres(genres.excluded);
+  akyuu::settings.setRequiredTypes(types.required);
+  akyuu::settings.setExcludedTypes(types.excluded);
   m_adultTitles = mode;
-  m_genreRules = rules;
-  m_hiddenTypes = types;
+  m_genreRules = genres;
+  m_typeRules = types;
   emit changed();
 }
 
@@ -133,19 +136,19 @@ bool ContentFilter::adultTitlesChanged() const {
 
 bool ContentFilter::filtersChanged() const {
   return !sameRules(m_genreRules, defaultGenreRules()) ||
-         !sameTypes(m_hiddenTypes, defaultHiddenTypes());
+         !sameTypeRules(m_typeRules, defaultTypeRules());
 }
 
 void ContentFilter::resetToDefaults() {
   m_adultTitles = defaultAdultTitles();
   m_genreRules = defaultGenreRules();
-  m_hiddenTypes = defaultHiddenTypes();
+  m_typeRules = defaultTypeRules();
   emit changed();
 }
 
 bool ContentFilter::accepts(const Anime& anime) const {
   if (m_adultTitles == akyuu::AdultTitles::Hide && anime::isNsfw(anime)) return false;
-  if (!anime::matchesTypes(anime.type, m_hiddenTypes)) return false;
+  if (!anime::matchesTypeRules(anime.type, m_typeRules)) return false;
   return anime::matchesGenreRules(anime.genres, m_genreRules);
 }
 

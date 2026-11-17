@@ -461,8 +461,12 @@ std::vector<std::string> Settings::excludedGenres() const {
   return toStrings(value("content.excludedGenres"));
 }
 
-std::vector<anime::Type> Settings::hiddenTypes() const {
-  return anime::typesFromSlugs(toStrings(value("content.hiddenTypes")));
+std::vector<anime::Type> Settings::requiredTypes() const {
+  return anime::typesFromSlugs(toStrings(value("content.requiredTypes")));
+}
+
+std::vector<anime::Type> Settings::excludedTypes() const {
+  return anime::typesFromSlugs(toStrings(value("content.excludedTypes")));
 }
 
 std::vector<std::string> Settings::disabledStreamingProviders() const {
@@ -819,8 +823,12 @@ void Settings::setExcludedGenres(std::vector<std::string> genres) const {
   setValue("content.excludedGenres", fromStrings(genres));
 }
 
-void Settings::setHiddenTypes(const std::vector<anime::Type>& types) const {
-  setValue("content.hiddenTypes", fromStrings(anime::slugsFromTypes(types)));
+void Settings::setRequiredTypes(const std::vector<anime::Type>& types) const {
+  setValue("content.requiredTypes", fromStrings(anime::slugsFromTypes(types)));
+}
+
+void Settings::setExcludedTypes(const std::vector<anime::Type>& types) const {
+  setValue("content.excludedTypes", fromStrings(anime::slugsFromTypes(types)));
 }
 
 void Settings::setStreamingMediaEnabled(const bool enabled) const {

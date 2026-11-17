@@ -40,9 +40,18 @@ struct GenreRules {
 // none of them.
 bool matchesGenreRules(const std::vector<std::string>& genres, const GenreRules& rules);
 
-// Types are only shown or hidden: a title has one type, so requiring one is the same as hiding
-// the others. A title of unknown type has no chip to hide it with and always stays.
-bool matchesTypes(Type type, const std::vector<Type>& hidden);
+// Types follow the same three states as genres, so that "only movies" is one click rather than
+// hiding every other type. A title has a single type: it is left out when its type is excluded,
+// or when some types are required and its type is not one of them. A title of unknown type is
+// never excluded, but it is not one of the required types either.
+struct TypeRules {
+  std::vector<Type> required;
+  std::vector<Type> excluded;
+
+  bool empty() const;
+};
+
+bool matchesTypeRules(Type type, const TypeRules& rules);
 
 // The names kept in the settings file. The labels on the chips may change, these do not.
 std::string_view typeSlug(Type type);

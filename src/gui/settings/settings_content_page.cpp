@@ -103,18 +103,20 @@ ContentPage::ContentPage(QWidget* parent)
 void ContentPage::load() {
   m_groupAdult->button(static_cast<int>(contentFilter().defaultAdultTitles()))->setChecked(true);
   updateDescription();
-  m_genres->setFilters(contentFilter().defaultGenreRules(), contentFilter().defaultHiddenTypes());
+  m_genres->setFilters(contentFilter().defaultGenreRules(), contentFilter().defaultTypeRules());
 }
 
 void ContentPage::save() {
   const auto mode = static_cast<akyuu::AdultTitles>(m_groupAdult->checkedId());
   const auto rules = m_genres->rules();
-  const auto types = m_genres->hiddenTypes();
-  // Unchanged defaults leave what was changed for now alone. The widget lists hidden types in the
-  // order of the chips, as the settings do.
+  const auto types = m_genres->typeRules();
+  // Unchanged defaults leave what was changed for now alone. The widget lists types in the order
+  // of the chips, as the settings do.
   const auto defaults = contentFilter().defaultGenreRules();
+  const auto defaultTypes = contentFilter().defaultTypeRules();
   if (mode == contentFilter().defaultAdultTitles() && rules.required == defaults.required &&
-      rules.excluded == defaults.excluded && types == contentFilter().defaultHiddenTypes()) {
+      rules.excluded == defaults.excluded && types.required == defaultTypes.required &&
+      types.excluded == defaultTypes.excluded) {
     return;
   }
   contentFilter().setDefaults(mode, rules, types);

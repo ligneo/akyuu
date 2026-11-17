@@ -29,8 +29,8 @@ class QMenu;
 
 namespace gui {
 
-// The Seasons and Search pages share one set of content filters: what to do with adult titles,
-// which types to hide and which genres to require or exclude. The settings hold the defaults,
+// The Seasons and Search pages share one set of content filters: what to do with adult titles
+// and which types and genres to require or exclude. The settings hold the defaults,
 // which Akyuu starts with. The Filters button and the View menu change the filters in use until
 // Akyuu is closed:
 // a look at "only Sports" should not quietly narrow every season from then on, and an adult
@@ -45,19 +45,18 @@ public:
   // In use, possibly changed for now
   akyuu::AdultTitles adultTitles() const;
   const anime::GenreRules& genreRules() const;
-  const std::vector<anime::Type>& hiddenTypes() const;
+  const anime::TypeRules& typeRules() const;
   void setAdultTitles(akyuu::AdultTitles mode);
   void setGenreRules(const anime::GenreRules& rules);
-  void setHiddenTypes(const std::vector<anime::Type>& types);
   // Both at once, so that the pages filter once
-  void setFilters(const anime::GenreRules& rules, const std::vector<anime::Type>& types);
+  void setFilters(const anime::GenreRules& genres, const anime::TypeRules& types);
 
   // Kept in the settings. Setting them applies them at once as well.
   akyuu::AdultTitles defaultAdultTitles() const;
   anime::GenreRules defaultGenreRules() const;
-  std::vector<anime::Type> defaultHiddenTypes() const;
-  void setDefaults(akyuu::AdultTitles mode, const anime::GenreRules& rules,
-                   const std::vector<anime::Type>& types);
+  anime::TypeRules defaultTypeRules() const;
+  void setDefaults(akyuu::AdultTitles mode, const anime::GenreRules& genres,
+                   const anime::TypeRules& types);
 
   bool adultTitlesChanged() const;
   // The types or the genres, which share the Filters button
@@ -80,7 +79,7 @@ private:
 
   akyuu::AdultTitles m_adultTitles = akyuu::AdultTitles::Hide;
   anime::GenreRules m_genreRules;
-  std::vector<anime::Type> m_hiddenTypes;
+  anime::TypeRules m_typeRules;
   // A cover that was clicked stays revealed until Akyuu is closed
   QSet<int> m_revealed;
 };

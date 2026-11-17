@@ -64,17 +64,31 @@ int main() {
           "a required genre without the excluded one should stay");
 
   using anime::Type;
-  using anime::matchesTypes;
+  using anime::TypeRules;
+  using anime::matchesTypeRules;
   using anime::slugsFromTypes;
   using anime::typesFromSlugs;
 
-  require(matchesTypes(Type::Movie, {}), "no hidden types should keep every title");
+  require(TypeRules{}.empty(), "no type rules should be empty");
+  require(matchesTypeRules(Type::Movie, {}), "no type rules should keep every title");
+  require(matchesTypeRules(Type::Unknown, {}), "no type rules should keep an unknown type");
+
   const std::vector<Type> noMovies{Type::Movie};
-  require(!matchesTypes(Type::Movie, noMovies), "a hidden type should hide the title");
-  require(matchesTypes(Type::Tv, noMovies), "other types should stay");
-  require(matchesTypes(Type::Unknown, {Type::Unknown}), "an unknown type has no chip to hide it");
+  const TypeRules hideMovies{.excluded = noMovies};
+  require(!matchesTypeRules(Type::Movie, hideMovies), "an excluded type should hide the title");
+  require(matchesTypeRules(Type::Tv, hideMovies), "other types should stay");
   std::vector<Type> allTypes{anime::kTypes.begin(), anime::kTypes.end()};
-  require(matchesTypes(Type::Unknown, allTypes), "an unknown type should stay with all hidden");
+  require(matchesTypeRules(Type::Unknown, {.excluded = allTypes}),
+          "an unknown type should stay with every type excluded");
+
+  const TypeRules onlyMovies{.required = {Type::Movie}};
+  require(matchesTypeRules(Type::Movie, onlyMovies), "a required type should stay");
+  require(!matchesTypeRules(Type::Tv, onlyMovies), "only the required types should stay");
+  require(!matchesTypeRules(Type::Unknown, onlyMovies), "an unknown type is not a required one");
+  const TypeRules moviesOrOvas{.required = {Type::Movie, Type::Ova}};
+  require(matchesTypeRules(Type::Ova, moviesOrOvas), "any of the required types should do");
+  require(!matchesTypeRules(Type::Movie, {.required = {Type::Movie}, .excluded = {Type::Movie}}),
+          "exclusion should win over requirement");
 
   require(typesFromSlugs(slugsFromTypes(allTypes)) == allTypes,
           "every type should come back from its name");
