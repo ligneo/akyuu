@@ -44,6 +44,13 @@ enum Opcode {
 // Discord listens on one of ten sockets, in the runtime directory or one of the sandbox folders
 // a Flatpak or Snap install uses.
 QStringList socketPaths() {
+  QStringList paths;
+
+#ifdef Q_OS_WIN
+  // On Windows they are named pipes, \\.\pipe\discord-ipc-N. QLocalSocket adds that prefix
+  // to a bare name, so a full path here would point at a pipe that never exists.
+  for (int i = 0; i < 10; ++i) paths.append(u"discord-ipc-%1"_s.arg(i));
+#else
   auto runtime = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
 
   if (runtime.isEmpty()) runtime = QDir::tempPath();
@@ -52,15 +59,17 @@ QStringList socketPaths() {
       runtime,
       u"%1/app/com.discordapp.Discord"_s.arg(runtime),
       u"%1/snap.discord"_s.arg(runtime),
+      // The Vesktop Flatpak keeps its arRPC socket in the sandbox's own runtime directory,
+      // which Flatpak shows to the host here.
+      u"%1/.flatpak/dev.vencord.Vesktop/xdg-run"_s.arg(runtime),
   };
-
-  QStringList paths;
 
   for (const auto& directory : directories) {
     for (int i = 0; i < 10; ++i) {
       paths.append(u"%1/discord-ipc-%2"_s.arg(directory).arg(i));
     }
   }
+#endif
 
   return paths;
 }
