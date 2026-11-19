@@ -133,6 +133,7 @@ public:
   bool discordTimeEnabled() const;
   bool discordUsernameEnabled() const;
   bool discordGroupEnabled() const;
+  bool discordAnimeInStatusEnabled() const;
   bool syncEnabled() const;
   bool syncOnStartup() const;
   bool syncGoToNowPlayingNotRecognized() const;
@@ -223,6 +224,7 @@ public:
   void setDiscordTimeEnabled(const bool enabled) const;
   void setDiscordUsernameEnabled(const bool enabled) const;
   void setDiscordGroupEnabled(const bool enabled) const;
+  void setDiscordAnimeInStatusEnabled(const bool enabled) const;
   void setSyncEnabled(const bool enabled) const;
   void setSyncOnStartup(const bool enabled) const;
   void setSyncGoToNowPlayingNotRecognized(const bool enabled) const;

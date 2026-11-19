@@ -33,7 +33,9 @@ DiscordPage::DiscordPage(QWidget* parent)
       m_checkEnabled(new QCheckBox(tr("Update rich presence"), this)),
       m_checkTime(new QCheckBox(tr("Display elapsed time"), this)),
       m_checkUsername(new QCheckBox(tr("Display username in tooltip"), this)),
-      m_checkGroup(new QCheckBox(tr("Display episode release group"), this)) {
+      m_checkGroup(new QCheckBox(tr("Display episode release group"), this)),
+      m_checkAnimeInStatus(
+          new QCheckBox(tr("Show the anime in my status instead of \"Playing Akyuu\""), this)) {
   const auto layout = new QVBoxLayout(this);
 
   const auto group = new QGroupBox(tr("Options"), this);
@@ -43,6 +45,7 @@ DiscordPage::DiscordPage(QWidget* parent)
   groupLayout->addWidget(m_checkTime);
   groupLayout->addWidget(m_checkUsername);
   groupLayout->addWidget(m_checkGroup);
+  groupLayout->addWidget(m_checkAnimeInStatus);
 
   const auto note = new QLabel(tr("Note: Requires using the Discord desktop client."), group);
   note->setWordWrap(true);
@@ -54,6 +57,7 @@ DiscordPage::DiscordPage(QWidget* parent)
   connect(m_checkEnabled, &QCheckBox::toggled, m_checkTime, &QWidget::setEnabled);
   connect(m_checkEnabled, &QCheckBox::toggled, m_checkUsername, &QWidget::setEnabled);
   connect(m_checkEnabled, &QCheckBox::toggled, m_checkGroup, &QWidget::setEnabled);
+  connect(m_checkEnabled, &QCheckBox::toggled, m_checkAnimeInStatus, &QWidget::setEnabled);
 }
 
 void DiscordPage::load() {
@@ -61,9 +65,11 @@ void DiscordPage::load() {
   m_checkTime->setChecked(akyuu::settings.discordTimeEnabled());
   m_checkUsername->setChecked(akyuu::settings.discordUsernameEnabled());
   m_checkGroup->setChecked(akyuu::settings.discordGroupEnabled());
+  m_checkAnimeInStatus->setChecked(akyuu::settings.discordAnimeInStatusEnabled());
   m_checkTime->setEnabled(m_checkEnabled->isChecked());
   m_checkUsername->setEnabled(m_checkEnabled->isChecked());
   m_checkGroup->setEnabled(m_checkEnabled->isChecked());
+  m_checkAnimeInStatus->setEnabled(m_checkEnabled->isChecked());
 }
 
 void DiscordPage::save() {
@@ -71,6 +77,7 @@ void DiscordPage::save() {
   akyuu::settings.setDiscordTimeEnabled(m_checkTime->isChecked());
   akyuu::settings.setDiscordUsernameEnabled(m_checkUsername->isChecked());
   akyuu::settings.setDiscordGroupEnabled(m_checkGroup->isChecked());
+  akyuu::settings.setDiscordAnimeInStatusEnabled(m_checkAnimeInStatus->isChecked());
 
   share::discord()->applySettings();
 }

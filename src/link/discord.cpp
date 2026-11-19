@@ -152,6 +152,13 @@ void Discord::updatePresence(QString details, QString state, const QString& larg
   assets[u"small_text"_s] = smallText;
 
   QJsonObject activity;
+  if (akyuu::settings.discordAnimeInStatusEnabled()) {
+    // Activity type 3 is Watching, and status display type 2 puts `details` (the title) in the
+    // member list instead of the application name. See the activity object in Discord's
+    // gateway events documentation.
+    activity[u"type"_s] = 3;
+    activity[u"status_display_type"_s] = 2;
+  }
   activity[u"details"_s] = details;
   activity[u"state"_s] = state;
   activity[u"assets"_s] = assets;
