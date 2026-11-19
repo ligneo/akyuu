@@ -301,11 +301,6 @@ bool Settings::discordGroupEnabled() const {
   return value("sharing.discord.showGroup", true).toBool();
 }
 
-bool Settings::discordAnimeInStatusEnabled() const {
-  // Off by default, so the status line keeps reading "Playing Akyuu" until the user asks.
-  return value("sharing.discord.animeInStatus", false).toBool();
-}
-
 bool Settings::syncEnabled() const {
   return value("sync.enabled", true).toBool();
 }
@@ -894,10 +889,6 @@ void Settings::setDiscordUsernameEnabled(const bool enabled) const {
 
 void Settings::setDiscordGroupEnabled(const bool enabled) const {
   setValue("sharing.discord.showGroup", enabled);
-}
-
-void Settings::setDiscordAnimeInStatusEnabled(const bool enabled) const {
-  setValue("sharing.discord.animeInStatus", enabled);
 }
 
 void Settings::setSyncEnabled(const bool enabled) const {
