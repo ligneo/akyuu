@@ -119,7 +119,7 @@ void Discord::updatePresence(QString details, QString state, const QString& larg
                              const std::time_t timestamp, const bool force) {
   if (!force && !akyuu::settings.discordEnabled()) return;
 
-  // v1 cuts both lines at 64 characters; Discord turns down an activity with longer ones.
+  // Discord turns down an activity with longer lines
   constexpr qsizetype kLimit = 64;
   for (auto text : {&details, &state}) {
     if (text->size() > kLimit) *text = text->left(kLimit - 3) + u"..."_s;
@@ -151,11 +151,8 @@ void Discord::updatePresence(QString details, QString state, const QString& larg
   assets[u"small_image"_s] = services::serviceSlug(service);
   assets[u"small_text"_s] = smallText;
 
-  // Activity type 3 is Watching, and status display type 2 puts `details` (the title) in the
-  // member list, so it reads "Watching <title>" rather than "Playing Akyuu". Discord uses `name`
-  // for the header of the activity card; without it the header falls back to the application
-  // name and reads "Watching Akyuu". See the activity object in Discord's gateway events
-  // documentation.
+  // Type 3 is Watching. `name` heads the activity card in place of the application name, and
+  // status display type 2 puts `details` under the user's name in the member list.
   QJsonObject activity;
   activity[u"name"_s] = details;
   activity[u"type"_s] = 3;

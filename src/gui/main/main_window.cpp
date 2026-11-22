@@ -91,7 +91,7 @@ namespace gui {
 MainWindow::MainWindow() : QMainWindow(), ui_(new Ui::MainWindow) {
   ui_->setupUi(this);
 
-  // v1 has a menu bar, so the menu button that stands in for it is not needed.
+  // The menu bar is always shown, so the button that stands in for it is not needed
   ui_->actionMenu->setVisible(false);
 
 #ifdef Q_OS_WINDOWS
@@ -144,9 +144,8 @@ void MainWindow::init() {
   initNowPlaying();
   updateTitle();
 
-  // v1 can synchronize the list as soon as it starts
   if (akyuu::settings.syncOnStartup()) synchronize();
-  // Newer anime relations come with the update check, as in v1
+  // Newer anime relations come with the update check
   if (akyuu::settings.appCheckForUpdates()) {
     checkForUpdates(true);
     track::recognition::updateRelations();
@@ -154,7 +153,7 @@ void MainWindow::init() {
 }
 
 void MainWindow::initShortcuts() {
-  // v1's keys for the main window. They work wherever the focus is, like v1's accelerators.
+  // These work wherever the focus is in the window
   const auto focusSearch = [this]() {
     if (!m_searchBox) return;
     m_searchBox->setFocus(Qt::ShortcutFocusReason);
@@ -170,7 +169,6 @@ void MainWindow::initShortcuts() {
           &QShortcut::activated, this, [this]() { m_navigationController->cycleListStatus(-1); });
 }
 
-// v1's "Announce current episode" submenu, in the same List menu
 void MainWindow::initShareMenu() {
   const auto menu = new QMenu(tr("Share current episode"), this);
   menu->addAction(u"Discord"_s, this, [this]() { announceCurrentEpisode(ShareChannel::Discord); });
@@ -182,14 +180,14 @@ void MainWindow::initShareMenu() {
   ui_->menuList->insertMenu(ui_->menuExport->menuAction(), menu);
   ui_->menuList->insertSeparator(ui_->menuExport->menuAction());
 
-  // Only something recognized can be shared, as in v1
+  // Only something recognized can be shared
   connect(ui_->menuList, &QMenu::aboutToShow, this, [menu]() {
     const auto episode = track::media::detection()->getCurrentEpisode();
     menu->setEnabled(episode && episode->animeId() != anime::kUnknownId);
   });
 }
 
-// Ctrl and Shift, because Ctrl alone with +, - and the digits edits the list, as in v1.
+// Ctrl and Shift, because Ctrl alone with +, - and the digits edits the list.
 //
 // Qt matches a shortcut both by the key as it is without Shift, with Shift among the modifiers,
 // and by what Shift types on it, without Shift (`QXkbCommon::possibleKeyCombinations`). So where
@@ -279,8 +277,7 @@ void MainWindow::initActions() {
   connect(ui_->actionSettings, &QAction::triggered, this, [this]() { SettingsDialog::show(this); });
   connect(ui_->actionLibraryFolders, &QAction::triggered, this,
           [this]() { SettingsDialog::show(this, SettingsPageId::Library); });
-  // Both actions pick the anime themselves, so a failure has to be said out loud. v1 shows a
-  // message box; v2 already reports playback this way.
+  // Both actions pick the anime themselves, so a failure has to be said out loud
   const auto playbackFailed = [this](const QString& text) {
     m_statusBarController->showMessage({
         .source = StatusBarController::Source::Playback,
@@ -340,7 +337,7 @@ void MainWindow::initActions() {
   ui_->actionToggleSharing->setChecked(akyuu::settings.sharingEnabled());
   connect(ui_->actionToggleSharing, &QAction::toggled, this, [](const bool checked) {
     akyuu::settings.setSharingEnabled(checked);
-    // Like v1, turning it back on does not repeat the current episode; the next one is shared.
+    // Turning it back on does not repeat the current episode; the next one is shared
     if (!checked) share::discord()->clearPresence();
   });
 
@@ -415,9 +412,8 @@ void MainWindow::shareEpisode(const std::optional<track::Episode>& episode) cons
     return;
   }
 
-  // v1 keeps entries marked private out of every sharing channel. Anything already shared is
-  // cleared first, so the previous episode is not left on display. Turning sharing off does the
-  // same.
+  // Private entries are never shared. Whatever is on display is cleared, so the previous episode
+  // does not linger there.
   const auto entry = anime::db.entry(episode->animeId());
   if ((entry && entry->is_private) || !akyuu::settings.sharingEnabled()) {
     share::discord()->clearPresence();
@@ -426,8 +422,8 @@ void MainWindow::shareEpisode(const std::optional<track::Episode>& episode) cons
 
   share::http::announce(*episode);
 
-  // As in v1, only HTTP hears about episodes that are not recognized. IRC and Discord are public,
-  // and the raw file name could be anything.
+  // Only HTTP hears about episodes that are not recognized. IRC and Discord are public, and the
+  // raw file name could be anything.
   if (episode->animeId() == anime::kUnknownId) {
     share::discord()->clearPresence();
     return;
@@ -444,18 +440,17 @@ void MainWindow::updateDiscordPresence(const track::Episode& episode, const bool
   const auto title = item ? QString::fromStdString(anime::preferredTitle(*item))
                           : QString::fromStdString(episode.element(anitomy::ElementKind::Title));
 
-  // The same lines as v1: "Episode 5/12 by Group", the group being optional.
+  // "Episode 5/12 by Group", the group being optional
   auto state = u"$if(%episode%,Episode %episode%$if(%total%,/%total%) )"_s;
   if (akyuu::settings.discordGroupEnabled()) state += u"$if(%group%,by %group%)"_s;
 
-  // v1 shares what is playing over Discord's rich presence.
   share::discord()->updatePresence(title, akyuu::replaceVariables(state, episode),
                                    item ? QString::fromStdString(item->image_url) : QString{},
                                    std::time(nullptr), force);
 }
 
-// v1's "Announce current episode" menu: shares on one channel on request, even when that channel
-// or sharing as a whole is turned off. Unlike v1 it still keeps private entries to itself.
+// Shares on one channel on request, even when that channel or sharing as a whole is turned off.
+// Private entries are still kept back.
 void MainWindow::announceCurrentEpisode(const ShareChannel channel) {
   const auto episode = track::media::detection()->getCurrentEpisode();
   if (!episode || episode->animeId() == anime::kUnknownId) return;
@@ -484,7 +479,7 @@ void MainWindow::announceCurrentEpisode(const ShareChannel channel) {
   }
 }
 
-// v1's `RefreshSearchText`: every page keeps its own text, and the box says what it does there.
+// Every page keeps its own text, and the box says what it does there
 void MainWindow::switchSearchText(MainWindowPage from, MainWindowPage to) {
   if (!m_searchBox) return;
 
@@ -500,7 +495,7 @@ void MainWindow::switchSearchText(MainWindowPage from, MainWindowPage to) {
     case MainWindowPage::Seasons:
       placeholder = tr("Filter list");
       break;
-    // v1 searches the service from the pages that have nothing to filter
+    // Pages that have nothing to filter search the service instead
     case MainWindowPage::Home:
     case MainWindowPage::History:
     case MainWindowPage::Profile:
@@ -692,8 +687,7 @@ void MainWindow::initStatusbar() {
   });
 }
 
-// v1 asks for a folder and names the file itself. A save dialog does the same job while letting
-// the name be changed, which is what a Linux user expects.
+// A save dialog rather than a folder picker, so the file name can be changed
 void MainWindow::exportList(const ExportFormat format) {
   const bool markdown = format == ExportFormat::Markdown;
 
@@ -872,7 +866,7 @@ void MainWindow::downloadUpdate(const akyuu::ReleaseAsset& asset, const QString&
   service->download(asset, tag, destination);
 }
 
-// v1 builds this menu from a setting, one `Name|URL` per line, with "-" for a separator.
+// Built from a setting, one `Name|URL` per line, with "-" for a separator
 void MainWindow::initExternalLinksMenu() {
   ui_->menuExternalLinks->clear();
 
@@ -893,7 +887,7 @@ void MainWindow::initExternalLinksMenu() {
   }
 }
 
-// v1 lists the user pages of all three services. Only the one being used is of any help here.
+// Only the service being used has user pages worth listing
 void MainWindow::initServicesMenu() {
   // Synchronize already lives in the List menu, so this one only carries the user pages.
   ui_->menuServices->clear();
@@ -933,7 +927,7 @@ void MainWindow::initServicesMenu() {
   }
 }
 
-// v1's View menu. The sidebar does the same job, but the menu is where the keyboard reaches it.
+// The sidebar does the same job, but the menu is where the keyboard reaches it
 void MainWindow::initViewMenu() {
   ui_->menuView->clear();
 
@@ -968,8 +962,7 @@ void MainWindow::initViewMenu() {
   action->setChecked(m_navigationWidget->isVisible());
 }
 
-// v1's `program/general/minimize`. Qt has no separate minimize event, so the state change is
-// what tells us.
+// Qt has no separate minimize event, so the state change is what tells us
 void MainWindow::changeEvent(QEvent* event) {
   if (event->type() == QEvent::WindowStateChange && isMinimized()) {
     if (akyuu::settings.appMinimizeToTray() && m_trayIcon && m_trayIcon->isVisible()) {
@@ -1012,7 +1005,7 @@ void MainWindow::initToolbar() {
     m_searchBox->setPlaceholderText(tr("Search"));
 
     // The search page runs the search itself; the other pages that search the service hand the
-    // text over to it, as in v1.
+    // text over to it.
     connect(m_searchBox, &QLineEdit::returnPressed, this, [this]() {
       const auto page = static_cast<MainWindowPage>(ui_->stackedWidget->currentIndex());
       if (page != MainWindowPage::Home && page != MainWindowPage::History &&
@@ -1035,7 +1028,6 @@ void MainWindow::initToolbar() {
       }());
     };
 
-    // v1 keeps the search box at the right end
     insertSpacer(before);
     ui_->toolbar->insertWidget(before, m_searchBox);
   }
@@ -1046,7 +1038,7 @@ void MainWindow::initTrayIcon() {
   menu->addAction(ui_->actionDisplayWindow);
   menu->setDefaultAction(ui_->actionDisplayWindow);
   menu->addSeparator();
-  // v1's tray menu reaches the same folders, service pages and links as the main one
+  // The same folders, service pages and links as the main menu
   menu->addMenu(ui_->menuLibraryFolders);
   menu->addMenu(ui_->menuServices);
   menu->addMenu(ui_->menuExternalLinks);
@@ -1103,7 +1095,7 @@ void MainWindow::initTrayIcon() {
 }
 
 void MainWindow::closeEvent(QCloseEvent* event) {
-  // v1's `program/general/close`: the window goes away but Akyuu keeps detecting.
+  // The window goes away but Akyuu keeps detecting
   if (akyuu::settings.appCloseToTray() && m_trayIcon && m_trayIcon->isVisible()) {
     hide();
     event->ignore();
