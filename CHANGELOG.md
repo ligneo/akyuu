@@ -5,6 +5,7 @@
 - The Discord activity card is headed with the title being watched, such as "Watching
   Re:CREATORS", instead of "Watching Akyuu" (#14). Thanks to @Recehan-Slayer for pointing it
   out.
+- Anime List in the sidebar no longer stays highlighted after another page is picked.
 
 ## 0.5.0
 

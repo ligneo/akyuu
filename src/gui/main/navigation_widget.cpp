@@ -164,6 +164,15 @@ void NavigationWidget::changeEvent(QEvent* event) {
   QTreeWidget::changeEvent(event);
 }
 
+// The delegate paints the parent of a hidden status item as selected, but the view repaints only
+// the items whose own state changed. Without this, Anime List stays highlighted next to the page
+// that was picked after it.
+void NavigationWidget::currentChanged(const QModelIndex& current, const QModelIndex& previous) {
+  QTreeWidget::currentChanged(current, previous);
+  if (previous.parent().isValid()) update(previous.parent());
+  if (current.parent().isValid()) update(current.parent());
+}
+
 void NavigationWidget::mouseMoveEvent(QMouseEvent* event) {
   auto cursor = Qt::CursorShape::ArrowCursor;
 

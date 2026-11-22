@@ -54,6 +54,7 @@ signals:
 
 protected:
   void changeEvent(QEvent* event) override;
+  void currentChanged(const QModelIndex& current, const QModelIndex& previous) override;
   void mouseMoveEvent(QMouseEvent* event) override;
 
 private:
