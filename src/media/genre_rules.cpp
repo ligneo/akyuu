@@ -49,13 +49,20 @@ bool matchesTypeRules(const Type type, const TypeRules& rules) {
 
 std::string_view typeSlug(const Type type) {
   switch (type) {
-    case Type::Tv: return "tv";
-    case Type::Ova: return "ova";
-    case Type::Movie: return "movie";
-    case Type::Special: return "special";
-    case Type::Ona: return "ona";
-    case Type::Music: return "music";
-    case Type::Unknown: break;
+    case Type::Tv:
+      return "tv";
+    case Type::Ova:
+      return "ova";
+    case Type::Movie:
+      return "movie";
+    case Type::Special:
+      return "special";
+    case Type::Ona:
+      return "ona";
+    case Type::Music:
+      return "music";
+    case Type::Unknown:
+      break;
   }
   return "";
 }

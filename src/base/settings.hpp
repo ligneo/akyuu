@@ -28,7 +28,9 @@ namespace base {
 class Settings {
 protected:
   virtual QString fileName() const = 0;
-  virtual bool isPrivate() const { return false; }
+  virtual bool isPrivate() const {
+    return false;
+  }
 
   QVariant value(QAnyStringView key) const;
   QVariant value(QAnyStringView key, const QVariant& defaultValue) const;

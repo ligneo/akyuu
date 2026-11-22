@@ -18,8 +18,6 @@
 
 #include "content_rules_widget.hpp"
 
-#include <algorithm>
-
 #include <QFrame>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -34,6 +32,7 @@
 #include <QToolButton>
 #include <QVBoxLayout>
 #include <QWidgetAction>
+#include <algorithm>
 
 #include "gui/utils/content_filter.hpp"
 #include "gui/utils/format.hpp"
@@ -55,16 +54,28 @@ public:
     while (const auto item = takeAt(0)) delete item;
   }
 
-  void addItem(QLayoutItem* item) override { m_items.push_back(item); }
-  int count() const override { return m_items.size(); }
-  QLayoutItem* itemAt(int index) const override { return m_items.value(index); }
+  void addItem(QLayoutItem* item) override {
+    m_items.push_back(item);
+  }
+  int count() const override {
+    return m_items.size();
+  }
+  QLayoutItem* itemAt(int index) const override {
+    return m_items.value(index);
+  }
   QLayoutItem* takeAt(int index) override {
     return index >= 0 && index < m_items.size() ? m_items.takeAt(index) : nullptr;
   }
 
-  Qt::Orientations expandingDirections() const override { return {}; }
-  bool hasHeightForWidth() const override { return true; }
-  int heightForWidth(int width) const override { return arrange({0, 0, width, 0}, true); }
+  Qt::Orientations expandingDirections() const override {
+    return {};
+  }
+  bool hasHeightForWidth() const override {
+    return true;
+  }
+  int heightForWidth(int width) const override {
+    return arrange({0, 0, width, 0}, true);
+  }
   // Wrapped at the width the layout has, or at a usual one before it has any
   QSize sizeHint() const override {
     const int width = geometry().width() > 0 ? geometry().width() : 400;
@@ -152,7 +163,8 @@ std::vector<std::string> toStrings(const QStringList& list) {
 
 ContentRulesWidget::ContentRulesWidget(QWidget* parent)
     : QWidget(parent),
-      m_labelEmpty(new QLabel(tr("Genres appear here once a season or a search is loaded."), this)) {
+      m_labelEmpty(
+          new QLabel(tr("Genres appear here once a season or a search is loaded."), this)) {
   setStyleSheet(chipStyle(palette()));
 
   const auto layout = new QVBoxLayout(this);
@@ -252,8 +264,7 @@ anime::TypeRules ContentRulesWidget::typeRules() const {
   return rules;
 }
 
-void ContentRulesWidget::setFilters(const anime::GenreRules& rules,
-                                    const anime::TypeRules& types) {
+void ContentRulesWidget::setFilters(const anime::GenreRules& rules, const anime::TypeRules& types) {
   for (const auto type : anime::kTypes) {
     const auto state = std::ranges::contains(types.excluded, type)   ? State::Excluded
                        : std::ranges::contains(types.required, type) ? State::Required
@@ -263,8 +274,10 @@ void ContentRulesWidget::setFilters(const anime::GenreRules& rules,
   }
 
   m_states.clear();
-  for (const auto& genre : rules.required) m_states[QString::fromStdString(genre)] = State::Required;
-  for (const auto& genre : rules.excluded) m_states[QString::fromStdString(genre)] = State::Excluded;
+  for (const auto& genre : rules.required)
+    m_states[QString::fromStdString(genre)] = State::Required;
+  for (const auto& genre : rules.excluded)
+    m_states[QString::fromStdString(genre)] = State::Excluded;
   reload();
 }
 
@@ -419,8 +432,8 @@ QMenu* createFiltersMenu(QWidget* parent) {
 QString filtersButtonText() {
   const auto& rules = contentFilter().genreRules();
   const auto& types = contentFilter().typeRules();
-  const auto count = types.required.size() + types.excluded.size() + rules.required.size() +
-                     rules.excluded.size();
+  const auto count =
+      types.required.size() + types.excluded.size() + rules.required.size() + rules.excluded.size();
   auto text = count > 0 ? QObject::tr("Filters (%1)").arg(count) : QObject::tr("Filters");
   // A dot says the rules are changed for now, away from the ones in the settings
   if (contentFilter().filtersChanged()) text += u" •"_s;

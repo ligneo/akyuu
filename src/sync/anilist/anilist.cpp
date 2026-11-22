@@ -157,24 +157,24 @@ void Service::fetchMalIdBatch(QList<int> remaining, QMap<int, int> found,
   }};
 
   post(data, [this, remaining, found, done](QRestReply& reply) mutable {
-                  if (isError(reply)) {
-                    handleError(*this, reply);
-                    done(std::nullopt);
-                    return;
-                  }
-                  const auto json = reply.readJson();
-                  if (!json) {
-                    handleError(*this, reply, "Could not parse media IDs.");
-                    done(std::nullopt);
-                    return;
-                  }
-                  for (const auto& value : (*json)["data"]["Page"]["media"].toArray()) {
-                    const auto media = value.toObject();
-                    const auto malId = media["idMal"].toInt();
-                    if (malId > 0) found[media["id"].toInt()] = malId;
-                  }
-                  fetchMalIdBatch(remaining, found, done);
-                });
+    if (isError(reply)) {
+      handleError(*this, reply);
+      done(std::nullopt);
+      return;
+    }
+    const auto json = reply.readJson();
+    if (!json) {
+      handleError(*this, reply, "Could not parse media IDs.");
+      done(std::nullopt);
+      return;
+    }
+    for (const auto& value : (*json)["data"]["Page"]["media"].toArray()) {
+      const auto media = value.toObject();
+      const auto malId = media["idMal"].toInt();
+      if (malId > 0) found[media["id"].toInt()] = malId;
+    }
+    fetchMalIdBatch(remaining, found, done);
+  });
 }
 
 void Service::search(const SearchParams& params, const int page) {

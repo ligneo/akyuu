@@ -29,12 +29,12 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 
+#include "akyuu/path.hpp"
+#include "akyuu/settings.hpp"
 #include "base/string.hpp"
 #include "gui/utils/image_provider.hpp"
 #include "gui/utils/widgets.hpp"
 #include "media/anime_history.hpp"
-#include "akyuu/path.hpp"
-#include "akyuu/settings.hpp"
 #include "track/feed_archive.hpp"
 
 namespace gui {

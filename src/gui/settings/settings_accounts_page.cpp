@@ -20,9 +20,9 @@
 
 #include <QCheckBox>
 #include <QComboBox>
+#include <QDesktopServices>
 #include <QDialog>
 #include <QDialogButtonBox>
-#include <QDesktopServices>
 #include <QFile>
 #include <QFormLayout>
 #include <QGroupBox>
@@ -112,10 +112,10 @@ bool acceptMyAnimeListPrivacyNotice(QWidget* parent) {
   dialog.setMinimumSize(560, 440);
 
   const auto layout = new QVBoxLayout(&dialog);
-  const auto introduction = new QLabel(
-      AccountsPage::tr("Review how Akyuu handles your information before continuing to "
-                       "MyAnimeList sign-in."),
-      &dialog);
+  const auto introduction =
+      new QLabel(AccountsPage::tr("Review how Akyuu handles your information before continuing to "
+                                  "MyAnimeList sign-in."),
+                 &dialog);
   introduction->setWordWrap(true);
   layout->addWidget(introduction);
 
@@ -125,8 +125,8 @@ bool acceptMyAnimeListPrivacyNotice(QWidget* parent) {
   layout->addWidget(policy, 1);
 
   const auto buttons = new QDialogButtonBox(&dialog);
-  const auto acceptButton = buttons->addButton(
-      AccountsPage::tr("Accept and continue"), QDialogButtonBox::AcceptRole);
+  const auto acceptButton =
+      buttons->addButton(AccountsPage::tr("Accept and continue"), QDialogButtonBox::AcceptRole);
   const auto cancelButton = buttons->addButton(QDialogButtonBox::Cancel);
   cancelButton->setDefault(true);
   acceptButton->setAutoDefault(false);

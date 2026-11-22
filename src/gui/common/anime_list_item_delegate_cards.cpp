@@ -116,8 +116,8 @@ void ListItemDelegateCards::paint(QPainter* painter, const QStyleOptionViewItem&
 
       if (blurred) {
         // Shrinking the poster to a few pixels and stretching it back leaves only its colors
-        const auto tiny = pixmap.copy(sourceRect).scaled(QSize{6, 9}, Qt::IgnoreAspectRatio,
-                                                         Qt::SmoothTransformation);
+        const auto tiny = pixmap.copy(sourceRect)
+                              .scaled(QSize{6, 9}, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
         painter->drawPixmap(posterRect, tiny.scaled(posterRect.size(), Qt::IgnoreAspectRatio,
                                                     Qt::SmoothTransformation));
       } else {

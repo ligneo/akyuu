@@ -130,8 +130,7 @@ void UpdateSession::tick() {
   // countdown, so that an episode opened and left paused is not taken as watched. For others,
   // being out of focus is our best guess for the media player not playing, if asked for.
   const auto* detection = media::detection();
-  paused_ = detection->isPlayerPaused() ||
-            (pauseWhenUnfocused_ && !detection->isPlayerFocused());
+  paused_ = detection->isPlayerPaused() || (pauseWhenUnfocused_ && !detection->isPlayerFocused());
   if (!paused_) elapsed_ += std::chrono::seconds{1};
   evaluate();
 }

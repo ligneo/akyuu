@@ -34,8 +34,7 @@ UpdateTarget updateTarget(const QString& kernel, const QString& architecture,
 
   if (target.platform == UpdatePlatform::Windows) target.format = PackageFormat::WindowsInstaller;
   if (target.platform == UpdatePlatform::MacOS) target.format = PackageFormat::MacDiskImage;
-  if (target.platform == UpdatePlatform::Linux &&
-      packageFormat == u"arch") {
+  if (target.platform == UpdatePlatform::Linux && packageFormat == u"arch") {
     target.format = PackageFormat::Arch;
   }
   if (target.platform == UpdatePlatform::Linux && packageFormat == u"deb")
@@ -56,11 +55,12 @@ UpdateTarget updateTarget() {
 
 QString updateInstructions(const UpdateTarget& target) {
   if (target.format == PackageFormat::Nix)
-    return QCoreApplication::translate("UpdatePackage",
+    return QCoreApplication::translate(
+        "UpdatePackage",
         "Update this installation through Nix. See the installation guide for commands.");
   if (target.format == PackageFormat::System)
-    return QCoreApplication::translate("UpdatePackage",
-        "Update this installation through your system's package manager.");
+    return QCoreApplication::translate(
+        "UpdatePackage", "Update this installation through your system's package manager.");
   return {};
 }
 

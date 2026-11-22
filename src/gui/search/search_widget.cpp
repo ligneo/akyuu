@@ -19,8 +19,8 @@
 
 #include "search_widget.hpp"
 
-#include <QActionGroup>
 #include <QAbstractItemView>
+#include <QActionGroup>
 #include <QLabel>
 #include <QLineEdit>
 #include <QStyle>

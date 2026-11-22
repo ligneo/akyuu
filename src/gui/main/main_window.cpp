@@ -59,10 +59,10 @@
 #include "akyuu/application.hpp"
 #include "akyuu/config.h"
 #include "akyuu/network.hpp"
-#include "akyuu/update_service.hpp"
 #include "akyuu/script.hpp"
 #include "akyuu/session.hpp"
 #include "akyuu/settings.hpp"
+#include "akyuu/update_service.hpp"
 #include "akyuu/version.hpp"
 #include "media/anime_db.hpp"
 #include "media/anime_list.hpp"
@@ -151,7 +151,6 @@ void MainWindow::init() {
     checkForUpdates(true);
     track::recognition::updateRelations();
   }
-
 }
 
 void MainWindow::initShortcuts() {
@@ -199,8 +198,8 @@ void MainWindow::initShareMenu() {
 // unbound: Ctrl+Shift+0 arrives as Ctrl+= on the Turkish layout.
 void MainWindow::initZoomActions() {
   m_actionZoomIn = new QAction(tr("Zoom In"), this);
-  m_actionZoomIn->setShortcuts({QKeySequence{Qt::CTRL | Qt::SHIFT | Qt::Key_Plus},
-                                QKeySequence{Qt::CTRL | Qt::Key_Plus}});
+  m_actionZoomIn->setShortcuts(
+      {QKeySequence{Qt::CTRL | Qt::SHIFT | Qt::Key_Plus}, QKeySequence{Qt::CTRL | Qt::Key_Plus}});
   m_actionZoomOut = new QAction(tr("Zoom Out"), this);
   m_actionZoomOut->setShortcut(QKeySequence{Qt::CTRL | Qt::SHIFT | Qt::Key_Minus});
   m_actionResetZoom = new QAction(tr("Reset Zoom"), this);
@@ -801,11 +800,10 @@ void MainWindow::checkForUpdates(bool silent) {
             const bool upToDate = selected.status == Status::UpToDate;
             if (upToDate && silent) return;
             const auto version = QString::fromStdString(akyuu::version().to_string());
-            auto message =
-                upToDate ? tr("You are up to date (%1).").arg(version)
-                         : tr("Akyuu %1 is available. Installed version: %2.")
-                               .arg(QString::fromStdString(selected.version.to_string()))
-                               .arg(version);
+            auto message = upToDate ? tr("You are up to date (%1).").arg(version)
+                                    : tr("Akyuu %1 is available. Installed version: %2.")
+                                          .arg(QString::fromStdString(selected.version.to_string()))
+                                          .arg(version);
             const auto target = akyuu::updateTarget();
             const auto instructions = akyuu::updateInstructions(target);
             if (!instructions.isEmpty()) message += u"\n\n"_s + instructions;

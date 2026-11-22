@@ -185,13 +185,12 @@ void SeasonsWidget::refresh() {
 void SeasonsWidget::updateStatus() {
   // Saying how many were hidden keeps a short season from looking like missing data
   const auto hidden = m_proxyModel->contentHiddenCount();
-  m_labelStatus->setText(hidden > 0 ? tr("%1 · %2 titles (%3 hidden)")
-                                          .arg(formatSeason(m_season))
-                                          .arg(m_proxyModel->rowCount())
-                                          .arg(hidden)
-                                    : tr("%1 · %2 titles")
-                                          .arg(formatSeason(m_season))
-                                          .arg(m_proxyModel->rowCount()));
+  m_labelStatus->setText(
+      hidden > 0 ? tr("%1 · %2 titles (%3 hidden)")
+                       .arg(formatSeason(m_season))
+                       .arg(m_proxyModel->rowCount())
+                       .arg(hidden)
+                 : tr("%1 · %2 titles").arg(formatSeason(m_season)).arg(m_proxyModel->rowCount()));
 
   // The cards cannot carry a group header, so the breakdown goes in the tooltip. It does not go
   // in the label itself: with five groups the text is long enough to squeeze the toolbar into its

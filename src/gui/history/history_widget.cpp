@@ -26,6 +26,7 @@
 #include <QToolButton>
 #include <QUrl>
 
+#include "akyuu/settings.hpp"
 #include "gui/main/main_window.hpp"
 #include "gui/media/media_dialog.hpp"
 #include "gui/models/history_model.hpp"
@@ -37,7 +38,6 @@
 #include "media/anime_utils.hpp"
 #include "sync/queue.hpp"
 #include "sync/service.hpp"
-#include "akyuu/settings.hpp"
 
 namespace gui {
 

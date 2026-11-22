@@ -18,13 +18,12 @@
 
 #include "content_filter.hpp"
 
-#include <algorithm>
-
 #include <QActionGroup>
 #include <QCollator>
 #include <QMenu>
 #include <QSet>
 #include <QTimer>
+#include <algorithm>
 
 #include "akyuu/session.hpp"
 #include "media/anime.hpp"
@@ -193,9 +192,9 @@ void addAdultTitlesMenu(QMenu* menu) {
     if (mode == contentFilter().adultTitles()) current = text;
   }
   // A dot says the mode is changed for now, away from the one in the settings
-  const auto submenu = menu->addMenu(
-      contentFilter().adultTitlesChanged() ? QObject::tr("Adult titles: %1 •").arg(current)
-                                           : QObject::tr("Adult titles: %1").arg(current));
+  const auto submenu = menu->addMenu(contentFilter().adultTitlesChanged()
+                                         ? QObject::tr("Adult titles: %1 •").arg(current)
+                                         : QObject::tr("Adult titles: %1").arg(current));
   const auto group = new QActionGroup(submenu);
   for (const auto& [text, mode] : modes) {
     // Applied once the menu is gone. Filtering the page right away kept the menu on screen with

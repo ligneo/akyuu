@@ -432,10 +432,10 @@ std::vector<std::string> toStrings(const QVariant& value) {
 }
 
 QJsonArray fromStrings(const std::vector<std::string>& strings) {
-  return QJsonArray::fromStringList(
-      strings |
-      std::views::transform([](const std::string& s) { return QString::fromStdString(s); }) |
-      std::ranges::to<QList>());
+  return QJsonArray::fromStringList(strings | std::views::transform([](const std::string& s) {
+                                      return QString::fromStdString(s);
+                                    }) |
+                                    std::ranges::to<QList>());
 }
 
 }  // namespace

@@ -21,8 +21,8 @@
 
 #include <QApplication>
 #include <QPalette>
-#include <QStyle>
 #include <QProxyStyle>
+#include <QStyle>
 #include <QStyleFactory>
 #include <QStyleHints>
 #include <memory>

@@ -93,7 +93,9 @@ signals:
 
 private:
   QString fileName() const override;
-  bool isPrivate() const override { return true; }
+  bool isPrivate() const override {
+    return true;
+  }
 };
 
 inline Accounts accounts;

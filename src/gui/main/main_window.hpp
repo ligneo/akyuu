@@ -32,7 +32,7 @@ class QLineEdit;
 namespace akyuu {
 class UpdateService;
 struct ReleaseAsset;
-}
+}  // namespace akyuu
 
 namespace Ui {
 class MainWindow;

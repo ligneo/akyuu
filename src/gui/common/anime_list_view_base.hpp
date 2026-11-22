@@ -42,8 +42,8 @@ class ListViewBase final : public QObject {
   Q_DISABLE_COPY_MOVE(ListViewBase)
 
 public:
-  ListViewBase(QAbstractItemView* view, AnimeListModel* model,
-               AnimeListProxyModel* proxyModel, AnimeListContext context);
+  ListViewBase(QAbstractItemView* view, AnimeListModel* model, AnimeListProxyModel* proxyModel,
+               AnimeListContext context);
   ~ListViewBase() = default;
 
   AnimeListContext context() const {

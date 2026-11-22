@@ -27,8 +27,9 @@
 namespace akyuu {
 
 void applyAutoStart() {
-  QSettings startup{QStringLiteral("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run"),
-                    QSettings::NativeFormat};
+  QSettings startup{
+      QStringLiteral("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run"),
+      QSettings::NativeFormat};
   if (settings.appAutoStart()) {
     startup.setValue(QStringLiteral("Akyuu"),
                      QStringLiteral("\"%1\" --minimized")
