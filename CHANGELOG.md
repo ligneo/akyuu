@@ -1,5 +1,22 @@
 # Changelog
 
+## Unreleased
+
+- The Discord activity card is headed with the title being watched, such as "Watching
+  Re:CREATORS", instead of "Watching Akyuu" (#14). Thanks to @Recehan-Slayer for pointing it
+  out.
+
+## 0.5.0
+
+- Seasons and Search can require or exclude types of titles as well as genres: TV, OVA, movie,
+  special, ONA and music (#13). Thanks to @stefanostrowiak for the idea.
+- Discord Rich Presence works on Windows and with the Vesktop Flatpak (#14). Thanks to
+  @Recehan-Slayer for reporting it.
+- Discord shows the anime as "Watching" with its title under your name, instead of "Playing
+  Akyuu" (#14).
+- A pressed menu choice no longer shows a second check mark, damaged genre settings are
+  ignored, ampersands stay in genre chips, and the About dialog fits on a laptop screen.
+
 ## 0.4.0
 
 - Settings > Application > Content decides what Seasons and Search show (#13). Adult titles
