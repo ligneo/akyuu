@@ -5,6 +5,9 @@
 - The Discord activity card is headed with the title being watched, such as "Watching
   Re:CREATORS", instead of "Watching Akyuu" (#14). Thanks to @Recehan-Slayer for pointing it
   out.
+- Files with an uppercase extension, such as `.MOV` from a phone or `.MKV`, are recognized.
+  They were taken for something other than a video, so playing them went unnoticed and library
+  scans skipped them.
 - Anime List in the sidebar no longer stays highlighted after another page is picked.
 
 ## 0.5.0
