@@ -53,6 +53,7 @@ protected:
 
 private:
   void arrangeColumns();
+  void balanceColumns();
   void openLink(const QString& link);
 
   QWidget* m_container = nullptr;
@@ -60,8 +61,7 @@ private:
   QBoxLayout* m_columns = nullptr;
   QVBoxLayout* m_leftColumn = nullptr;
   QVBoxLayout* m_rightColumn = nullptr;
-  QList<QGroupBox*> m_leftGroups;
-  QList<QGroupBox*> m_rightGroups;
+  QList<QGroupBox*> m_sections;
   int m_columnCount = 0;
   bool m_buttonUnder = false;
   bool m_buttonPlaced = false;
@@ -92,6 +92,7 @@ private:
   Timeline* m_readyTimeline = nullptr;
   ActivityChart* m_activityChart = nullptr;
   QLabel* m_recent = nullptr;
+  Timeline* m_recentTimeline = nullptr;
   QTimer* m_activityTimer = nullptr;
 };
 
