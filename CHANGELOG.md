@@ -13,6 +13,8 @@
   was saved with OK. This happened with MyAnimeList and Kitsu, where such a title stays completed.
 - A Kitsu password and MyAnimeList notes keep their plus signs and percent signs. A plus sign
   became a space, so a Kitsu password with one could not sign in.
+- Clapper, Dragon Player, GNOME Videos (Totem), MPlayer, Parole and Showtime are detected on
+  Linux. Showtime runs as Python, so a player started from a script is now known by the script.
 
 ## 0.5.0
 
