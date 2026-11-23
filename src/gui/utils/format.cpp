@@ -76,8 +76,16 @@ QString formatDate(const QDate date, QString placeholder) {
 }
 
 QString formatFuzzyDate(const base::FuzzyDate& fuzzyDate, QString placeholder) {
+  // A date that is only partly known, as for what has not aired yet, keeps the parts it has
+  if (!fuzzyDate) {
+    if (fuzzyDate.year() && fuzzyDate.month()) {
+      return QDate(fuzzyDate.year(), fuzzyDate.month(), 1).toString(u"MMM yyyy"_s);
+    }
+    if (fuzzyDate.year()) return QString::number(fuzzyDate.year());
+    return placeholder;
+  }
   const QDate date(fuzzyDate.year(), fuzzyDate.month(), fuzzyDate.day());
-  return fuzzyDate ? date.toString(Qt::RFC2822Date) : placeholder;
+  return date.toString(Qt::RFC2822Date);
 }
 
 QString formatFuzzyDateRange(const base::FuzzyDate& from, const base::FuzzyDate& to,

@@ -24,6 +24,7 @@
 #include <QGroupBox>
 #include <QHBoxLayout>
 #include <QLocale>
+#include <QMouseEvent>
 #include <QPainter>
 #include <QPainterPath>
 #include <QScrollArea>
@@ -33,6 +34,7 @@
 #include <QVBoxLayout>
 #include <algorithm>
 #include <chrono>
+#include <functional>
 #include <ranges>
 #include <set>
 
@@ -62,8 +64,9 @@ namespace {
 
 // Days shown by the activity chart, two weeks to compare one with the other
 constexpr int kActivityDays = 14;
-// Rows of each list on the page, which point to the full pages for the rest
-constexpr int kListLimit = 8;
+// Posters shown in a section, a couple of rows in a wide window
+constexpr int kPosterLimit = 12;
+// Rows of the list of what was recently watched
 constexpr int kRecentLimit = 6;
 // In characters, below which the page has a single column
 constexpr int kTwoColumnWidth = 90;
@@ -116,10 +119,9 @@ QString largeText(const QWidget* widget, const QString& text, const double scale
 }
 
 QString formatEpisodeRange(const int first, const int last) {
-  return first == last ? QCoreApplication::translate("gui::ProfileWidget", "Episode %1").arg(first)
-                       : QCoreApplication::translate("gui::ProfileWidget", "Episodes %1-%2")
-                             .arg(first)
-                             .arg(last);
+  return first == last
+             ? QCoreApplication::translate("gui::ProfileWidget", "Ep %1").arg(first)
+             : QCoreApplication::translate("gui::ProfileWidget", "Ep %1-%2").arg(first).arg(last);
 }
 
 // Local days, which is how the user counts them
@@ -245,6 +247,230 @@ protected:
 private:
   QDate m_today;
   std::vector<int> m_days;
+};
+
+// A poster for each anime, with a badge on it and its title under it, in as many columns as fit.
+// The lists of the page read better as covers than as lines of titles.
+struct PosterItem {
+  int id = 0;
+  QString badge;
+  QString note;
+};
+
+class PosterGrid final : public QWidget {
+public:
+  explicit PosterGrid(QWidget* parent, std::function<void(int)> clicked)
+      : QWidget(parent), m_clicked(std::move(clicked)) {
+    setMouseTracking(true);
+    auto policy = sizePolicy();
+    policy.setHeightForWidth(true);
+    policy.setVerticalPolicy(QSizePolicy::Preferred);
+    setSizePolicy(policy);
+    connect(&imageProvider, &ImageProvider::posterChanged, this, [this](const int id) {
+      if (std::ranges::any_of(m_items, [id](const PosterItem& item) { return item.id == id; })) {
+        update();
+      }
+    });
+  }
+
+  void setItems(std::vector<PosterItem> items) {
+    m_items = std::move(items);
+    m_hovered = -1;
+    updateGeometry();
+    update();
+  }
+
+  bool hasHeightForWidth() const override {
+    return true;
+  }
+
+  int heightForWidth(const int width) const override {
+    if (m_items.empty()) return 0;
+    const auto [columns, cardWidth] = columnsFor(width);
+    const auto rows = (static_cast<int>(m_items.size()) + columns - 1) / columns;
+    return rows * cardHeight(cardWidth) + (rows - 1) * gap();
+  }
+
+  QSize sizeHint() const override {
+    const auto width = this->width() > 0 ? this->width() : minimumCardWidth() * 4;
+    return {minimumCardWidth(), heightForWidth(width)};
+  }
+
+  QSize minimumSizeHint() const override {
+    return {minimumCardWidth(), 0};
+  }
+
+protected:
+  void paintEvent(QPaintEvent*) override {
+    QPainter painter(this);
+    painter.setRenderHint(QPainter::Antialiasing);
+    painter.setRenderHint(QPainter::SmoothPixmapTransform);
+
+    const auto fm = fontMetrics();
+    for (int i = 0; i < std::ssize(m_items); ++i) {
+      const auto& item = m_items[i];
+      const auto card = cardRect(i);
+      const QRectF poster{card.left() * 1.0, card.top() * 1.0, card.width() * 1.0,
+                          posterHeight(card.width()) * 1.0};
+      constexpr qreal kRadius = 6;
+
+      QPainterPath path;
+      path.addRoundedRect(poster, kRadius, kRadius);
+      painter.save();
+      painter.setClipPath(path);
+      if (const auto pixmap = imageProvider.loadPoster(item.id); !pixmap.isNull()) {
+        const auto scaled =
+            pixmap.size().scaled(poster.size().toSize(), Qt::KeepAspectRatioByExpanding);
+        const QRectF target{poster.center().x() - scaled.width() / 2.0,
+                            poster.center().y() - scaled.height() / 2.0, scaled.width() * 1.0,
+                            scaled.height() * 1.0};
+        painter.drawPixmap(target, pixmap, pixmap.rect());
+      } else {
+        painter.fillRect(poster, palette().color(QPalette::Mid));
+      }
+      painter.restore();
+
+      if (i == m_hovered) {
+        painter.setPen(QPen{palette().color(QPalette::Highlight), 2});
+        painter.setBrush(Qt::NoBrush);
+        painter.drawRoundedRect(poster.adjusted(1, 1, -1, -1), kRadius, kRadius);
+      }
+
+      // The badge, light on dark in the corner, so that it reads on any poster
+      if (!item.badge.isEmpty()) {
+        auto font = this->font();
+        font.setPointSizeF(font.pointSizeF() > 0 ? font.pointSizeF() * 0.85 : font.pointSizeF());
+        font.setWeight(QFont::Weight::DemiBold);
+        const QFontMetrics badgeMetrics{font};
+        const auto text = badgeMetrics.elidedText(item.badge, Qt::ElideRight,
+                                                  static_cast<int>(poster.width()) - 16);
+        const QRectF badge{poster.left() + 6, poster.bottom() - badgeMetrics.height() - 10,
+                           badgeMetrics.horizontalAdvance(text) + 12.0,
+                           badgeMetrics.height() + 4.0};
+        painter.setPen(Qt::NoPen);
+        painter.setBrush(QColor{0, 0, 0, 185});
+        painter.drawRoundedRect(badge, badge.height() / 2, badge.height() / 2);
+        painter.setFont(font);
+        painter.setPen(Qt::white);
+        painter.drawText(badge, Qt::AlignCenter, text);
+        painter.setFont(this->font());
+      }
+
+      // The title in up to two lines, and a note under it in a quieter color
+      const auto anime = anime::db.item(item.id);
+      const auto title = anime ? QString::fromStdString(anime::preferredTitle(*anime)) : QString{};
+      const QRect titleRect{card.left(), static_cast<int>(poster.bottom()) + 6, card.width(),
+                            fm.height() * 2};
+      painter.setPen(palette().color(QPalette::WindowText));
+      painter.drawText(titleRect, Qt::AlignLeft | Qt::AlignTop | Qt::TextWordWrap,
+                       elidedTwoLines(title, card.width()));
+      if (!item.note.isEmpty()) {
+        painter.setPen(palette().color(QPalette::PlaceholderText));
+        painter.drawText(QRect{card.left(), titleRect.bottom() + 1, card.width(), fm.height()},
+                         Qt::AlignLeft | Qt::AlignTop,
+                         fm.elidedText(item.note, Qt::ElideRight, card.width()));
+      }
+    }
+  }
+
+  void mouseMoveEvent(QMouseEvent* event) override {
+    const auto index = indexAt(event->position().toPoint());
+    if (index != m_hovered) {
+      m_hovered = index;
+      setCursor(index >= 0 ? Qt::PointingHandCursor : Qt::ArrowCursor);
+      if (index >= 0) {
+        if (const auto anime = anime::db.item(m_items[index].id)) {
+          setToolTip(QString::fromStdString(anime::preferredTitle(*anime)));
+        }
+      } else {
+        setToolTip({});
+      }
+      update();
+    }
+  }
+
+  void leaveEvent(QEvent*) override {
+    m_hovered = -1;
+    update();
+  }
+
+  void mouseReleaseEvent(QMouseEvent* event) override {
+    if (event->button() != Qt::LeftButton) return;
+    if (const auto index = indexAt(event->position().toPoint()); index >= 0) {
+      m_clicked(m_items[index].id);
+    }
+  }
+
+  void resizeEvent(QResizeEvent* event) override {
+    QWidget::resizeEvent(event);
+    updateGeometry();
+  }
+
+private:
+  // Sized by the font, so that the cards follow the zoom of the page
+  int minimumCardWidth() const {
+    return fontMetrics().averageCharWidth() * 14;
+  }
+  int maximumCardWidth() const {
+    return fontMetrics().averageCharWidth() * 20;
+  }
+  int gap() const {
+    return fontMetrics().averageCharWidth() * 2;
+  }
+  int posterHeight(const int cardWidth) const {
+    return cardWidth * 3 / 2;
+  }
+  int cardHeight(const int cardWidth) const {
+    const auto hasNote =
+        std::ranges::any_of(m_items, [](const PosterItem& item) { return !item.note.isEmpty(); });
+    return posterHeight(cardWidth) + 6 + fontMetrics().height() * (hasNote ? 3 : 2);
+  }
+
+  std::pair<int, int> columnsFor(const int width) const {
+    const auto columns = std::max(1, (width + gap()) / (minimumCardWidth() + gap()));
+    const auto cardWidth = std::min(maximumCardWidth(), (width - gap() * (columns - 1)) / columns);
+    return {columns, std::max(cardWidth, 1)};
+  }
+
+  QRect cardRect(const int index) const {
+    const auto [columns, cardWidth] = columnsFor(width());
+    const auto row = index / columns;
+    const auto column = index % columns;
+    return {column * (cardWidth + gap()), row * (cardHeight(cardWidth) + gap()), cardWidth,
+            cardHeight(cardWidth)};
+  }
+
+  int indexAt(const QPoint& point) const {
+    for (int i = 0; i < std::ssize(m_items); ++i) {
+      // The whole card, the title as well as the poster
+      if (cardRect(i).contains(point)) return i;
+    }
+    return -1;
+  }
+
+  // Word wrapped into two lines, the second one cut short with an ellipsis
+  QString elidedTwoLines(const QString& text, const int width) const {
+    const auto fm = fontMetrics();
+    if (fm.boundingRect(QRect{0, 0, width, 10000}, Qt::TextWordWrap, text).height() <=
+        fm.height() * 2) {
+      return text;
+    }
+    const auto words = text.split(u' ');
+    QString first;
+    int i = 0;
+    for (; i < words.size(); ++i) {
+      const auto candidate = first.isEmpty() ? words[i] : first + u' ' + words[i];
+      if (fm.horizontalAdvance(candidate) > width) break;
+      first = candidate;
+    }
+    if (first.isEmpty()) return fm.elidedText(text, Qt::ElideRight, width);
+    const auto rest = words.mid(i).join(u' ');
+    return first + u'\n' + fm.elidedText(rest, Qt::ElideRight, width);
+  }
+
+  std::vector<PosterItem> m_items;
+  std::function<void(int)> m_clicked;
+  int m_hovered = -1;
 };
 
 // The account at the top of the page, over the banner of the profile when the service has one
@@ -388,14 +614,25 @@ ProfileWidget::ProfileWidget(QWidget* parent) : PageWidget(parent) {
     return group;
   };
 
-  // Airing next
-  addListGroup(tr("Airing"), m_airing);
+  // A grid of posters under the label, which says why the grid is empty when it is
+  const auto addPosterGroup = [this, &addListGroup](const QString& title, QLabel*& label,
+                                                    PosterGrid*& grid) {
+    const auto group = addListGroup(title, label);
+    grid = new PosterGrid(group, [this](const int id) {
+      if (const auto anime = anime::db.item(id)) {
+        MediaDialog::show(this, MediaDialogPage::Details, *anime);
+      }
+    });
+    group->layout()->addWidget(grid);
+    return group;
+  };
+
+  addPosterGroup(tr("Airing"), m_airing, m_airingGrid);
 
   // Upcoming, only when something on the list has not started yet
-  m_upcomingGroup = addListGroup(tr("Upcoming"), m_upcoming);
+  m_upcomingGroup = addPosterGroup(tr("Upcoming"), m_upcoming, m_upcomingGrid);
 
-  // Ready to watch
-  addListGroup(tr("Available Episodes"), m_ready);
+  addPosterGroup(tr("Available Episodes"), m_ready, m_readyGrid);
 
   // Recent activity, on the right in a wide window
   {
@@ -609,21 +846,21 @@ void ProfileWidget::refreshActivity() {
     }
     std::ranges::sort(airing, {}, &anime::Details::next_episode_time);
 
-    QStringList rows;
-    for (const auto anime : airing | std::views::take(kListLimit)) {
+    std::vector<PosterItem> items;
+    for (const auto anime : airing | std::views::take(kPosterLimit)) {
       const auto time = QDateTime::fromSecsSinceEpoch(anime->next_episode_time).toLocalTime();
-      const auto when = QLocale::system().toString(time, u"ddd HH:mm"_s);
+      auto when = QLocale::system().toString(time, u"ddd HH:mm"_s);
       const auto entry = anime::db.entry(anime->id);
-      const auto planned = entry && entry->status == anime::list::Status::PlanToWatch;
-      rows.append(
-          tableRow(animeLink(*anime) + (planned ? u" "_s + muted(tr("Planning")) : QString{}),
-                   formatAsRelativeTime(anime->next_episode_time) + u"  "_s + muted(when)));
+      if (entry && entry->status == anime::list::Status::PlanToWatch) {
+        when += u", "_s + tr("Planning");
+      }
+      items.push_back({anime->id, formatAsRelativeTime(anime->next_episode_time), when});
     }
-    m_airing->setText(
-        rows.isEmpty() ? u"<p style=\"margin: 0;\">%1 <a href=\"akyuu:seasons\">%2</a></p>"_s.arg(
-                             tr("Nothing on your list is airing.").toHtmlEscaped(),
-                             tr("See this season").toHtmlEscaped())
-                       : table(rows));
+    m_airing->setText(u"<p style=\"margin: 0;\">%1 <a href=\"akyuu:seasons\">%2</a></p>"_s.arg(
+        tr("Nothing on your list is airing.").toHtmlEscaped(),
+        tr("See this season").toHtmlEscaped()));
+    m_airing->setVisible(items.empty());
+    m_airingGrid->setItems(std::move(items));
   }
 
   // Upcoming, from Watching and Planning, by when they start
@@ -646,18 +883,13 @@ void ProfileWidget::refreshActivity() {
     };
     std::ranges::sort(upcoming, {}, key);
 
-    QStringList rows;
-    for (const auto anime : upcoming | std::views::take(kListLimit)) {
-      rows.append(
-          tableRow(animeLink(*anime), muted(formatFuzzyDate(anime->date_started, tr("TBA")))));
+    std::vector<PosterItem> items;
+    for (const auto anime : upcoming | std::views::take(kPosterLimit)) {
+      items.push_back({anime->id, formatFuzzyDate(anime->date_started, tr("TBA")), {}});
     }
-    if (std::ssize(upcoming) > kListLimit) {
-      rows.append(tableRow(
-          muted(tr("and %n more", nullptr, static_cast<int>(std::ssize(upcoming) - kListLimit))),
-          {}));
-    }
-    m_upcoming->setText(table(rows));
-    m_upcomingGroup->setVisible(!upcoming.empty());
+    m_upcoming->hide();
+    m_upcomingGroup->setVisible(!items.empty());
+    m_upcomingGrid->setItems(std::move(items));
   }
 
   // Ready to watch, from the library folders
@@ -687,18 +919,18 @@ void ProfileWidget::refreshActivity() {
 
     const auto scanned = track::library()->hasScanned();
 
-    QStringList rows;
-    for (const auto& item : ready | std::views::take(kListLimit)) {
-      QStringList ranges;
-      for (const auto& [first, last] : item.ranges) {
-        ranges.append(formatEpisodeRange(first, last));
+    std::vector<PosterItem> items;
+    if (scanned) {
+      for (const auto& item : ready | std::views::take(kPosterLimit)) {
+        QStringList ranges;
+        for (const auto& [first, last] : item.ranges) {
+          ranges.append(formatEpisodeRange(first, last));
+        }
+        items.push_back({item.anime->id, ranges.join(u", "_s), {}});
       }
-      rows.append(tableRow(animeLink(*item.anime), muted(ranges.join(u", "_s))));
     }
-    if (std::ssize(ready) > kListLimit) {
-      rows.append(tableRow(
-          muted(tr("and %n more", nullptr, static_cast<int>(std::ssize(ready) - kListLimit))), {}));
-    }
+    m_ready->setVisible(items.empty());
+    m_readyGrid->setItems(std::move(items));
     // What to do about an empty list, when there is something to do
     if (akyuu::settings.libraryFolders().empty()) {
       m_ready->setText(
@@ -708,8 +940,7 @@ void ProfileWidget::refreshActivity() {
       // Scanned as soon as the page is shown, see `showEvent`
       m_ready->setText(note(tr("Scanning...")));
     } else {
-      m_ready->setText(rows.isEmpty() ? note(tr("No new episodes in library folders."))
-                                      : table(rows));
+      m_ready->setText(note(tr("No new episodes in library folders.")));
     }
   }
 }

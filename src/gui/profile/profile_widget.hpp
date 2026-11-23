@@ -31,6 +31,7 @@
 namespace gui {
 
 class ActivityChart;
+class PosterGrid;
 class ProfileHeader;
 
 class ProfileWidget final : public PageWidget {
@@ -82,9 +83,12 @@ private:
   QLabel* m_completedYear = nullptr;
 
   QLabel* m_airing = nullptr;
+  PosterGrid* m_airingGrid = nullptr;
   QGroupBox* m_upcomingGroup = nullptr;
   QLabel* m_upcoming = nullptr;
+  PosterGrid* m_upcomingGrid = nullptr;
   QLabel* m_ready = nullptr;
+  PosterGrid* m_readyGrid = nullptr;
   ActivityChart* m_activityChart = nullptr;
   QLabel* m_recent = nullptr;
   QTimer* m_activityTimer = nullptr;
