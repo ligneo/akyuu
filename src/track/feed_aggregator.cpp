@@ -31,6 +31,7 @@
 #include <map>
 #include <set>
 
+#include "akyuu/accounts.hpp"
 #include "akyuu/path.hpp"
 #include "akyuu/settings.hpp"
 #include "base/log.hpp"
@@ -298,6 +299,26 @@ void Aggregator::download(const FeedItem& item) {
 
     const auto mode = QString::fromStdString(akyuu::settings.torrentDownloadAppMode());
     const auto command = QString::fromStdString(akyuu::settings.torrentDownloadAppPath());
+
+    if (mode == u"qbittorrent") {
+      const QBittorrentServer server{
+          QUrl::fromUserInput(
+              QString::fromStdString(akyuu::settings.torrentDownloadQbittorrentUrl())),
+          QString::fromStdString(akyuu::accounts.qbittorrentUsername()),
+          QString::fromStdString(akyuu::accounts.qbittorrentPassword()),
+      };
+      const auto category =
+          QString::fromStdString(akyuu::settings.torrentDownloadQbittorrentCategory());
+      qbittorrent_.add(
+          server, target, downloadFolder(episode), category, [this, title](const QString& error) {
+            if (!error.isEmpty()) {
+              emit errorOccurred(tr("Could not add \"%1\" to qBittorrent: %2").arg(title, error));
+              return;
+            }
+            emit downloadFinished(title);
+          });
+      return;
+    }
 
     bool started = false;
 

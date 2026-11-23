@@ -5,6 +5,10 @@
 - The Discord activity card is headed with the title being watched, such as "Watching
   Re:CREATORS", instead of "Watching Akyuu" (#14). Thanks to @Recehan-Slayer for pointing it
   out.
+- Torrents can be sent to qBittorrent through its Web UI, in Settings > Torrents > Downloads.
+  This works when qBittorrent runs without a window, such as `qbittorrent-nox`, or on another
+  computer, and the download folder and an optional category always reach it. Test checks the
+  address and the sign-in before saving. The password is kept with the other accounts.
 - Episodes named like `Title - 07 (S01E07)`, as some groups do, are recognized. The number
   before the season and episode was read as part of the title, so the anime was not found.
 - More file names are read right, and recognized: episode 1080 of One Piece is not taken for a

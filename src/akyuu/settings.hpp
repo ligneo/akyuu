@@ -79,6 +79,8 @@ public:
   bool torrentDownloadUseMagnet() const;
   std::string torrentDownloadAppMode() const;
   std::string torrentDownloadAppPath() const;
+  std::string torrentDownloadQbittorrentUrl() const;
+  std::string torrentDownloadQbittorrentCategory() const;
   std::string torrentDownloadFileLocation() const;
   std::optional<QJsonArray> torrentFilters() const;
   std::string service() const;
@@ -172,6 +174,8 @@ public:
   void setTorrentDownloadUseMagnet(const bool use) const;
   void setTorrentDownloadAppMode(const std::string& mode) const;
   void setTorrentDownloadAppPath(const std::string& path) const;
+  void setTorrentDownloadQbittorrentUrl(const std::string& url) const;
+  void setTorrentDownloadQbittorrentCategory(const std::string& category) const;
   void setTorrentDownloadFileLocation(const std::string& path) const;
   void setTorrentFilters(const QJsonArray& filters) const;
   void setService(const std::string& service) const;

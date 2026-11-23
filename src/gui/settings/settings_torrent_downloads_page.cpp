@@ -22,6 +22,7 @@
 #include <QComboBox>
 #include <QDir>
 #include <QFileDialog>
+#include <QFormLayout>
 #include <QGroupBox>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -30,7 +31,9 @@
 #include <QRadioButton>
 #include <QVBoxLayout>
 
+#include "akyuu/accounts.hpp"
 #include "akyuu/settings.hpp"
+#include "track/qbittorrent.hpp"
 
 namespace gui {
 
@@ -57,7 +60,15 @@ TorrentDownloadsPage::TorrentDownloadsPage(QWidget* parent)
       m_radioDefaultApp(
           new QRadioButton(tr("Use the default application associated with .torrent files"), this)),
       m_radioCustomApp(new QRadioButton(tr("Use a custom application:"), this)),
-      m_editAppPath(new QLineEdit(this)) {
+      m_editAppPath(new QLineEdit(this)),
+      m_radioQbittorrent(new QRadioButton(tr("Send to qBittorrent through its Web UI:"), this)),
+      m_qbittorrentFields(new QWidget(this)),
+      m_editQbittorrentUrl(new QLineEdit(this)),
+      m_editQbittorrentUsername(new QLineEdit(this)),
+      m_editQbittorrentPassword(new QLineEdit(this)),
+      m_editQbittorrentCategory(new QLineEdit(this)),
+      m_labelQbittorrentStatus(new QLabel(this)),
+      m_qbittorrent(new track::QBittorrent(this)) {
   const auto layout = new QVBoxLayout(this);
 
   // Download queue
@@ -135,6 +146,24 @@ TorrentDownloadsPage::TorrentDownloadsPage(QWidget* parent)
     pathLayout->addWidget(m_editAppPath);
     pathLayout->addWidget(buttonBrowse);
 
+    // qBittorrent can also run without a window, or on another computer, and its Web UI takes the
+    // download folder in any case.
+    const auto qbittorrentLayout = new QFormLayout(m_qbittorrentFields);
+    qbittorrentLayout->setContentsMargins(20, 0, 0, 0);
+    m_editQbittorrentUrl->setPlaceholderText(u"http://localhost:8080"_s);
+    m_editQbittorrentPassword->setEchoMode(QLineEdit::Password);
+    m_editQbittorrentCategory->setPlaceholderText(tr("Optional"));
+    const auto testLayout = new QHBoxLayout();
+    const auto buttonTest = new QPushButton(tr("Test"), m_qbittorrentFields);
+    m_labelQbittorrentStatus->setWordWrap(true);
+    testLayout->addWidget(buttonTest);
+    testLayout->addWidget(m_labelQbittorrentStatus, 1);
+    qbittorrentLayout->addRow(tr("Address:"), m_editQbittorrentUrl);
+    qbittorrentLayout->addRow(tr("Username:"), m_editQbittorrentUsername);
+    qbittorrentLayout->addRow(tr("Password:"), m_editQbittorrentPassword);
+    qbittorrentLayout->addRow(tr("Category:"), m_editQbittorrentCategory);
+    qbittorrentLayout->addRow(testLayout);
+
     const auto nested = new QVBoxLayout();
     nested->setContentsMargins(20, 0, 0, 0);
     nested->addWidget(m_radioDefaultApp);
@@ -143,6 +172,10 @@ TorrentDownloadsPage::TorrentDownloadsPage(QWidget* parent)
     pathNested->setContentsMargins(20, 0, 0, 0);
     pathNested->addLayout(pathLayout);
     nested->addLayout(pathNested);
+    nested->addWidget(m_radioQbittorrent);
+    nested->addWidget(m_qbittorrentFields);
+
+    connect(buttonTest, &QPushButton::clicked, this, &TorrentDownloadsPage::testQbittorrent);
 
     groupLayout->addWidget(m_checkOpen);
     groupLayout->addLayout(nested);
@@ -164,6 +197,7 @@ TorrentDownloadsPage::TorrentDownloadsPage(QWidget* parent)
   connect(m_checkFallback, &QCheckBox::toggled, this, &TorrentDownloadsPage::refreshState);
   connect(m_checkOpen, &QCheckBox::toggled, this, &TorrentDownloadsPage::refreshState);
   connect(m_radioCustomApp, &QRadioButton::toggled, this, &TorrentDownloadsPage::refreshState);
+  connect(m_radioQbittorrent, &QRadioButton::toggled, this, &TorrentDownloadsPage::refreshState);
 }
 
 void TorrentDownloadsPage::load() {
@@ -179,10 +213,18 @@ void TorrentDownloadsPage::load() {
 
   m_checkOpen->setChecked(akyuu::settings.torrentDownloadOpen());
 
-  const bool custom = akyuu::settings.torrentDownloadAppMode() != "default";
-  m_radioCustomApp->setChecked(custom);
-  m_radioDefaultApp->setChecked(!custom);
+  const auto mode = akyuu::settings.torrentDownloadAppMode();
+  m_radioQbittorrent->setChecked(mode == "qbittorrent");
+  m_radioCustomApp->setChecked(mode != "default" && mode != "qbittorrent");
+  m_radioDefaultApp->setChecked(mode == "default");
   m_editAppPath->setText(QString::fromStdString(akyuu::settings.torrentDownloadAppPath()));
+
+  m_editQbittorrentUrl->setText(
+      QString::fromStdString(akyuu::settings.torrentDownloadQbittorrentUrl()));
+  m_editQbittorrentUsername->setText(QString::fromStdString(akyuu::accounts.qbittorrentUsername()));
+  m_editQbittorrentPassword->setText(QString::fromStdString(akyuu::accounts.qbittorrentPassword()));
+  m_editQbittorrentCategory->setText(
+      QString::fromStdString(akyuu::settings.torrentDownloadQbittorrentCategory()));
 
   refreshState();
 }
@@ -196,8 +238,17 @@ void TorrentDownloadsPage::save() {
   akyuu::settings.setTorrentDownloadLocation(m_editLocation->text().trimmed().toStdString());
   akyuu::settings.setTorrentDownloadCreateSubfolder(m_checkCreateSubfolder->isChecked());
   akyuu::settings.setTorrentDownloadOpen(m_checkOpen->isChecked());
-  akyuu::settings.setTorrentDownloadAppMode(m_radioCustomApp->isChecked() ? "custom" : "default");
+  akyuu::settings.setTorrentDownloadAppMode(m_radioQbittorrent->isChecked() ? "qbittorrent"
+                                            : m_radioCustomApp->isChecked() ? "custom"
+                                                                            : "default");
   akyuu::settings.setTorrentDownloadAppPath(m_editAppPath->text().trimmed().toStdString());
+
+  akyuu::settings.setTorrentDownloadQbittorrentUrl(
+      m_editQbittorrentUrl->text().trimmed().toStdString());
+  akyuu::accounts.setQbittorrentUsername(m_editQbittorrentUsername->text().toStdString());
+  akyuu::accounts.setQbittorrentPassword(m_editQbittorrentPassword->text().toStdString());
+  akyuu::settings.setTorrentDownloadQbittorrentCategory(
+      m_editQbittorrentCategory->text().trimmed().toStdString());
 }
 
 void TorrentDownloadsPage::refreshState() {
@@ -214,6 +265,24 @@ void TorrentDownloadsPage::refreshState() {
   m_radioDefaultApp->setEnabled(open);
   m_radioCustomApp->setEnabled(open);
   m_editAppPath->setEnabled(open && m_radioCustomApp->isChecked());
+  m_radioQbittorrent->setEnabled(open);
+  m_qbittorrentFields->setEnabled(open && m_radioQbittorrent->isChecked());
+}
+
+// Tries the fields as they are, before they are saved
+void TorrentDownloadsPage::testQbittorrent() {
+  const track::QBittorrentServer server{
+      QUrl::fromUserInput(m_editQbittorrentUrl->text().trimmed()),
+      m_editQbittorrentUsername->text(),
+      m_editQbittorrentPassword->text(),
+  };
+
+  m_labelQbittorrentStatus->setText(tr("Connecting..."));
+
+  m_qbittorrent->test(server, [this](const QString& version, const QString& error) {
+    m_labelQbittorrentStatus->setText(
+        error.isEmpty() ? tr("Connected to qBittorrent %1.").arg(version) : error);
+  });
 }
 
 }  // namespace gui

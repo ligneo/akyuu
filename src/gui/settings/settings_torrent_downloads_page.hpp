@@ -22,9 +22,14 @@
 
 class QCheckBox;
 class QComboBox;
+class QLabel;
 class QLineEdit;
 class QPushButton;
 class QRadioButton;
+
+namespace track {
+class QBittorrent;
+}
 
 namespace gui {
 
@@ -41,6 +46,7 @@ public:
 
 private:
   void refreshState();
+  void testQbittorrent();
 
   QComboBox* m_comboSortBy = nullptr;
   QComboBox* m_comboSortOrder = nullptr;
@@ -53,6 +59,14 @@ private:
   QRadioButton* m_radioDefaultApp = nullptr;
   QRadioButton* m_radioCustomApp = nullptr;
   QLineEdit* m_editAppPath = nullptr;
+  QRadioButton* m_radioQbittorrent = nullptr;
+  QWidget* m_qbittorrentFields = nullptr;
+  QLineEdit* m_editQbittorrentUrl = nullptr;
+  QLineEdit* m_editQbittorrentUsername = nullptr;
+  QLineEdit* m_editQbittorrentPassword = nullptr;
+  QLineEdit* m_editQbittorrentCategory = nullptr;
+  QLabel* m_labelQbittorrentStatus = nullptr;
+  track::QBittorrent* m_qbittorrent = nullptr;
 };
 
 }  // namespace gui

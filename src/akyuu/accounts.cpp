@@ -104,6 +104,14 @@ std::string Accounts::myanimelistRefreshToken() const {
   return value("myanimelist.refreshToken").toString().toStdString();
 }
 
+std::string Accounts::qbittorrentUsername() const {
+  return value("qbittorrent.username").toString().toStdString();
+}
+
+std::string Accounts::qbittorrentPassword() const {
+  return value("qbittorrent.password").toString().toStdString();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 void Accounts::setAnilistAuthenticated(bool authenticated) {
@@ -175,6 +183,14 @@ void Accounts::setMyanimelistAccessToken(const std::string& accessToken) const {
 
 void Accounts::setMyanimelistRefreshToken(const std::string& refreshToken) const {
   setValue("myanimelist.refreshToken", refreshToken);
+}
+
+void Accounts::setQbittorrentUsername(const std::string& username) const {
+  setValue("qbittorrent.username", username);
+}
+
+void Accounts::setQbittorrentPassword(const std::string& password) const {
+  setValue("qbittorrent.password", password);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

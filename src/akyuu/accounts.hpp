@@ -66,6 +66,9 @@ public:
   std::string myanimelistAccessToken() const;
   std::string myanimelistRefreshToken() const;
 
+  std::string qbittorrentUsername() const;
+  std::string qbittorrentPassword() const;
+
   void setAnilistAuthenticated(bool authenticated);
   void setAnilistRatingSystem(const std::string& ratingSystem) const;
   void setAnilistUsername(const std::string& username) const;
@@ -85,6 +88,9 @@ public:
   void setMyanimelistUsername(const std::string& username) const;
   void setMyanimelistAccessToken(const std::string& accessToken) const;
   void setMyanimelistRefreshToken(const std::string& refreshToken) const;
+
+  void setQbittorrentUsername(const std::string& username) const;
+  void setQbittorrentPassword(const std::string& password) const;
 
   std::string serviceUsername(const std::string& service) const;
 

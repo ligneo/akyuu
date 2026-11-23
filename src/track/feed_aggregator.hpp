@@ -27,6 +27,7 @@
 
 #include "akyuu/network.hpp"
 #include "track/feed.hpp"
+#include "track/qbittorrent.hpp"
 
 namespace track {
 
@@ -61,6 +62,7 @@ signals:
 
 private:
   QRestAccessManager manager_{akyuu::network()};
+  QBittorrent qbittorrent_{this};
   QTimer timer_{this};
   Feed feed_;
   bool fetching_ = false;

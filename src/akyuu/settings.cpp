@@ -553,14 +553,24 @@ bool Settings::torrentDownloadOpen() const {
   return value("torrents.download.open", true).toBool();
 }
 
-// "default" hands the file to whatever the desktop opens it with; anything else is the command in
-// `torrents.download.appPath`.
+// "default" hands the file to whatever the desktop opens it with, "qbittorrent" sends it to
+// qBittorrent's Web UI, and anything else is the command in `torrents.download.appPath`.
 std::string Settings::torrentDownloadAppMode() const {
   return value("torrents.download.appMode", u"default"_s).toString().toStdString();
 }
 
 std::string Settings::torrentDownloadAppPath() const {
   return value("torrents.download.appPath").toString().toStdString();
+}
+
+std::string Settings::torrentDownloadQbittorrentUrl() const {
+  return value("torrents.download.qbittorrent.url", u"http://localhost:8080"_s)
+      .toString()
+      .toStdString();
+}
+
+std::string Settings::torrentDownloadQbittorrentCategory() const {
+  return value("torrents.download.qbittorrent.category").toString().toStdString();
 }
 
 bool Settings::torrentFilterEnabled() const {
@@ -666,6 +676,14 @@ void Settings::setTorrentDownloadAppMode(const std::string& mode) const {
 
 void Settings::setTorrentDownloadAppPath(const std::string& path) const {
   setValue("torrents.download.appPath", path);
+}
+
+void Settings::setTorrentDownloadQbittorrentUrl(const std::string& url) const {
+  setValue("torrents.download.qbittorrent.url", url);
+}
+
+void Settings::setTorrentDownloadQbittorrentCategory(const std::string& category) const {
+  setValue("torrents.download.qbittorrent.category", category);
 }
 
 void Settings::setTorrentDownloadFileLocation(const std::string& path) const {
