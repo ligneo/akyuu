@@ -128,6 +128,15 @@ void ListWidget::initTabs() {
   refreshTabs();
 }
 
+void ListWidget::changeEvent(QEvent* event) {
+  PageWidget::changeEvent(event);
+  // A zoomed page has a new font, and the counters need room for it. Queued, so that the counters
+  // have their new font by then.
+  if (event->type() == QEvent::FontChange && m_tabs) {
+    QMetaObject::invokeMethod(this, &ListWidget::refreshTabs, Qt::QueuedConnection);
+  }
+}
+
 void ListWidget::refreshTabs() {
   const auto navigation = mainWindow()->navigation();
 

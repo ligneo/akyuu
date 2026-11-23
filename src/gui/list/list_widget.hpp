@@ -45,6 +45,9 @@ public:
 
   void saveState();
 
+protected:
+  void changeEvent(QEvent* event) override;
+
 private:
   void initToolbar();
   void initSortMenu();
