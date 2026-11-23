@@ -198,15 +198,15 @@ QTreeWidgetItem* NavigationWidget::addItem(const QString& text, const QString& i
                                            MainWindowPage page) {
   auto item = new QTreeWidgetItem(this);
 
-  item->setFont(0, [item]() {
-    auto font = item->font(0);
-    font.setPointSize(10);
-    font.setWeight(QFont::Weight::DemiBold);
-    return font;
-  }());
+  // At least the 10 points it had, and as large as the application font, which made it look small
+  // next to the rest of the window when larger
+  auto font = this->font();
+  if (font.pointSizeF() > 0) font.setPointSizeF(std::max(font.pointSizeF(), 10.0));
+  font.setWeight(QFont::Weight::DemiBold);
+  item->setFont(0, font);
 
   item->setIcon(0, theme.getIcon(icon));
-  item->setSizeHint(0, QSize{0, 32});
+  item->setSizeHint(0, QSize{0, std::max(32, QFontMetrics(font).height() + 12)});
   item->setText(0, text);
 
   setItemData(item, NavigationItemDataRole::PageIndex, static_cast<int>(page));

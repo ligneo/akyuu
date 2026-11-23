@@ -18,6 +18,8 @@
   cards do, instead of a thin bar with the count next to it.
 - The tabs above the anime list show their counts in a small badge, like the sidebar, instead
   of in parentheses.
+- The sidebar follows the size of the application font, with 10 points at least. It was fixed
+  at 10 points, so it looked small next to the rest of the window with a larger font.
 - Episodes named like `Title - 07 (S01E07)`, as some groups do, are recognized. The number
   before the season and episode was read as part of the title, so the anime was not found.
 - More file names are read right, and recognized: episode 1080 of One Piece is not taken for a

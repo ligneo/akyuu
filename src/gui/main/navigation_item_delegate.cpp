@@ -22,6 +22,7 @@
 #include <QAbstractItemView>
 #include <QPainter>
 #include <QPainterPath>
+#include <algorithm>
 
 #include "gui/utils/painter_state_saver.hpp"
 #include "gui/utils/theme.hpp"
@@ -89,8 +90,9 @@ void NavigationItemDelegate::paintCounter(QPainter* painter, QRect rect, const i
   const PainterStateSaver painterStateSaver(painter);
 
   painter->setFont([painter]() {
+    // A little smaller than the label, whatever its size
     auto font = painter->font();
-    font.setPointSize(8);
+    if (font.pointSizeF() > 0) font.setPointSizeF(std::max(font.pointSizeF() * 0.8, 8.0));
     font.setWeight(QFont::Weight::DemiBold);
     return font;
   }());
