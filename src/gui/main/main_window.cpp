@@ -1001,7 +1001,10 @@ void MainWindow::initToolbar() {
   {
     m_searchBox = new QLineEdit();
     m_searchBox->setClearButtonEnabled(true);
-    m_searchBox->setFixedWidth(320);
+    // It gives way to the buttons in a narrow window, which now share the row with the menus
+    m_searchBox->setMinimumWidth(120);
+    m_searchBox->setMaximumWidth(320);
+    m_searchBox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     m_searchBox->setPlaceholderText(tr("Search"));
 
     // The search page runs the search itself; the other pages that search the service hand the
@@ -1030,6 +1033,23 @@ void MainWindow::initToolbar() {
 
     insertSpacer(before);
     ui_->toolbar->insertWidget(before, m_searchBox);
+  }
+
+  // The menus share the toolbar's row, which held little more than the synchronize button on its
+  // own below them. That button joins the others at the right.
+  {
+    // A menu bar keeps to the top of its space, so it is centered next to the taller buttons
+    auto container = new QWidget(ui_->toolbar);
+    auto layout = new QVBoxLayout(container);
+    layout->setContentsMargins({});
+    auto menuBar = new QMenuBar(container);
+    menuBar->addActions(ui_->menubar->actions());
+    layout->addWidget(menuBar, 0, Qt::AlignVCenter);
+    ui_->menubar->hide();
+    ui_->toolbar->insertWidget(ui_->toolbar->actions().constFirst(), container);
+
+    ui_->toolbar->removeAction(ui_->actionSynchronize);
+    ui_->toolbar->insertAction(ui_->actionSettings, ui_->actionSynchronize);
   }
 }
 

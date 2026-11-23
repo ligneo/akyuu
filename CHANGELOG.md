@@ -25,6 +25,9 @@
 - The Type and Last updated columns of the anime list widen with a larger font or zoom, so
   "Special" and "7 months ago" are no longer cut short.
 - The names and values in Settings > Advanced keep apart, and its rows are easier to tell apart.
+- The menus share one row with the search box and the buttons, which had a row of their own with
+  only the synchronize button on its left, so the page starts higher up. The search box narrows
+  in a small window instead of pushing the buttons out of sight.
 
 ## 0.5.0
 
