@@ -54,6 +54,7 @@ public:
 
 signals:
   void authenticationCompleted(bool authenticated);
+  void userRefreshed();
   void searchCompleted(const SearchParams& params, const QList<int>& ids);
   void listEntriesFetched();
   void transferProgress(const qint64 current, const qint64 total);
@@ -78,6 +79,7 @@ QString serviceSlug(const ServiceId serviceId);
 QString tagMessage(const ServiceId serviceId, const QString& message);
 
 void authenticateUser();
+void refreshUser();
 void fetchAnime(const int id);
 void fetchListEntries();
 void search(const SearchParams& params);

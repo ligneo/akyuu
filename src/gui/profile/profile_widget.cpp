@@ -64,7 +64,7 @@ constexpr int kActivityDays = 14;
 constexpr int kListLimit = 8;
 constexpr int kRecentLimit = 6;
 // In characters, below which the page has a single column
-constexpr int kTwoColumnWidth = 110;
+constexpr int kTwoColumnWidth = 90;
 
 QLabel* createRichLabel(QWidget* parent) {
   const auto label = new QLabel(parent);
@@ -425,6 +425,7 @@ ProfileWidget::ProfileWidget(QWidget* parent) : PageWidget(parent) {
         static_cast<services::Service*>(services::kitsu::Service::instance()),
         static_cast<services::Service*>(services::myanimelist::Service::instance())}) {
     connect(service, &services::Service::authenticationCompleted, this, refreshAccountIfVisible);
+    connect(service, &services::Service::userRefreshed, this, refreshAccountIfVisible);
   }
 
   containerLayout->addStretch();
@@ -588,7 +589,11 @@ void ProfileWidget::refreshActivity() {
   {
     std::vector<const anime::Details*> airing;
     for (const auto& entry : entries) {
-      if (entry.status != anime::list::Status::Watching) continue;
+      // Planning too, since a show that airs now is the one to start before it piles up
+      if (entry.status != anime::list::Status::Watching &&
+          entry.status != anime::list::Status::PlanToWatch) {
+        continue;
+      }
       const auto anime = anime::db.item(entry.anime_id);
       if (anime && anime->next_episode_time > now) airing.push_back(anime);
     }
@@ -598,12 +603,15 @@ void ProfileWidget::refreshActivity() {
     for (const auto anime : airing | std::views::take(kListLimit)) {
       const auto time = QDateTime::fromSecsSinceEpoch(anime->next_episode_time).toLocalTime();
       const auto when = QLocale::system().toString(time, u"ddd HH:mm"_s);
-      rows.append(tableRow(animeLink(*anime),
-                           formatAsRelativeTime(anime->next_episode_time) + u"  "_s + muted(when)));
+      const auto entry = anime::db.entry(anime->id);
+      const auto planned = entry && entry->status == anime::list::Status::PlanToWatch;
+      rows.append(
+          tableRow(animeLink(*anime) + (planned ? u" "_s + muted(tr("Planning")) : QString{}),
+                   formatAsRelativeTime(anime->next_episode_time) + u"  "_s + muted(when)));
     }
-    m_airing->setText(rows.isEmpty()
-                          ? note(tr("Nothing you are watching has an episode on the way."))
-                          : table(rows));
+    m_airing->setText(
+        rows.isEmpty() ? note(tr("Nothing you are watching or planning has an episode on the way."))
+                       : table(rows));
   }
 
   // Ready to watch, from the library folders
@@ -684,16 +692,39 @@ void ProfileWidget::openLink(const QString& link) {
 // Side by side when both columns have room for their lists, one under the other otherwise
 void ProfileWidget::arrangeColumns() {
   const auto available = m_scrollArea ? m_scrollArea->viewport()->width() : width();
+  // The button of the account goes under its name only when the row has no room for it
+  {
+    const auto margins = m_headerLayout->contentsMargins();
+    const auto names =
+        std::max(m_userName->sizeHint().width(),
+                 m_userService->fontMetrics().horizontalAdvance(m_userService->text()));
+    const auto needed = 32 + margins.left() + margins.right() + m_avatar->width() + names +
+                        m_userButton->sizeHint().width() + m_headerLayout->spacing() * 2;
+    const auto under = available < needed;
+    if (under != m_buttonUnder || !m_buttonPlaced) {
+      if (m_buttonPlaced) {
+        if (m_buttonUnder) {
+          m_names->removeWidget(m_userButton);
+          // The spacing that was put above the button
+          delete m_names->takeAt(m_names->count() - 1);
+        } else {
+          m_headerLayout->removeWidget(m_userButton);
+        }
+      }
+      if (under) {
+        m_names->addSpacing(6);
+        m_names->addWidget(m_userButton, 0, Qt::AlignLeft);
+      } else {
+        m_headerLayout->addWidget(m_userButton, 0, Qt::AlignVCenter);
+      }
+      m_buttonUnder = under;
+      m_buttonPlaced = true;
+    }
+  }
+
   const auto columnCount = available >= fontMetrics().averageCharWidth() * kTwoColumnWidth ? 2 : 1;
   if (columnCount == m_columnCount) return;
   m_columnCount = columnCount;
-
-  // A narrow window puts the button of the account under its name, which leaves the name its width
-  if (columnCount == 2) {
-    m_headerLayout->addWidget(m_userButton, 0, Qt::AlignVCenter);
-  } else {
-    m_names->addWidget(m_userButton, 0, Qt::AlignLeft);
-  }
 
   const auto tilesPerRow = columnCount == 2 ? 4 : 2;
   for (int i = 0; i < m_tileFrames.size(); ++i) {

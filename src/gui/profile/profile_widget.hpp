@@ -62,6 +62,8 @@ private:
   QList<QGroupBox*> m_leftGroups;
   QList<QGroupBox*> m_rightGroups;
   int m_columnCount = 0;
+  bool m_buttonUnder = false;
+  bool m_buttonPlaced = false;
 
   ProfileHeader* m_header = nullptr;
   QHBoxLayout* m_headerLayout = nullptr;

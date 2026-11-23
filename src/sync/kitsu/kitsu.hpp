@@ -57,6 +57,9 @@ public:
   static Service* instance();
 
   void authenticateUser();
+  // Asks for the name and pictures of the account again, without touching the sign in, which
+  // only happens once. A failure is only logged.
+  void refreshUser();
   void fetchAnime(const int id);
   void fetchListEntries(const int offset = 0, QSet<int> fetchedIds = {});
   void search(const SearchParams& params, const int offset = 0);

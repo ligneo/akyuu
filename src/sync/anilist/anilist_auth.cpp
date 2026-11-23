@@ -20,6 +20,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QRestReply>
+#include <QtLogging>
 
 #include "akyuu/accounts.hpp"
 #include "anilist.hpp"
@@ -27,6 +28,17 @@
 #include "sync/anilist/anilist_utils.hpp"
 
 namespace services::anilist {
+
+namespace {
+
+void applyViewer(const QJsonObject& viewer) {
+  akyuu::accounts.setAnilistUsername(viewer["name"].toString().toStdString());
+  // Asked along with the name, so the profile page gets its pictures without a request of its own
+  akyuu::accounts.setServiceAvatar("anilist", viewer["avatar"]["large"].toString().toStdString());
+  akyuu::accounts.setServiceBanner("anilist", viewer["bannerImage"].toString().toStdString());
+}
+
+}  // namespace
 
 void Service::setAccessToken(const QString& token) {
   akyuu::accounts.setAnilistToken(token.toStdString());
@@ -55,11 +67,7 @@ void Service::authenticateUser() {
       return;
     }
 
-    akyuu::accounts.setAnilistUsername((*viewer)["name"].toString().toStdString());
-    // Asked along with the name, so the profile page gets its pictures without a request of its own
-    akyuu::accounts.setServiceAvatar("anilist",
-                                     (*viewer)["avatar"]["large"].toString().toStdString());
-    akyuu::accounts.setServiceBanner("anilist", (*viewer)["bannerImage"].toString().toStdString());
+    applyViewer(*viewer);
     akyuu::accounts.setAnilistRatingSystem(
         (*viewer)["mediaListOptions"]["scoreFormat"].toString().toStdString());
 
@@ -67,6 +75,25 @@ void Service::authenticateUser() {
   };
 
   manager_.post(api_.createRequest(), data, this, callback);
+}
+
+void Service::refreshUser() {
+  if (akyuu::accounts.anilistToken().empty()) return;
+
+  const QJsonDocument data{QJsonObject{
+      {"query", gql("Viewer")},
+  }};
+
+  manager_.post(api_.createRequest(), data, this, [this](QRestReply& reply) {
+    if (isError(reply)) {
+      qWarning("Could not refresh the user: %s", qPrintable(reply.errorString()));
+      return;
+    }
+    const auto json = reply.readJson();
+    if (!json) return;
+    applyViewer((*json)["data"]["Viewer"].toObject());
+    emit userRefreshed();
+  });
 }
 
 }  // namespace services::anilist

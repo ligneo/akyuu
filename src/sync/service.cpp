@@ -20,6 +20,7 @@
 #include "service.hpp"
 
 #include <QMap>
+#include <QSet>
 
 #include "akyuu/accounts.hpp"
 #include "akyuu/network.hpp"
@@ -175,10 +176,34 @@ void search(const SearchParams& params) {
   }
 }
 
+void refreshUser() {
+  switch (currentServiceId()) {
+    case ServiceId::MyAnimeList:
+      myanimelist::Service::instance()->refreshUser();
+      break;
+    case ServiceId::Kitsu:
+      kitsu::Service::instance()->refreshUser();
+      break;
+    case ServiceId::AniList:
+      anilist::Service::instance()->refreshUser();
+      break;
+  }
+}
+
 bool synchronize() {
+  // Signing in is kept between sessions, so the account is otherwise only read once, and a new
+  // name or avatar would never arrive. It is read again on the first sync of each session.
+  static QSet<ServiceId> refreshedUsers;
+
   if (willAuthenticate()) {
+    refreshedUsers.insert(currentServiceId());
     authenticateUser();
     return true;
+  }
+
+  if (!refreshedUsers.contains(currentServiceId())) {
+    refreshedUsers.insert(currentServiceId());
+    refreshUser();
   }
 
   if (!isUserAuthenticated()) {

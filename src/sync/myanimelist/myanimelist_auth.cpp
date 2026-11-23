@@ -21,6 +21,7 @@
 #include <QJsonObject>
 #include <QNetworkRequest>
 #include <QRestReply>
+#include <QtLogging>
 
 #include "akyuu/accounts.hpp"
 #include "base/form.hpp"
@@ -30,6 +31,16 @@
 #include "sync/myanimelist/myanimelist_utils.hpp"
 
 namespace services::myanimelist {
+
+namespace {
+
+void applyUser(const QJsonObject& user) {
+  akyuu::accounts.setMyanimelistUsername(user["name"].toString().toStdString());
+  // For the profile page. MyAnimeList has no banner.
+  akyuu::accounts.setServiceAvatar("myanimelist", user["picture"].toString().toStdString());
+}
+
+}  // namespace
 
 bool Service::retryOnTokenExpiry(QRestReply& reply, std::function<void()> retry) {
   if (!isTokenExpired(reply)) return false;
@@ -137,15 +148,27 @@ void Service::authenticateUser() {
       return;
     }
 
-    akyuu::accounts.setMyanimelistUsername(json->object()["name"].toString().toStdString());
-    // For the profile page. MyAnimeList has no banner.
-    akyuu::accounts.setServiceAvatar("myanimelist",
-                                     json->object()["picture"].toString().toStdString());
+    applyUser(json->object());
 
     emit authenticationCompleted(true);
   };
 
   manager_.get(api_.createRequest(u"/users/@me"_s), this, callback);
+}
+
+void Service::refreshUser() {
+  if (akyuu::accounts.myanimelistAccessToken().empty()) return;
+
+  manager_.get(api_.createRequest(u"/users/@me"_s), this, [this](QRestReply& reply) {
+    if (isError(reply)) {
+      qWarning("Could not refresh the user: %s", qPrintable(reply.errorString()));
+      return;
+    }
+    const auto json = reply.readJson();
+    if (!json) return;
+    applyUser(json->object());
+    emit userRefreshed();
+  });
 }
 
 }  // namespace services::myanimelist

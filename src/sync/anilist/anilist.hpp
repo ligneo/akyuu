@@ -37,6 +37,9 @@ public:
 
   void setAccessToken(const QString& token);
   void authenticateUser();
+  // Asks for the name and pictures of the account again, without touching the sign in, which
+  // only happens once. A failure is only logged.
+  void refreshUser();
   void fetchAnime(const int id);
   void fetchMalIds(const QList<int>& ids,
                    const std::function<void(std::optional<QMap<int, int>>)>& done);

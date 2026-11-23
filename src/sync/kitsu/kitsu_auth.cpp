@@ -23,6 +23,7 @@
 #include <QNetworkRequest>
 #include <QRestReply>
 #include <QUrlQuery>
+#include <QtLogging>
 
 #include "akyuu/accounts.hpp"
 #include "base/form.hpp"
@@ -32,6 +33,31 @@
 #include "sync/kitsu/kitsu_utils.hpp"
 
 namespace services::kitsu {
+
+namespace {
+
+// The user signed in, or the one whose library is read without signing in
+QUrlQuery userQuery(const bool authenticated) {
+  QUrlQuery query =
+      authenticated
+          ? QUrlQuery{{u"filter[self]"_s, u"true"_s}}
+          : QUrlQuery{{u"filter[slug]"_s, QString::fromStdString(akyuu::accounts.kitsuUsername())}};
+  query.addQueryItem(u"fields[users]"_s, userFields());
+  return query;
+}
+
+void applyUser(const QJsonObject& user) {
+  const auto attributes = user["attributes"].toObject();
+  akyuu::accounts.setKitsuUserId(user["id"].toString().toStdString());
+  akyuu::accounts.setKitsuDisplayName(attributes["name"].toString().toStdString());
+  akyuu::accounts.setKitsuUsername(attributes["slug"].toString().toStdString());
+  // For the profile page, which asks for nothing itself
+  akyuu::accounts.setServiceAvatar("kitsu", attributes["avatar"]["large"].toString().toStdString());
+  akyuu::accounts.setServiceBanner("kitsu",
+                                   attributes["coverImage"]["large"].toString().toStdString());
+}
+
+}  // namespace
 
 bool Service::retryOnTokenExpiry(QRestReply& reply, std::function<void()> retry) {
   if (!isTokenExpired(reply)) return false;
@@ -133,12 +159,7 @@ void Service::refreshAccessToken(std::function<void()> onSuccess) {
 
 void Service::resolveUser(std::function<void()> onSuccess) {
   const bool authenticated = !akyuu::accounts.kitsuAccessToken().empty();
-
-  QUrlQuery query =
-      authenticated
-          ? QUrlQuery{{u"filter[self]"_s, u"true"_s}}
-          : QUrlQuery{{u"filter[slug]"_s, QString::fromStdString(akyuu::accounts.kitsuUsername())}};
-  query.addQueryItem(u"fields[users]"_s, userFields());
+  const auto query = userQuery(authenticated);
 
   const auto callback = [this, authenticated, onSuccess](QRestReply& reply) {
     if (isError(reply)) {
@@ -160,14 +181,7 @@ void Service::resolveUser(std::function<void()> onSuccess) {
     const auto user = data.first().toObject();
     const auto attributes = user["attributes"].toObject();
 
-    akyuu::accounts.setKitsuUserId(user["id"].toString().toStdString());
-    akyuu::accounts.setKitsuDisplayName(attributes["name"].toString().toStdString());
-    akyuu::accounts.setKitsuUsername(attributes["slug"].toString().toStdString());
-    // For the profile page, which asks for nothing itself
-    akyuu::accounts.setServiceAvatar("kitsu",
-                                     attributes["avatar"]["large"].toString().toStdString());
-    akyuu::accounts.setServiceBanner("kitsu",
-                                     attributes["coverImage"]["large"].toString().toStdString());
+    applyUser(user);
 
     if (authenticated) {
       akyuu::accounts.setKitsuEmail(attributes["email"].toString().toStdString());
@@ -179,6 +193,24 @@ void Service::resolveUser(std::function<void()> onSuccess) {
   };
 
   manager_.get(api_.createRequest(u"/users"_s, query), this, callback);
+}
+
+void Service::refreshUser() {
+  const bool authenticated = !akyuu::accounts.kitsuAccessToken().empty();
+  if (!authenticated && akyuu::accounts.kitsuUsername().empty()) return;
+
+  manager_.get(api_.createRequest(u"/users"_s, userQuery(authenticated)), this,
+               [this](QRestReply& reply) {
+                 if (isError(reply)) {
+                   qWarning("Could not refresh the user: %s", qPrintable(reply.errorString()));
+                   return;
+                 }
+                 const auto json = reply.readJson();
+                 const auto data = json ? json->object()["data"].toArray() : QJsonArray{};
+                 if (data.isEmpty()) return;
+                 applyUser(data.first().toObject());
+                 emit userRefreshed();
+               });
 }
 
 }  // namespace services::kitsu
