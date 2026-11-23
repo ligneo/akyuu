@@ -72,7 +72,7 @@ struct Entry {
   int rewatching_ep = 0;
   FuzzyDate date_started;
   FuzzyDate date_completed;
-  std::time_t last_updated;
+  std::time_t last_updated = 0;
   std::string notes;
   bool pending_delete = false;
 };
