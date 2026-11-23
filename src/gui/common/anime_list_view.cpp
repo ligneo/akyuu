@@ -19,9 +19,13 @@
 
 #include "anime_list_view.hpp"
 
+#include <QDateTime>
 #include <QHeaderView>
 #include <QKeyEvent>
 #include <QMenu>
+#include <QStyle>
+#include <QStyleOptionViewItem>
+#include <algorithm>
 
 #include "akyuu/session.hpp"
 #include "akyuu/settings.hpp"
@@ -29,7 +33,9 @@
 #include "gui/common/anime_list_view_base.hpp"
 #include "gui/models/anime_list_model.hpp"
 #include "gui/models/anime_list_proxy_model.hpp"
+#include "gui/utils/format.hpp"
 #include "gui/utils/painters.hpp"
+#include "media/anime.hpp"
 #include "track/play.hpp"
 
 namespace gui {
@@ -125,6 +131,7 @@ ListView::ListView(QWidget* parent, AnimeListModel* model, AnimeListProxyModel* 
   header()->resizeSection(AnimeListModel::COLUMN_TYPE, 75);
   header()->resizeSection(AnimeListModel::COLUMN_SEASON, 135);
   header()->resizeSection(AnimeListModel::COLUMN_LAST_UPDATED, 130);
+  fitColumns();
   // Like v1, the title takes whatever width the other columns leave.
   header()->setSectionResizeMode(AnimeListModel::COLUMN_TITLE, QHeaderView::Stretch);
 
@@ -135,6 +142,45 @@ ListView::ListView(QWidget* parent, AnimeListModel* model, AnimeListProxyModel* 
 
   connect(this, &QAbstractItemView::clicked, this,
           qOverload<const QModelIndex&>(&QAbstractItemView::edit));
+}
+
+void ListView::changeEvent(QEvent* event) {
+  QTreeView::changeEvent(event);
+  if (event->type() == QEvent::FontChange) fitColumns();
+}
+
+// Some columns are narrow, so a larger font or zoom would cut "Special" or "11 months ago" short.
+// They are widened to fit, but never narrowed, which would undo a width the user dragged them to.
+void ListView::fitColumns() {
+  using enum anime::Type;
+  QStringList types;
+  for (const auto type : {Tv, Ova, Movie, Special, Ona, Music}) {
+    types.append(formatType(type));
+  }
+  fitColumn(AnimeListModel::COLUMN_TYPE, types);
+
+  QStringList times;
+  const auto now = QDateTime::currentSecsSinceEpoch();
+  for (const qint64 ago : {44 * 60, 21 * 3600, 24 * 86400, 300 * 86400, 3650 * 86400}) {
+    times.append(formatAsRelativeTime(now - ago, {}));
+  }
+  fitColumn(AnimeListModel::COLUMN_LAST_UPDATED, times);
+}
+
+void ListView::fitColumn(const int column, const QStringList& texts) {
+  // The style measures the cell, so that the padding of the style sheet is counted as well
+  QStyleOptionViewItem option;
+  initViewItemOption(&option);
+  option.features |= QStyleOptionViewItem::HasDisplay;
+
+  int width = 0;
+  for (const auto& text : texts) {
+    option.text = text;
+    width = std::max(width,
+                     style()->sizeFromContents(QStyle::CT_ItemViewItem, &option, {}, this).width());
+  }
+
+  if (header()->sectionSize(column) < width) header()->resizeSection(column, width);
 }
 
 bool ListView::event(QEvent* event) {

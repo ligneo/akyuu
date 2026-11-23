@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include <QStringList>
 #include <QTreeView>
 
 #include "gui/common/anime_list_context.hpp"
@@ -46,12 +47,16 @@ public:
   void setHiddenColumns(const QList<int>& columns);
 
 protected:
+  void changeEvent(QEvent* event) override;
   bool event(QEvent* event) override;
   void keyPressEvent(QKeyEvent* event) override;
   void mousePressEvent(QMouseEvent* event) override;
   void paintEvent(QPaintEvent* event) override;
 
 private:
+  void fitColumns();
+  void fitColumn(int column, const QStringList& texts);
+
   ListViewBase* m_base = nullptr;
 };
 

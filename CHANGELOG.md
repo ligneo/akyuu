@@ -22,6 +22,8 @@
   Thanks to SGalazzo, who found both in Taiga.
 - Changing the update delay, its trigger or the confirmation in Settings applies to the episode
   that is playing. They applied from the next episode on. The time already watched still counts.
+- The Type and Last updated columns of the anime list widen with a larger font or zoom, so
+  "Special" and "7 months ago" are no longer cut short.
 
 ## 0.5.0
 
