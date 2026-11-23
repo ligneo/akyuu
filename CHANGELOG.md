@@ -24,6 +24,7 @@
   that is playing. They applied from the next episode on. The time already watched still counts.
 - The Type and Last updated columns of the anime list widen with a larger font or zoom, so
   "Special" and "7 months ago" are no longer cut short.
+- The names and values in Settings > Advanced keep apart, and its rows are easier to tell apart.
 
 ## 0.5.0
 

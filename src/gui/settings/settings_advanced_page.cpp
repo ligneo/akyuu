@@ -81,6 +81,7 @@ AdvancedPage::AdvancedPage(QWidget* parent)
     warning->setForegroundRole(QPalette::PlaceholderText);
     layout->addWidget(warning);
 
+    m_treeSettings->setObjectName("advancedSettings");
     m_treeSettings->setRootIsDecorated(false);
     m_treeSettings->setAllColumnsShowFocus(true);
     m_treeSettings->setAlternatingRowColors(true);

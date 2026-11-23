@@ -66,7 +66,7 @@ QPalette akyuuPalette() {
   palette.setColor(QPalette::Window, night);
   palette.setColor(QPalette::WindowText, text);
   palette.setColor(QPalette::Base, deep);
-  palette.setColor(QPalette::AlternateBase, QColor{0x1e, 0x1a, 0x2b});
+  palette.setColor(QPalette::AlternateBase, QColor{0x22, 0x1d, 0x32});
   palette.setColor(QPalette::Text, text);
   palette.setColor(QPalette::PlaceholderText, muted);
   palette.setColor(QPalette::Button, raised);

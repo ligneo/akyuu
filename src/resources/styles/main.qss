@@ -83,6 +83,18 @@ QTreeView#libraryView::item {
   min-height: 24px;
 }
 
+/* The padding also widens the name column, which fits its contents, so values keep apart */
+QTreeWidget#advancedSettings::item {
+  min-height: 24px;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+QTreeWidget#advancedSettings QHeaderView::section {
+  padding-left: 11px;
+  padding-right: 11px;
+}
+
 /* Now Playing */
 
 #nowPlaying {
