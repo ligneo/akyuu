@@ -2,13 +2,18 @@
 
 ## Unreleased
 
-- The Discord activity card is headed with the title being watched, such as "Watching
-  Re:CREATORS", instead of "Watching Akyuu" (#14). Thanks to @Recehan-Slayer for pointing it
-  out.
 - Torrents can be sent to qBittorrent through its Web UI, in Settings > Torrents > Downloads.
   This works when qBittorrent runs without a window, such as `qbittorrent-nox`, or on another
   computer, and the download folder and an optional category always reach it. Test checks the
   address and the sign-in before saving. The password is kept with the other accounts.
+- Clapper, Dragon Player, GNOME Videos (Totem), MPlayer, Parole and Showtime are detected on
+  Linux. Showtime runs as Python, so a player started from a script is now known by the script.
+- The Discord activity card is headed with the title being watched, such as "Watching
+  Re:CREATORS", instead of "Watching Akyuu" (#14). Thanks to @Recehan-Slayer for pointing it
+  out.
+- The menus share one row with the search box and the buttons, which had a row of their own with
+  only the synchronize button on its left, so the page starts higher up. The search box narrows
+  in a small window instead of pushing the buttons out of sight.
 - Episodes named like `Title - 07 (S01E07)`, as some groups do, are recognized. The number
   before the season and episode was read as part of the title, so the anime was not found.
 - More file names are read right, and recognized: episode 1080 of One Piece is not taken for a
@@ -17,26 +22,21 @@
 - Files with an uppercase extension, such as `.MOV` from a phone or `.MKV`, are recognized.
   They were taken for something other than a video, so playing them went unnoticed and library
   scans skipped them.
-- Anime List in the sidebar no longer stays highlighted after another page is picked.
 - Opening a completed title that is being rewatched no longer sets its progress to 0, which
   was saved with OK. This happened with MyAnimeList and Kitsu, where such a title stays completed.
-- A Kitsu password and MyAnimeList notes keep their plus signs and percent signs. A plus sign
-  became a space, so a Kitsu password with one could not sign in.
-- Clapper, Dragon Player, GNOME Videos (Totem), MPlayer, Parole and Showtime are detected on
-  Linux. Showtime runs as Python, so a player started from a script is now known by the script.
-- Icons are drawn once on a scaled display, such as at 125% or 160%, instead of on every repaint.
 - List updates keep being sent when MyAnimeList or Kitsu cannot renew an expired sign-in. The
   update waiting for it was never finished, so the ones after it stayed in History until Akyuu
   was restarted. An update the service keeps refusing no longer holds back the others either.
-  Thanks to SGalazzo, who found both in Taiga.
+  Thanks to @SGalazzo, who found both in Taiga.
+- A Kitsu password and MyAnimeList notes keep their plus signs and percent signs. A plus sign
+  became a space, so a Kitsu password with one could not sign in.
 - Changing the update delay, its trigger or the confirmation in Settings applies to the episode
   that is playing. They applied from the next episode on. The time already watched still counts.
+- Anime List in the sidebar no longer stays highlighted after another page is picked.
 - The Type and Last updated columns of the anime list widen with a larger font or zoom, so
   "Special" and "7 months ago" are no longer cut short.
 - The names and values in Settings > Advanced keep apart, and its rows are easier to tell apart.
-- The menus share one row with the search box and the buttons, which had a row of their own with
-  only the synchronize button on its left, so the page starts higher up. The search box narrows
-  in a small window instead of pushing the buttons out of sight.
+- Icons are drawn once on a scaled display, such as at 125% or 160%, instead of on every repaint.
 
 ## 0.5.0
 
