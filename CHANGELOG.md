@@ -7,9 +7,9 @@
 - The profile button opens a Profile page, which the statistics stay apart from. It shows the
   account with its avatar and banner, the episodes and time watched this week, the days in a row,
   the anime completed this year, what is airing with a countdown, what is upcoming, the available
-  episodes in library folders, and what was recently watched. Airing, Upcoming and Available
-  Episodes show posters with the time, the date or the episodes on them, and include the
-  Planning list. Posters and titles open their details. The library is scanned when the page is first shown.
+  episodes in library folders, and what was recently watched. Airing is a schedule by day, with
+  the episode and the time, and Upcoming a timeline by the date each starts. Both include the
+  Planning list. Each row has a small poster, and opens the details of its anime. The library is scanned when the page is first shown.
   The account is read again on the first sync of each session, which brings its avatar and banner
   (MyAnimeList has no banner), and a renamed account no longer keeps its old name. The pictures
   are kept on disk and checked once a day.

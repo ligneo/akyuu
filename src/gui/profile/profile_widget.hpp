@@ -31,7 +31,7 @@
 namespace gui {
 
 class ActivityChart;
-class PosterGrid;
+class Timeline;
 class ProfileHeader;
 
 class ProfileWidget final : public PageWidget {
@@ -74,6 +74,7 @@ private:
   QLabel* m_userService = nullptr;
   QPushButton* m_userButton = nullptr;
   QString m_userUrl;
+  QString m_accountState;
 
   QGridLayout* m_tiles = nullptr;
   QList<QFrame*> m_tileFrames;
@@ -83,12 +84,12 @@ private:
   QLabel* m_completedYear = nullptr;
 
   QLabel* m_airing = nullptr;
-  PosterGrid* m_airingGrid = nullptr;
+  Timeline* m_airingTimeline = nullptr;
   QGroupBox* m_upcomingGroup = nullptr;
   QLabel* m_upcoming = nullptr;
-  PosterGrid* m_upcomingGrid = nullptr;
+  Timeline* m_upcomingTimeline = nullptr;
   QLabel* m_ready = nullptr;
-  PosterGrid* m_readyGrid = nullptr;
+  Timeline* m_readyTimeline = nullptr;
   ActivityChart* m_activityChart = nullptr;
   QLabel* m_recent = nullptr;
   QTimer* m_activityTimer = nullptr;
