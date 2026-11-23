@@ -21,9 +21,9 @@
 #include <QJsonObject>
 #include <QNetworkRequest>
 #include <QRestReply>
-#include <QUrlQuery>
 
 #include "akyuu/accounts.hpp"
+#include "base/form.hpp"
 #include "base/string.hpp"
 #include "myanimelist.hpp"
 #include "sync/myanimelist/myanimelist_error.hpp"
@@ -41,7 +41,7 @@ void Service::requestAccessToken(const QString& authorizationCode, const QString
   QNetworkRequest request{QUrl{kTokenUrl}};
   request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
 
-  const QUrlQuery body{{
+  const base::FormFields body{{
       {"client_id", kClientId},
       {"grant_type", "authorization_code"},
       {"code", authorizationCode},
@@ -72,7 +72,7 @@ void Service::requestAccessToken(const QString& authorizationCode, const QString
     authenticateUser();
   };
 
-  manager_.post(request, formUrlEncode(body), this, callback);
+  manager_.post(request, base::formUrlEncode(body), this, callback);
 }
 
 void Service::refreshAccessToken(std::function<void()> onSuccess) {
@@ -87,7 +87,7 @@ void Service::refreshAccessToken(std::function<void()> onSuccess) {
   QNetworkRequest request{QUrl{kTokenUrl}};
   request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
 
-  const QUrlQuery body{{
+  const base::FormFields body{{
       {"client_id", kClientId},
       {"grant_type", "refresh_token"},
       {"refresh_token", QString::fromStdString(refreshToken)},
@@ -116,7 +116,7 @@ void Service::refreshAccessToken(std::function<void()> onSuccess) {
     if (onSuccess) onSuccess();
   };
 
-  manager_.post(request, formUrlEncode(body), this, callback);
+  manager_.post(request, base::formUrlEncode(body), this, callback);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

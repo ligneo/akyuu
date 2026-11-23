@@ -163,10 +163,6 @@ QJsonObject buildLibraryEntryObject(const anime::list::Entry& entry,
   return QJsonObject{{"data", data}};
 }
 
-QByteArray formUrlEncode(const QUrlQuery& query) {
-  return query.toString(QUrl::FullyEncoded).toUtf8();
-}
-
 std::optional<int> pagingOffset(const QJsonObject& links, const QString& key) {
   const QUrlQuery query{QUrl{links[key].toString()}};
 

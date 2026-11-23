@@ -25,6 +25,7 @@
 #include <QUrlQuery>
 
 #include "akyuu/accounts.hpp"
+#include "base/form.hpp"
 #include "base/string.hpp"
 #include "kitsu.hpp"
 #include "sync/kitsu/kitsu_error.hpp"
@@ -47,7 +48,7 @@ void Service::authenticateUser() {
 
   // Resource Owner Password Credentials Grant
   // https://tools.ietf.org/html/rfc6749#section-4.3
-  const QUrlQuery body{{
+  const base::FormFields body{{
       {"grant_type", "password"},
       {"username", QString::fromStdString(username)},
       {"password", QString::fromStdString(akyuu::accounts.kitsuPassword())},
@@ -80,7 +81,7 @@ void Service::authenticateUser() {
     resolveUser();
   };
 
-  manager_.post(request, formUrlEncode(body), this, callback);
+  manager_.post(request, base::formUrlEncode(body), this, callback);
 }
 
 void Service::refreshAccessToken(std::function<void()> onSuccess) {
@@ -95,7 +96,7 @@ void Service::refreshAccessToken(std::function<void()> onSuccess) {
   QNetworkRequest request{QUrl{kTokenUrl}};
   request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
 
-  const QUrlQuery body{{
+  const base::FormFields body{{
       {"grant_type", "refresh_token"},
       {"refresh_token", QString::fromStdString(refreshToken)},
       {"client_id", kClientId},
@@ -125,7 +126,7 @@ void Service::refreshAccessToken(std::function<void()> onSuccess) {
     if (onSuccess) onSuccess();
   };
 
-  manager_.post(request, formUrlEncode(body), this, callback);
+  manager_.post(request, base::formUrlEncode(body), this, callback);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

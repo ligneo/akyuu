@@ -11,6 +11,8 @@
 - Anime List in the sidebar no longer stays highlighted after another page is picked.
 - Opening a completed title that is being rewatched no longer sets its progress to 0, which
   was saved with OK. This happened with MyAnimeList and Kitsu, where such a title stays completed.
+- A Kitsu password and MyAnimeList notes keep their plus signs and percent signs. A plus sign
+  became a space, so a Kitsu password with one could not sign in.
 
 ## 0.5.0
 

@@ -11,6 +11,8 @@ target_sources(akyuu PRIVATE
 	base/chrono.hpp
 	base/file.cpp
 	base/file.hpp
+	base/form.cpp
+	base/form.hpp
 	base/log.cpp
 	base/log.hpp
 	base/preprocessor.h
@@ -246,6 +248,17 @@ if (AKYUU_BUILD_TESTS AND BUILD_TESTING)
 	target_compile_definitions(akyuu-release-selection-tests PRIVATE AKYUU_PACKAGE_FORMAT="source")
 	target_link_libraries(akyuu-release-selection-tests PRIVATE Qt6::Core semaver)
 	add_test(NAME release-selection COMMAND akyuu-release-selection-tests)
+
+	add_executable(akyuu-form-tests
+		${CMAKE_SOURCE_DIR}/tests/form.cpp
+		base/form.cpp
+	)
+	set_target_properties(akyuu-form-tests PROPERTIES
+		RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests
+	)
+	target_include_directories(akyuu-form-tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+	target_link_libraries(akyuu-form-tests PRIVATE Qt6::Core)
+	add_test(NAME form COMMAND akyuu-form-tests)
 
 	add_executable(akyuu-private-settings-tests
 		${CMAKE_SOURCE_DIR}/tests/private_settings.cpp

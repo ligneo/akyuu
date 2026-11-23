@@ -19,7 +19,6 @@
 
 #pragma once
 
-#include <QByteArray>
 #include <QString>
 #include <optional>
 #include <string>
@@ -48,7 +47,6 @@ QString fromType(const anime::Type value);
 
 QJsonObject buildLibraryEntryObject(const anime::list::Entry& entry,
                                     const anime::list::Fields dirty, const QString& userId);
-QByteArray formUrlEncode(const QUrlQuery& query);
 std::optional<int> pagingOffset(const QJsonObject& links, const QString& key);
 
 // Sparse fieldsets
