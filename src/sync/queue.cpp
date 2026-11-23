@@ -23,6 +23,7 @@
 #include <algorithm>
 #include <chrono>
 #include <format>
+#include <utility>
 
 #include "akyuu/accounts.hpp"
 #include "akyuu/path.hpp"
@@ -220,7 +221,10 @@ void Queue::processAutomatically() {
 const QueueItem* Queue::currentItem() const {
   if (items_.isEmpty()) return nullptr;
 
-  const auto it = std::ranges::min_element(items_, {}, &QueueItem::time);
+  // The oldest change goes first, but one that keeps failing waits for the others, which it would
+  // otherwise hold back for good.
+  const auto it = std::ranges::min_element(
+      items_, {}, [](const QueueItem& item) { return std::pair{item.retry_count, item.time}; });
   return &(*it);
 }
 
