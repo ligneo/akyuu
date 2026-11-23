@@ -38,6 +38,8 @@
 
 #include "akyuu/accounts.hpp"
 #include "akyuu/settings.hpp"
+#include "gui/main/main_window.hpp"
+#include "gui/main/navigation_controller.hpp"
 #include "gui/media/media_dialog.hpp"
 #include "gui/settings/settings_dialog.hpp"
 #include "gui/utils/format.hpp"
@@ -355,12 +357,10 @@ ProfileWidget::ProfileWidget(QWidget* parent) : PageWidget(parent) {
       return value;
     };
     m_weekEpisodes = addTile(tr("Episodes this week"), tr("Episodes watched in the last 7 days"));
-    m_streak = addTile(tr("Day streak"), tr("Days in a row with at least one episode watched"));
+    m_streak = addTile(tr("Days in a row"), tr("Days in a row with at least one episode watched"));
     // The lists below already count what is ready and what airs, so these say something else
-    m_weekTime = addTile(tr("Watched this week"),
-                         tr("Time spent on the episodes of the last 7 days, by their length"));
-    m_completedYear =
-        addTile(tr("Completed this year"), tr("Anime on your list finished this calendar year"));
+    m_weekTime = addTile(tr("Time this week"), tr("Time spent watching in the last 7 days"));
+    m_completedYear = addTile(tr("Completed this year"), tr("Anime completed this year"));
     containerLayout->addLayout(m_tiles);
   }
 
@@ -389,14 +389,17 @@ ProfileWidget::ProfileWidget(QWidget* parent) : PageWidget(parent) {
   };
 
   // Airing next
-  addListGroup(tr("Airing next"), m_airing);
+  addListGroup(tr("Airing"), m_airing);
+
+  // Upcoming, only when something on the list has not started yet
+  m_upcomingGroup = addListGroup(tr("Upcoming"), m_upcoming);
 
   // Ready to watch
-  addListGroup(tr("Ready to watch"), m_ready);
+  addListGroup(tr("Available Episodes"), m_ready);
 
   // Recent activity, on the right in a wide window
   {
-    const auto group = addListGroup(tr("Recent activity"), m_recent);
+    const auto group = addListGroup(tr("Recently Watched"), m_recent);
     m_activityChart = new ActivityChart(group);
     static_cast<QVBoxLayout*>(group->layout())->insertWidget(0, m_activityChart);
     m_leftGroups.removeLast();
@@ -472,10 +475,9 @@ void ProfileWidget::refreshAccount() {
   const auto serviceName = services::serviceName(service);
   const auto name = user.isEmpty() ? tr("Not signed in") : user;
   m_userName->setText(largeText(this, name.toHtmlEscaped(), 1.8));
-  m_userService->setText(user.isEmpty() ? tr("Sign in to sync your list")
-                                        : tr("Synced with %1").arg(serviceName));
-  m_userButton->setText(user.isEmpty() ? tr("Set up an account")
-                                       : tr("View on %1").arg(serviceName));
+  m_userService->setText(user.isEmpty() ? tr("Add an account to sync your list") : serviceName);
+  // As in the Services menu
+  m_userButton->setText(user.isEmpty() ? tr("Add account") : tr("Go to my profile"));
 
   const auto slug = services::serviceSlug(service).toStdString();
   const auto avatarUrl =
@@ -490,6 +492,14 @@ void ProfileWidget::refreshAccount() {
   const auto padding = banner.isNull() ? 0 : 20;
   m_header->layout()->setContentsMargins(padding, padding, padding, padding);
   m_userName->setStyleSheet(banner.isNull() ? QString{} : u"color: white;"_s);
+  // Glass over the picture rather than a plain button, which looked pasted on
+  m_userButton->setStyleSheet(
+      banner.isNull()
+          ? QString{}
+          : u"QPushButton { color: white; background: rgba(0, 0, 0, 90); border: 1px solid "
+            u"rgba(255, 255, 255, 70); border-radius: 8px; padding: 5px 14px; }"
+            u"QPushButton:hover { background: rgba(255, 255, 255, 40); }"
+            u"QPushButton:pressed { background: rgba(255, 255, 255, 25); }"_s);
   m_userService->setStyleSheet(banner.isNull() ? QString{} : u"color: rgba(255, 255, 255, 200);"_s);
 
   // The avatar, or the first letter of the name, in a circle sized by the font so that it follows
@@ -582,7 +592,7 @@ void ProfileWidget::refreshActivity() {
       rows.append(tableRow(animeLink(*anime) + u" "_s + muted(u"#%1"_s.arg(it->episode)),
                            muted(formatAsRelativeTime(it->time))));
     }
-    m_recent->setText(rows.isEmpty() ? note(tr("Episodes you watch show up here.")) : table(rows));
+    m_recent->setText(rows.isEmpty() ? note(tr("Nothing yet.")) : table(rows));
   }
 
   // Airing next, from what the service said about the anime being watched
@@ -610,8 +620,44 @@ void ProfileWidget::refreshActivity() {
                    formatAsRelativeTime(anime->next_episode_time) + u"  "_s + muted(when)));
     }
     m_airing->setText(
-        rows.isEmpty() ? note(tr("Nothing you are watching or planning has an episode on the way."))
+        rows.isEmpty() ? u"<p style=\"margin: 0;\">%1 <a href=\"akyuu:seasons\">%2</a></p>"_s.arg(
+                             tr("Nothing on your list is airing.").toHtmlEscaped(),
+                             tr("See this season").toHtmlEscaped())
                        : table(rows));
+  }
+
+  // Upcoming, from Watching and Planning, by when they start
+  {
+    std::vector<const anime::Details*> upcoming;
+    for (const auto& entry : entries) {
+      if (entry.status != anime::list::Status::Watching &&
+          entry.status != anime::list::Status::PlanToWatch) {
+        continue;
+      }
+      const auto anime = anime::db.item(entry.anime_id);
+      if (anime && anime->status == anime::Status::NotYetAired) upcoming.push_back(anime);
+    }
+    // A known date first, the month and the year for what is not known yet
+    const auto key = [](const anime::Details* anime) {
+      const auto& date = anime->date_started;
+      const auto year = date.year() ? date.year() : 9999u;
+      const auto month = date.month() ? date.month() : 13u;
+      return std::pair{year, month};
+    };
+    std::ranges::sort(upcoming, {}, key);
+
+    QStringList rows;
+    for (const auto anime : upcoming | std::views::take(kListLimit)) {
+      rows.append(
+          tableRow(animeLink(*anime), muted(formatFuzzyDate(anime->date_started, tr("TBA")))));
+    }
+    if (std::ssize(upcoming) > kListLimit) {
+      rows.append(tableRow(
+          muted(tr("and %n more", nullptr, static_cast<int>(std::ssize(upcoming) - kListLimit))),
+          {}));
+    }
+    m_upcoming->setText(table(rows));
+    m_upcomingGroup->setVisible(!upcoming.empty());
   }
 
   // Ready to watch, from the library folders
@@ -657,14 +703,12 @@ void ProfileWidget::refreshActivity() {
     if (akyuu::settings.libraryFolders().empty()) {
       m_ready->setText(
           u"<p style=\"margin: 0;\">%1 <a href=\"akyuu:library-settings\">%2</a></p>"_s.arg(
-              tr("No library folders are set.").toHtmlEscaped(),
-              tr("Add folders").toHtmlEscaped()));
+              tr("No library folders.").toHtmlEscaped(), tr("Add folders").toHtmlEscaped()));
     } else if (!scanned) {
-      m_ready->setText(u"<p style=\"margin: 0;\">%1 <a href=\"akyuu:scan\">%2</a></p>"_s.arg(
-          tr("The library folders have not been scanned yet.").toHtmlEscaped(),
-          tr("Scan now").toHtmlEscaped()));
+      // Scanned as soon as the page is shown, see `showEvent`
+      m_ready->setText(note(tr("Scanning...")));
     } else {
-      m_ready->setText(rows.isEmpty() ? note(tr("No unwatched episodes in the library folders."))
+      m_ready->setText(rows.isEmpty() ? note(tr("No new episodes in library folders."))
                                       : table(rows));
     }
   }
@@ -673,9 +717,8 @@ void ProfileWidget::refreshActivity() {
 void ProfileWidget::openLink(const QString& link) {
   const QUrl url{link};
   if (url.scheme() != u"akyuu"_s) return;
-  if (url.path() == u"scan"_s) {
-    m_ready->setText(note(tr("Scanning the library folders...")));
-    track::library()->scan();
+  if (url.path() == u"seasons"_s) {
+    mainWindow()->navigateTo(MainWindowPage::Seasons);
     return;
   }
   if (url.path() == u"library-settings"_s) {
@@ -749,6 +792,13 @@ void ProfileWidget::hideEvent(QHideEvent* event) {
 }
 
 void ProfileWidget::showEvent(QShowEvent* event) {
+  // The library is scanned once when it has not been yet, after the page is drawn, so that what is
+  // available shows without asking. The folders are watched afterwards, which keeps it current.
+  if (!track::library()->hasScanned() && !akyuu::settings.libraryFolders().empty()) {
+    QTimer::singleShot(0, this, []() {
+      if (!track::library()->hasScanned()) track::library()->scan();
+    });
+  }
   refreshAccount();
   refreshActivity();
   m_activityTimer->start();

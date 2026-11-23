@@ -82,6 +82,8 @@ private:
   QLabel* m_completedYear = nullptr;
 
   QLabel* m_airing = nullptr;
+  QGroupBox* m_upcomingGroup = nullptr;
+  QLabel* m_upcoming = nullptr;
   QLabel* m_ready = nullptr;
   ActivityChart* m_activityChart = nullptr;
   QLabel* m_recent = nullptr;
