@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- In the details of an anime, titles and tags that wrap onto more lines keep all of them. With a
+  larger font or a narrower window, the next row was drawn over their last line.
 - A folder made in the library folders while Akyuu runs is watched as well, so episodes put in it
   afterwards show as available without a scan. Before, only the first file that made the folder
   was noticed.

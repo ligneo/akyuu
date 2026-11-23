@@ -52,6 +52,34 @@
 
 namespace gui {
 
+namespace {
+
+// A value that wraps onto more lines keeps the height of all of them at its width. The form left
+// it the height of fewer lines when its width changed after the form was laid out, so the next row
+// was drawn over its last line.
+class WrappedLabel final : public QLabel {
+public:
+  WrappedLabel(const QString& text, QWidget* parent) : QLabel(text, parent) {
+    setAlignment(Qt::AlignLeft | Qt::AlignTop);
+  }
+
+  // The height of all the lines at the width the label has, which the form keeps it from going
+  // under, as it would otherwise only keep the height of one line
+  QSize minimumSizeHint() const override {
+    auto size = QLabel::minimumSizeHint();
+    if (width() > 0) size.setHeight(std::max(size.height(), heightForWidth(width())));
+    return size;
+  }
+
+protected:
+  void resizeEvent(QResizeEvent* event) override {
+    QLabel::resizeEvent(event);
+    if (event->size().width() != event->oldSize().width()) updateGeometry();
+  }
+};
+
+}  // namespace
+
 MediaDialog::MediaDialog(QWidget* parent) : QDialog(parent), ui_(new Ui::MediaDialog) {
   ui_->setupUi(this);
 
@@ -253,7 +281,7 @@ void MediaDialog::initDetails() {
   };
 
   const auto get_row_label = [this](const QString& text) {
-    auto* label = new QLabel(text, this);
+    auto* label = new WrappedLabel(text, this);
     label->setContextMenuPolicy(Qt::ContextMenuPolicy::NoContextMenu);
     label->setTextInteractionFlags(Qt::TextInteractionFlag::TextSelectableByMouse);
     label->setOpenExternalLinks(true);
