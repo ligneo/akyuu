@@ -81,7 +81,7 @@
    </widget>
    <widget class="QMenu" name="menuList">
     <property name="title">
-     <string>List</string>
+     <string>&amp;List</string>
     </property>
     <widget class="QMenu" name="menuExport">
      <property name="title">
@@ -96,7 +96,7 @@
    </widget>
    <widget class="QMenu" name="menuServices">
     <property name="title">
-     <string>Ser&amp;vices</string>
+     <string>&amp;Services</string>
     </property>
    </widget>
    <widget class="QMenu" name="menuView">
@@ -136,7 +136,7 @@
    </widget>
    <widget class="QMenu" name="menuLibrary">
     <property name="title">
-     <string>Library</string>
+     <string>Li&amp;brary</string>
     </property>
     <widget class="QMenu" name="menuLibraryFolders">
      <property name="title">

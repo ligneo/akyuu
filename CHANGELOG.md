@@ -47,6 +47,9 @@
   row and could not be resized. Dragging an edge moves it between its two columns only, and the
   widths are kept the next time.
 - The names and values in Settings > Advanced keep apart, and its rows are easier to tell apart.
+- The shortcut letters of menus are underlined only while Alt is held, as in Plasma, instead of
+  all the time. List and Library have one now (Alt+L, Alt+B), and Services has S, as View had V
+  as well.
 - The values on the Statistics page start at the same place in every group, so the page reads as
   one table.
 - The pages of Settings scroll, so the window opens smaller and can be made shorter. With a large

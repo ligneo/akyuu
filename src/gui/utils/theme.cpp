@@ -20,6 +20,9 @@
 #include "theme.hpp"
 
 #include <QApplication>
+#include <QKeyEvent>
+#include <QMenu>
+#include <QMenuBar>
 #include <QPalette>
 #include <QProxyStyle>
 #include <QStyle>
@@ -49,6 +52,52 @@ const QIcon& Theme::getIcon(const QString& key, const QString& extension, bool u
 }
 
 namespace {
+
+// Fusion underlines the shortcut letters of menus and buttons all the time, which reads as a
+// broken font. As in Plasma, they show while Alt is held down.
+class FusionStyle final : public QProxyStyle {
+public:
+  FusionStyle() : QProxyStyle(QStyleFactory::create(u"fusion"_s)) {
+    qApp->installEventFilter(this);
+  }
+
+  int styleHint(StyleHint hint, const QStyleOption* option, const QWidget* widget,
+                QStyleHintReturn* returnData) const override {
+    if (hint == SH_UnderlineShortcut) return m_altHeld ? 1 : 0;
+    return QProxyStyle::styleHint(hint, option, widget, returnData);
+  }
+
+protected:
+  bool eventFilter(QObject* object, QEvent* event) override {
+    switch (event->type()) {
+      case QEvent::KeyPress:
+      case QEvent::KeyRelease:
+        if (static_cast<QKeyEvent*>(event)->key() == Qt::Key_Alt) {
+          setAltHeld(event->type() == QEvent::KeyPress);
+        }
+        break;
+      // Alt+Tab leaves without a release
+      case QEvent::ApplicationDeactivate:
+        setAltHeld(false);
+        break;
+      default:
+        break;
+    }
+    return QProxyStyle::eventFilter(object, event);
+  }
+
+private:
+  void setAltHeld(const bool held) {
+    if (held == m_altHeld) return;
+    m_altHeld = held;
+    for (const auto window : QApplication::topLevelWidgets()) {
+      for (const auto menuBar : window->findChildren<QMenuBar*>()) menuBar->update();
+      if (qobject_cast<QMenu*>(window)) window->update();
+    }
+  }
+
+  bool m_altHeld = false;
+};
 
 // The owl on a night sky: deep purple surfaces, the owl's purple for selections, lavender for
 // links and amber, its eyes, for accents. See also `styles/akyuu.qss`.
@@ -258,7 +307,9 @@ void Theme::applyStyle() {
   } else if (akyuuStyle) {
     style = u"fusion"_s;
   }
-  if (qApp->style()->name().compare(style, Qt::CaseInsensitive) != 0) {
+  if (style.compare(u"fusion"_s, Qt::CaseInsensitive) == 0) {
+    qApp->setStyle(new FusionStyle);
+  } else if (qApp->style()->name().compare(style, Qt::CaseInsensitive) != 0) {
     qApp->setStyle(style);
   }
 
