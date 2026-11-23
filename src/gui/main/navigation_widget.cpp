@@ -20,8 +20,10 @@
 #include "navigation_widget.hpp"
 
 #include <QMouseEvent>
+#include <QSignalBlocker>
 #include <QStyle>
 #include <algorithm>
+#include <optional>
 
 #include "akyuu/session.hpp"
 #include "base/string.hpp"
@@ -88,6 +90,19 @@ NavigationWidget::NavigationWidget(QWidget* parent) : QTreeWidget(parent) {
 }
 
 void NavigationWidget::refresh() {
+  // Clearing loses the current item, which marks the page that is showing, so it is put back
+  // afterwards. A sync at startup refreshes the sidebar, and left no page marked.
+  const auto current = currentItem();
+  const auto currentPage =
+      current ? std::optional{current->data(0, static_cast<int>(NavigationItemDataRole::PageIndex))
+                                  .value<MainWindowPage>()}
+              : std::nullopt;
+  const auto currentStatus =
+      current && current->parent()
+          ? std::optional{current->data(0, static_cast<int>(NavigationItemDataRole::ListStatus))
+                              .value<anime::list::Status>()}
+          : std::nullopt;
+
   setUpdatesEnabled(false);
   clear();
 
@@ -126,6 +141,13 @@ void NavigationWidget::refresh() {
   addItem("Seasons", "calendar_month", MainWindowPage::Seasons);
   addItem("Torrents", "rss_feed", MainWindowPage::Torrents);
   addItem("Library", "folder", MainWindowPage::Library);
+
+  if (currentPage) {
+    // Without signals, as the page itself does not change
+    const QSignalBlocker blocker(this);
+    setCurrentItem(currentStatus ? findListStatusItem(*currentStatus)
+                                 : findItemByPage(*currentPage));
+  }
 
   setUpdatesEnabled(true);
   updateMaximumWidth();
