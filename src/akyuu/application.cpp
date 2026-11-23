@@ -49,7 +49,8 @@
 
 namespace akyuu {
 
-Application::Application(int argc, char* argv[])
+// QApplication keeps a reference to argc, so it must outlive the constructor
+Application::Application(int& argc, char* argv[])
     : QApplication(argc, argv),
       lock_file_(
           u"%1/%2.lock"_s.arg(QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation))
