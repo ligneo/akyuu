@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include <QFormLayout>
 #include <QLabel>
 #include <QList>
 #include <QProgressBar>
@@ -40,11 +41,13 @@ public:
   void refreshLocalDatabase();
 
 protected:
+  void changeEvent(QEvent* event) override;
   void hideEvent(QHideEvent* event) override;
   void resizeEvent(QResizeEvent* event) override;
   void showEvent(QShowEvent* event) override;
 
 private:
+  void alignForms();
   void fitToWindow();
 
   QWidget* m_container = nullptr;
@@ -65,6 +68,7 @@ private:
 
   QList<QProgressBar*> m_scoreBars;
   QList<QLabel*> m_scoreCounts;
+  QList<QFormLayout*> m_forms;
 };
 
 }  // namespace gui

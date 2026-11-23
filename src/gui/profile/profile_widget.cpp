@@ -84,6 +84,7 @@ ProfileWidget::ProfileWidget(QWidget* parent) : PageWidget(parent) {
   {
     const auto group = new QGroupBox(tr("Anime list"), container);
     const auto form = createForm(group);
+    m_forms.append(form);
 
     const auto add_row = [this, form](const QString& text) {
       const auto label = new QLabel("-", form->parentWidget());
@@ -136,6 +137,7 @@ ProfileWidget::ProfileWidget(QWidget* parent) : PageWidget(parent) {
   {
     const auto group = new QGroupBox(tr("Local database"), container);
     const auto form = createForm(group);
+    m_forms.append(form);
 
     m_animeItems = new QLabel("-", group);
     m_imageFiles = new QLabel("-", group);
@@ -154,6 +156,7 @@ ProfileWidget::ProfileWidget(QWidget* parent) : PageWidget(parent) {
   {
     const auto group = new QGroupBox(tr("Akyuu"), container);
     const auto form = createForm(group);
+    m_forms.append(form);
 
     m_uptime = new QLabel("-", group);
     m_owlsWoken = new QLabel("-", group);
@@ -172,6 +175,7 @@ ProfileWidget::ProfileWidget(QWidget* parent) : PageWidget(parent) {
   connect(m_refreshTimer, &QTimer::timeout, this, &ProfileWidget::refresh);
 
   containerLayout->addStretch();
+  alignForms();
 
   // The page shrinks to fit a small window, see `fitToWindow`, and scrolls below that instead of
   // squeezing the groups
@@ -261,6 +265,34 @@ void ProfileWidget::showEvent(QShowEvent* event) {
   m_refreshTimer->start();
   PageWidget::showEvent(event);
   fitToWindow();
+}
+
+// Each group has a form of its own, so their values would start wherever their longest label
+// ends. They start at the same place in all of them instead, which reads as one table.
+void ProfileWidget::alignForms() {
+  int width = 0;
+  for (const auto form : m_forms) {
+    for (int row = 0; row < form->rowCount(); ++row) {
+      if (const auto item = form->itemAt(row, QFormLayout::LabelRole); item && item->widget()) {
+        width = std::max(width, item->widget()->sizeHint().width());
+      }
+    }
+  }
+  for (const auto form : m_forms) {
+    for (int row = 0; row < form->rowCount(); ++row) {
+      if (const auto item = form->itemAt(row, QFormLayout::LabelRole); item && item->widget()) {
+        item->widget()->setMinimumWidth(width);
+      }
+    }
+  }
+}
+
+void ProfileWidget::changeEvent(QEvent* event) {
+  PageWidget::changeEvent(event);
+  // The labels take the new font of a zoomed page only afterwards
+  if (event->type() == QEvent::FontChange) {
+    QMetaObject::invokeMethod(this, &ProfileWidget::alignForms, Qt::QueuedConnection);
+  }
 }
 
 void ProfileWidget::resizeEvent(QResizeEvent* event) {
