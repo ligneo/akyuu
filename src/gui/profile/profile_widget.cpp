@@ -37,13 +37,18 @@
 #include <set>
 
 #include "akyuu/accounts.hpp"
+#include "akyuu/settings.hpp"
 #include "gui/media/media_dialog.hpp"
 #include "gui/settings/settings_dialog.hpp"
 #include "gui/utils/format.hpp"
+#include "gui/utils/image_provider.hpp"
 #include "media/anime_db.hpp"
 #include "media/anime_history.hpp"
 #include "media/anime_list.hpp"
 #include "media/anime_utils.hpp"
+#include "sync/anilist/anilist.hpp"
+#include "sync/kitsu/kitsu.hpp"
+#include "sync/myanimelist/myanimelist.hpp"
 #include "sync/service.hpp"
 #include "track/library.hpp"
 
@@ -157,12 +162,6 @@ std::vector<track::EpisodeRange> unwatchedRanges(const anime::list::Entry& entry
   return ranges;
 }
 
-int rangeSize(const std::vector<track::EpisodeRange>& ranges) {
-  int count = 0;
-  for (const auto& [first, last] : ranges) count += last - first + 1;
-  return count;
-}
-
 }  // namespace
 
 // Bars for the episodes of each of the last two weeks, with the days under them. The count of a day
@@ -232,8 +231,10 @@ protected:
       painter.setFont(font);
       painter.setPen(palette().color(isToday ? QPalette::WindowText : QPalette::PlaceholderText));
       const QRectF dayLabel{center - slot / 2, chartBottom + 4, slot, static_cast<qreal>(line)};
-      painter.drawText(dayLabel, Qt::AlignCenter,
-                       QLocale::system().dayName(date.dayOfWeek(), QLocale::ShortFormat));
+      // The first letter alone when the short names would run into each other
+      auto day = QLocale::system().dayName(date.dayOfWeek(), QLocale::ShortFormat);
+      if (painter.fontMetrics().horizontalAdvance(day) > slot - 4) day = day.left(1);
+      painter.drawText(dayLabel, Qt::AlignCenter, day);
       font.setBold(false);
       painter.setFont(font);
     }
@@ -244,6 +245,49 @@ private:
   std::vector<int> m_days;
 };
 
+// The account at the top of the page, over the banner of the profile when the service has one
+class ProfileHeader final : public QWidget {
+public:
+  using QWidget::QWidget;
+
+  void setBanner(const QPixmap& banner) {
+    m_banner = banner;
+    update();
+  }
+
+  bool hasBanner() const {
+    return !m_banner.isNull();
+  }
+
+protected:
+  void paintEvent(QPaintEvent*) override {
+    if (m_banner.isNull()) return;
+
+    QPainter painter(this);
+    painter.setRenderHint(QPainter::Antialiasing);
+    painter.setRenderHint(QPainter::SmoothPixmapTransform);
+
+    QPainterPath path;
+    path.addRoundedRect(rect(), 8, 8);
+    painter.setClipPath(path);
+
+    // Covers the header and keeps the middle of the picture, as the services show it
+    const auto scaled = m_banner.size().scaled(size(), Qt::KeepAspectRatioByExpanding);
+    const QRect target{(width() - scaled.width()) / 2, (height() - scaled.height()) / 2,
+                       scaled.width(), scaled.height()};
+    painter.drawPixmap(target, m_banner);
+
+    // Darker on the left, where the name is, so that it reads on any picture
+    QLinearGradient shade{0, 0, static_cast<qreal>(width()), 0};
+    shade.setColorAt(0, QColor{0, 0, 0, 170});
+    shade.setColorAt(1, QColor{0, 0, 0, 60});
+    painter.fillRect(rect(), shade);
+  }
+
+private:
+  QPixmap m_banner;
+};
+
 ProfileWidget::ProfileWidget(QWidget* parent) : PageWidget(parent) {
   const auto container = new QWidget(this);
   const auto containerLayout = new QVBoxLayout(container);
@@ -252,7 +296,8 @@ ProfileWidget::ProfileWidget(QWidget* parent) : PageWidget(parent) {
 
   // Account
   {
-    const auto header = new QWidget(container);
+    const auto header = new ProfileHeader(container);
+    m_header = header;
     const auto layout = new QHBoxLayout(header);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(12);
@@ -262,11 +307,14 @@ ProfileWidget::ProfileWidget(QWidget* parent) : PageWidget(parent) {
     layout->addWidget(m_avatar);
 
     const auto names = new QVBoxLayout();
+    m_headerLayout = layout;
+    m_names = names;
     names->setSpacing(0);
     m_userName = new QLabel(header);
     m_userName->setTextFormat(Qt::RichText);
     m_userService = new QLabel(header);
     m_userService->setObjectName("profileCaption");
+    m_userService->setWordWrap(true);
     names->addWidget(m_userName);
     names->addWidget(m_userService);
     // Centered next to the avatar without spacers, which would take the height left on the page
@@ -281,7 +329,6 @@ ProfileWidget::ProfileWidget(QWidget* parent) : PageWidget(parent) {
         QDesktopServices::openUrl(QUrl{m_userUrl});
       }
     });
-    layout->addWidget(m_userButton, 0, Qt::AlignVCenter);
 
     containerLayout->addWidget(header);
   }
@@ -301,6 +348,7 @@ ProfileWidget::ProfileWidget(QWidget* parent) : PageWidget(parent) {
       value->setTextFormat(Qt::RichText);
       const auto text = new QLabel(caption, tile);
       text->setObjectName("profileCaption");
+      text->setWordWrap(true);
       layout->addWidget(value);
       layout->addWidget(text);
       m_tileFrames.append(tile);
@@ -308,10 +356,11 @@ ProfileWidget::ProfileWidget(QWidget* parent) : PageWidget(parent) {
     };
     m_weekEpisodes = addTile(tr("Episodes this week"), tr("Episodes watched in the last 7 days"));
     m_streak = addTile(tr("Day streak"), tr("Days in a row with at least one episode watched"));
-    m_readyEpisodes =
-        addTile(tr("Ready to watch"), tr("Unwatched episodes of your list in the library folders"));
-    m_airingSoon = addTile(tr("Airing this week"),
-                           tr("Anime you are watching with an episode out in the next 7 days"));
+    // The lists below already count what is ready and what airs, so these say something else
+    m_weekTime = addTile(tr("Watched this week"),
+                         tr("Time spent on the episodes of the last 7 days, by their length"));
+    m_completedYear =
+        addTile(tr("Completed this year"), tr("Anime on your list finished this calendar year"));
     containerLayout->addLayout(m_tiles);
   }
 
@@ -367,6 +416,17 @@ ProfileWidget::ProfileWidget(QWidget* parent) : PageWidget(parent) {
   connect(track::library(), &track::Library::availabilityChanged, this, refreshIfVisible);
   connect(track::library(), &track::Library::scanCompleted, this, refreshIfVisible);
 
+  const auto refreshAccountIfVisible = [this]() {
+    if (isVisible()) refreshAccount();
+  };
+  connect(&imageProvider, &ImageProvider::userImageChanged, this, refreshAccountIfVisible);
+  for (const auto service :
+       {static_cast<services::Service*>(services::anilist::Service::instance()),
+        static_cast<services::Service*>(services::kitsu::Service::instance()),
+        static_cast<services::Service*>(services::myanimelist::Service::instance())}) {
+    connect(service, &services::Service::authenticationCompleted, this, refreshAccountIfVisible);
+  }
+
   containerLayout->addStretch();
   arrangeColumns();
 
@@ -416,8 +476,24 @@ void ProfileWidget::refreshAccount() {
   m_userButton->setText(user.isEmpty() ? tr("Set up an account")
                                        : tr("View on %1").arg(serviceName));
 
-  // The first letter of the name in a circle, sized by the font so that it follows the zoom
-  const auto size = fontMetrics().height() * 3;
+  const auto slug = services::serviceSlug(service).toStdString();
+  const auto avatarUrl =
+      user.isEmpty() ? QString{} : QString::fromStdString(akyuu::accounts.serviceAvatar(slug));
+  const auto bannerUrl =
+      user.isEmpty() ? QString{} : QString::fromStdString(akyuu::accounts.serviceBanner(slug));
+  const auto avatar = imageProvider.loadUserImage(avatarUrl);
+  const auto banner = imageProvider.loadUserImage(bannerUrl);
+
+  // Over a banner the header is padded like a card, and its text is light on the darkened picture
+  m_header->setBanner(banner);
+  const auto padding = banner.isNull() ? 0 : 20;
+  m_header->layout()->setContentsMargins(padding, padding, padding, padding);
+  m_userName->setStyleSheet(banner.isNull() ? QString{} : u"color: white;"_s);
+  m_userService->setStyleSheet(banner.isNull() ? QString{} : u"color: rgba(255, 255, 255, 200);"_s);
+
+  // The avatar, or the first letter of the name, in a circle sized by the font so that it follows
+  // the zoom
+  const auto size = fontMetrics().height() * (banner.isNull() ? 3 : 4);
   const auto ratio = devicePixelRatioF();
   QPixmap pixmap(QSize{size, size} * ratio);
   pixmap.setDevicePixelRatio(ratio);
@@ -425,16 +501,29 @@ void ProfileWidget::refreshAccount() {
   {
     QPainter painter(&pixmap);
     painter.setRenderHint(QPainter::Antialiasing);
+    painter.setRenderHint(QPainter::SmoothPixmapTransform);
+    const QRectF circle{0, 0, static_cast<qreal>(size), static_cast<qreal>(size)};
+    if (!avatar.isNull()) {
+      QPainterPath path;
+      path.addEllipse(circle);
+      painter.setClipPath(path);
+      const auto scaled = avatar.size().scaled(QSize{size, size}, Qt::KeepAspectRatioByExpanding);
+      painter.drawPixmap(QRect{(size - scaled.width()) / 2, (size - scaled.height()) / 2,
+                               scaled.width(), scaled.height()},
+                         avatar);
+    }
     painter.setPen(Qt::NoPen);
     painter.setBrush(palette().color(QPalette::Highlight));
-    painter.drawEllipse(QRectF{0, 0, static_cast<qreal>(size), static_cast<qreal>(size)});
+    if (avatar.isNull()) painter.drawEllipse(circle);
     auto font = this->font();
     font.setPixelSize(size / 2);
     font.setWeight(QFont::Weight::DemiBold);
     painter.setFont(font);
     painter.setPen(palette().color(QPalette::HighlightedText));
-    painter.drawText(QRect{0, 0, size, size}, Qt::AlignCenter,
-                     user.isEmpty() ? u"?"_s : user.left(1).toUpper());
+    if (avatar.isNull()) {
+      painter.drawText(QRect{0, 0, size, size}, Qt::AlignCenter,
+                       user.isEmpty() ? u"?"_s : user.left(1).toUpper());
+    }
   }
   m_avatar->setPixmap(pixmap);
   m_avatar->setFixedSize(size, size);
@@ -456,6 +545,31 @@ void ProfileWidget::refreshActivity() {
   m_activityChart->setDays(today, days);
   m_weekEpisodes->setText(tileValue(weekEpisodes));
   m_streak->setText(tileValue(streakDays(today)));
+
+  // Watched this week, by the length of each episode, or the usual length when it is not known
+  {
+    constexpr int kUsualEpisodeLength = 24;
+    int minutes = 0;
+    for (const auto& item : anime::history.items()) {
+      if (item.episode <= 0) continue;
+      const auto age = localDate(item.time).daysTo(today);
+      if (age < 0 || age >= 7) continue;
+      const auto anime = anime::db.item(item.anime_id);
+      minutes += anime && anime->episode_length > 0 ? anime->episode_length : kUsualEpisodeLength;
+    }
+    const auto text =
+        minutes < 60 ? tr("%1m").arg(minutes) : tr("%1h %2m").arg(minutes / 60).arg(minutes % 60);
+    m_weekTime->setText(largeText(this, text, 2.0));
+  }
+
+  // Completed this year, by the date on the list
+  {
+    const auto year = static_cast<unsigned>(today.year());
+    const auto completed = std::ranges::count_if(entries, [year](const anime::list::Entry& entry) {
+      return entry.status == anime::list::Status::Completed && entry.date_completed.year() == year;
+    });
+    m_completedYear->setText(tileValue(static_cast<int>(completed)));
+  }
 
   {
     QStringList rows;
@@ -480,12 +594,6 @@ void ProfileWidget::refreshActivity() {
     }
     std::ranges::sort(airing, {}, &anime::Details::next_episode_time);
 
-    const auto week = now + 7 * 24 * 60 * 60;
-    m_airingSoon->setText(tileValue(
-        static_cast<int>(std::ranges::count_if(airing, [week](const anime::Details* anime) {
-          return anime->next_episode_time <= week;
-        }))));
-
     QStringList rows;
     for (const auto anime : airing | std::views::take(kListLimit)) {
       const auto time = QDateTime::fromSecsSinceEpoch(anime->next_episode_time).toLocalTime();
@@ -506,7 +614,6 @@ void ProfileWidget::refreshActivity() {
       std::vector<track::EpisodeRange> ranges;
     };
     std::vector<Ready> ready;
-    int readyEpisodes = 0;
     for (const auto& entry : entries) {
       using enum anime::list::Status;
       if (entry.status == Completed || entry.status == Dropped) continue;
@@ -514,7 +621,6 @@ void ProfileWidget::refreshActivity() {
       if (!anime) continue;
       auto ranges = unwatchedRanges(entry);
       if (ranges.empty()) continue;
-      readyEpisodes += rangeSize(ranges);
       ready.push_back({anime, &entry, std::move(ranges)});
     }
     // What is being watched first, then what was touched last
@@ -526,7 +632,6 @@ void ProfileWidget::refreshActivity() {
     });
 
     const auto scanned = track::library()->hasScanned();
-    m_readyEpisodes->setText(scanned ? tileValue(readyEpisodes) : tileValue(0));
 
     QStringList rows;
     for (const auto& item : ready | std::views::take(kListLimit)) {
@@ -540,8 +645,16 @@ void ProfileWidget::refreshActivity() {
       rows.append(tableRow(
           muted(tr("and %n more", nullptr, static_cast<int>(std::ssize(ready) - kListLimit))), {}));
     }
-    if (!scanned) {
-      m_ready->setText(note(tr("The library folders have not been scanned yet.")));
+    // What to do about an empty list, when there is something to do
+    if (akyuu::settings.libraryFolders().empty()) {
+      m_ready->setText(
+          u"<p style=\"margin: 0;\">%1 <a href=\"akyuu:library-settings\">%2</a></p>"_s.arg(
+              tr("No library folders are set.").toHtmlEscaped(),
+              tr("Add folders").toHtmlEscaped()));
+    } else if (!scanned) {
+      m_ready->setText(u"<p style=\"margin: 0;\">%1 <a href=\"akyuu:scan\">%2</a></p>"_s.arg(
+          tr("The library folders have not been scanned yet.").toHtmlEscaped(),
+          tr("Scan now").toHtmlEscaped()));
     } else {
       m_ready->setText(rows.isEmpty() ? note(tr("No unwatched episodes in the library folders."))
                                       : table(rows));
@@ -551,7 +664,17 @@ void ProfileWidget::refreshActivity() {
 
 void ProfileWidget::openLink(const QString& link) {
   const QUrl url{link};
-  if (url.scheme() != u"akyuu"_s || url.path() != u"info"_s) return;
+  if (url.scheme() != u"akyuu"_s) return;
+  if (url.path() == u"scan"_s) {
+    m_ready->setText(note(tr("Scanning the library folders...")));
+    track::library()->scan();
+    return;
+  }
+  if (url.path() == u"library-settings"_s) {
+    SettingsDialog::show(this, SettingsPageId::Library);
+    return;
+  }
+  if (url.path() != u"info"_s) return;
   const auto id = QUrlQuery(url).queryItemValue(u"id"_s).toInt();
   if (const auto anime = anime::db.item(id)) {
     MediaDialog::show(this, MediaDialogPage::Details, *anime);
@@ -564,6 +687,13 @@ void ProfileWidget::arrangeColumns() {
   const auto columnCount = available >= fontMetrics().averageCharWidth() * kTwoColumnWidth ? 2 : 1;
   if (columnCount == m_columnCount) return;
   m_columnCount = columnCount;
+
+  // A narrow window puts the button of the account under its name, which leaves the name its width
+  if (columnCount == 2) {
+    m_headerLayout->addWidget(m_userButton, 0, Qt::AlignVCenter);
+  } else {
+    m_names->addWidget(m_userButton, 0, Qt::AlignLeft);
+  }
 
   const auto tilesPerRow = columnCount == 2 ? 4 : 2;
   for (int i = 0; i < m_tileFrames.size(); ++i) {

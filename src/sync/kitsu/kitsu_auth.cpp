@@ -163,6 +163,11 @@ void Service::resolveUser(std::function<void()> onSuccess) {
     akyuu::accounts.setKitsuUserId(user["id"].toString().toStdString());
     akyuu::accounts.setKitsuDisplayName(attributes["name"].toString().toStdString());
     akyuu::accounts.setKitsuUsername(attributes["slug"].toString().toStdString());
+    // For the profile page, which asks for nothing itself
+    akyuu::accounts.setServiceAvatar("kitsu",
+                                     attributes["avatar"]["large"].toString().toStdString());
+    akyuu::accounts.setServiceBanner("kitsu",
+                                     attributes["coverImage"]["large"].toString().toStdString());
 
     if (authenticated) {
       akyuu::accounts.setKitsuEmail(attributes["email"].toString().toStdString());

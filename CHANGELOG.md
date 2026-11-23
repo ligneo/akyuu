@@ -3,9 +3,11 @@
 ## Unreleased
 
 - The profile button opens a Profile page, which the statistics stay apart from. It shows the
-  account with a link to it, this week's episodes and day streak, what airs next on the Watching
-  list with a countdown, the unwatched episodes in the library folders, and the episodes watched
-  on each of the last two weeks. Titles open their details.
+  account with its avatar and banner, this week's episodes and time watched, the day streak, the
+  anime completed this year, what airs next on the Watching list with a countdown, the unwatched
+  episodes in the library folders, and the episodes watched on each of the last two weeks. Titles
+  open their details. The avatar and banner come with the account details that AniList, Kitsu
+  and MyAnimeList already send at sign in, and are kept on disk and checked once a day.
 - Torrents can be sent to qBittorrent through its Web UI, in Settings > Torrents > Downloads.
   This works when qBittorrent runs without a window, such as `qbittorrent-nox`, or on another
   computer, and the download folder and an optional category always reach it. Test checks the

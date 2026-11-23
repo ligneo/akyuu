@@ -220,7 +220,9 @@ QString libraryEntryFields() {
 }
 
 QString userFields() {
-  return u"email,"
+  return u"avatar,"
+         "coverImage,"
+         "email,"
          "name,"
          "ratingSystem,"
          "slug"_s;

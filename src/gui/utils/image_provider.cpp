@@ -19,6 +19,7 @@
 
 #include "image_provider.hpp"
 
+#include <QCryptographicHash>
 #include <QDateTime>
 #include <QDir>
 #include <QFile>
@@ -143,6 +144,71 @@ QPixmap ImageProvider::loadPoster(const int id) {
 void ImageProvider::reloadPoster(const int id) {
   QPixmapCache::remove(cacheKey(id));
   loadPoster(id);
+}
+
+QPixmap ImageProvider::loadUserImage(const QString& url) {
+  if (url.isEmpty()) return {};
+
+  const auto key = u"user/%1"_s.arg(url);
+  QPixmap pixmap;
+  if (QPixmapCache::find(key, &pixmap)) return pixmap;
+
+  const QFileInfo file{userImageFileName(url)};
+  if (file.exists() && pixmap.load(file.filePath())) {
+    QPixmapCache::insert(key, pixmap);
+    // The address of an avatar stays the same when it is replaced, so the file is checked with the
+    // date it was saved, which costs an empty reply while nothing changed
+    constexpr int kStaleDays = 1;
+    if (!m_userImagesChecked.contains(url) &&
+        file.lastModified().daysTo(QDateTime::currentDateTime()) >= kStaleDays) {
+      fetchUserImage(url, true);
+    }
+    return pixmap;
+  }
+
+  fetchUserImage(url, false);
+  return {};
+}
+
+void ImageProvider::fetchUserImage(const QString& url, const bool revalidate) {
+  // Once a session, so that a failed request is not repeated on every repaint
+  if (m_userImagesChecked.contains(url)) return;
+  m_userImagesChecked.insert(url);
+
+  QNetworkRequest request{QUrl{url}};
+  const auto fileName = userImageFileName(url);
+  if (revalidate) {
+    request.setHeader(QNetworkRequest::IfModifiedSinceHeader, QFileInfo(fileName).lastModified());
+  }
+
+  m_manager->get(request, this, [this, url, fileName](QRestReply& reply) {
+    if (reply.httpStatus() == 304) {
+      // Still current, which is not asked again for another day
+      QFile file{fileName};
+      if (file.open(QIODevice::ReadWrite)) {
+        file.setFileTime(QDateTime::currentDateTime(), QFileDevice::FileModificationTime);
+      }
+      return;
+    }
+    if (!reply.isHttpStatusSuccess() || reply.hasError()) return;
+
+    QFile file{fileName};
+    QDir().mkpath(QFileInfo(file).path());
+    if (!file.open(QIODevice::WriteOnly)) return;
+    file.write(reply.readBody());
+    file.close();
+    QPixmapCache::remove(u"user/%1"_s.arg(url));
+    emit userImageChanged(url);
+  });
+}
+
+// Named after the address, which differs between the services and the avatar and the banner
+QString ImageProvider::userImageFileName(const QString& url) const {
+  const auto hash = QCryptographicHash::hash(url.toUtf8(), QCryptographicHash::Sha1).toHex();
+  auto extension = QFileInfo(QUrl{url}.path()).suffix();
+  if (extension.isEmpty()) extension = u"jpg"_s;
+  const auto path = QString::fromStdString(akyuu::get_data_path());
+  return u"%1/cache/user/%2.%3"_s.arg(path, QString::fromLatin1(hash), extension);
 }
 
 QString ImageProvider::cachePath() const {

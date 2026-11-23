@@ -202,4 +202,20 @@ std::string Accounts::serviceUsername(const std::string& service) const {
   return {};
 }
 
+std::string Accounts::serviceAvatar(const std::string& service) const {
+  return value(service + ".avatar").toString().toStdString();
+}
+
+std::string Accounts::serviceBanner(const std::string& service) const {
+  return value(service + ".banner").toString().toStdString();
+}
+
+void Accounts::setServiceAvatar(const std::string& service, const std::string& url) const {
+  setValue(service + ".avatar", url);
+}
+
+void Accounts::setServiceBanner(const std::string& service, const std::string& url) const {
+  setValue(service + ".banner", url);
+}
+
 }  // namespace akyuu

@@ -94,6 +94,13 @@ public:
 
   std::string serviceUsername(const std::string& service) const;
 
+  // Where the pictures of the account are, as the service gave them along with the name. The
+  // profile page shows them. Not every service has a banner.
+  std::string serviceAvatar(const std::string& service) const;
+  std::string serviceBanner(const std::string& service) const;
+  void setServiceAvatar(const std::string& service, const std::string& url) const;
+  void setServiceBanner(const std::string& service, const std::string& url) const;
+
 signals:
   void authenticationChanged(bool authenticated);
 

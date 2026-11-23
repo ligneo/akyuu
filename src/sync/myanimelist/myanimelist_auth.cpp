@@ -138,6 +138,9 @@ void Service::authenticateUser() {
     }
 
     akyuu::accounts.setMyanimelistUsername(json->object()["name"].toString().toStdString());
+    // For the profile page. MyAnimeList has no banner.
+    akyuu::accounts.setServiceAvatar("myanimelist",
+                                     json->object()["picture"].toString().toStdString());
 
     emit authenticationCompleted(true);
   };

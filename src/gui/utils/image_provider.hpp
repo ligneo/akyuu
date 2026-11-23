@@ -42,21 +42,28 @@ public:
   QPixmap loadPoster(const int id);
   void reloadPoster(const int id);
 
+  // The pictures of the account, which are kept on disk and checked for a new version once a day
+  QPixmap loadUserImage(const QString& url);
+
   QString cachePath() const;
   void clearCache();
 
 signals:
   void posterChanged(const int id);
+  void userImageChanged(const QString& url);
 
 private:
   QString fileName(const int id) const;
   bool isStale(const int id) const;
   bool canRetry(const int id) const;
   void retryAfter(const int id);
+  void fetchUserImage(const QString& url, const bool revalidate);
+  QString userImageFileName(const QString& url) const;
 
   QRestAccessManager* m_manager = nullptr;
   QSet<int> m_loading;
   QMap<int, QDateTime> m_retryAfter;
+  QSet<QString> m_userImagesChecked;
 };
 
 inline ImageProvider imageProvider;

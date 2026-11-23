@@ -56,6 +56,10 @@ void Service::authenticateUser() {
     }
 
     akyuu::accounts.setAnilistUsername((*viewer)["name"].toString().toStdString());
+    // Asked along with the name, so the profile page gets its pictures without a request of its own
+    akyuu::accounts.setServiceAvatar("anilist",
+                                     (*viewer)["avatar"]["large"].toString().toStdString());
+    akyuu::accounts.setServiceBanner("anilist", (*viewer)["bannerImage"].toString().toStdString());
     akyuu::accounts.setAnilistRatingSystem(
         (*viewer)["mediaListOptions"]["scoreFormat"].toString().toStdString());
 

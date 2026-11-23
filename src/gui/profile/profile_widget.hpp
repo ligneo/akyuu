@@ -31,6 +31,7 @@
 namespace gui {
 
 class ActivityChart;
+class ProfileHeader;
 
 class ProfileWidget final : public PageWidget {
   Q_OBJECT
@@ -62,6 +63,9 @@ private:
   QList<QGroupBox*> m_rightGroups;
   int m_columnCount = 0;
 
+  ProfileHeader* m_header = nullptr;
+  QHBoxLayout* m_headerLayout = nullptr;
+  QVBoxLayout* m_names = nullptr;
   QLabel* m_avatar = nullptr;
   QLabel* m_userName = nullptr;
   QLabel* m_userService = nullptr;
@@ -72,8 +76,8 @@ private:
   QList<QFrame*> m_tileFrames;
   QLabel* m_weekEpisodes = nullptr;
   QLabel* m_streak = nullptr;
-  QLabel* m_readyEpisodes = nullptr;
-  QLabel* m_airingSoon = nullptr;
+  QLabel* m_weekTime = nullptr;
+  QLabel* m_completedYear = nullptr;
 
   QLabel* m_airing = nullptr;
   QLabel* m_ready = nullptr;
