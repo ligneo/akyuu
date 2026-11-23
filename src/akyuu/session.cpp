@@ -56,6 +56,10 @@ QVariantList fromColumns(const QList<int>& columns) {
 
 }  // namespace
 
+std::optional<QList<int>> Session::animeListColumnWidths() const {
+  return toColumns(value("animeList.columnWidths"));
+}
+
 std::optional<QList<int>> Session::animeListHiddenColumns() const {
   return toColumns(value("animeList.hiddenColumns"));
 }
@@ -167,6 +171,10 @@ gui::AnimeListProxyModelFilter Session::searchListFilters() const {
   // clang-format on
 }
 
+std::optional<QList<int>> Session::searchListColumnWidths() const {
+  return toColumns(value("searchList.columnWidths"));
+}
+
 std::optional<QList<int>> Session::searchListHiddenColumns() const {
   return toColumns(value("searchList.hiddenColumns"));
 }
@@ -185,6 +193,10 @@ gui::ListViewMode Session::searchListViewMode() const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+void Session::setAnimeListColumnWidths(const QList<int>& widths) const {
+  setValue("animeList.columnWidths", fromColumns(widths));
+}
 
 void Session::setAnimeListHiddenColumns(const QList<int>& columns) const {
   setValue("animeList.hiddenColumns", fromColumns(columns));
@@ -262,6 +274,10 @@ void Session::setSearchListFilters(const gui::AnimeListProxyModelFilter& filters
   }
   setValue("searchList.filters",
            QJsonDocument{object}.toJson(QJsonDocument::Compact).toBase64().toStdString());
+}
+
+void Session::setSearchListColumnWidths(const QList<int>& widths) const {
+  setValue("searchList.columnWidths", fromColumns(widths));
 }
 
 void Session::setSearchListHiddenColumns(const QList<int>& columns) const {

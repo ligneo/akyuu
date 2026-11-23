@@ -42,6 +42,9 @@
   page that is showing stays marked after a sync or a list update.
 - The Type and Last updated columns of the anime list widen with a larger font or zoom, so
   "Special" and "7 months ago" are no longer cut short.
+- The Title column of the anime list can be dragged wider or narrower; it filled the rest of the
+  row and could not be resized. Dragging an edge moves it between its two columns only, and the
+  widths are kept the next time.
 - The names and values in Settings > Advanced keep apart, and its rows are easier to tell apart.
 - Icons are drawn once on a scaled display, such as at 125% or 160%, instead of on every repaint.
 

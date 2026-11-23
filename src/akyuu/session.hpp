@@ -40,6 +40,7 @@ namespace akyuu {
 
 class Session final : public base::Settings {
 public:
+  std::optional<QList<int>> animeListColumnWidths() const;
   std::optional<QList<int>> animeListHiddenColumns() const;
   int animeListSortColumn() const;
   Qt::SortOrder animeListSortOrder() const;
@@ -58,12 +59,14 @@ public:
   // 0.3.0's switch, read once to carry it over to `content.adultTitles`
   std::optional<bool> seasonsHideNsfw() const;
   gui::AnimeListProxyModelFilter searchListFilters() const;
+  std::optional<QList<int>> searchListColumnWidths() const;
   std::optional<QList<int>> searchListHiddenColumns() const;
   int searchListSortColumn() const;
   Qt::SortOrder searchListSortOrder() const;
   gui::ListViewMode searchListViewMode() const;
   int owlsWoken() const;
 
+  void setAnimeListColumnWidths(const QList<int>& widths) const;
   void setAnimeListHiddenColumns(const QList<int>& columns) const;
   void setAnimeListSortColumn(const int column) const;
   void setAnimeListSortOrder(const Qt::SortOrder order) const;
@@ -80,6 +83,7 @@ public:
   void setSeasonsSortOrder(const Qt::SortOrder order) const;
   void setSeasonsViewMode(const gui::ListViewMode mode) const;
   void setSearchListFilters(const gui::AnimeListProxyModelFilter& filters) const;
+  void setSearchListColumnWidths(const QList<int>& widths) const;
   void setSearchListHiddenColumns(const QList<int>& columns) const;
   void setSearchListSortColumn(const int column) const;
   void setSearchListSortOrder(const Qt::SortOrder order) const;

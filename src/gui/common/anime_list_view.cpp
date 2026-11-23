@@ -20,9 +20,11 @@
 #include "anime_list_view.hpp"
 
 #include <QDateTime>
+#include <QGuiApplication>
 #include <QHeaderView>
 #include <QKeyEvent>
 #include <QMenu>
+#include <QResizeEvent>
 #include <QStyle>
 #include <QStyleOptionViewItem>
 #include <algorithm>
@@ -59,6 +61,19 @@ QList<int> defaultHiddenColumns(const AnimeListContext context) {
 std::optional<QList<int>> savedHiddenColumns(const AnimeListContext context) {
   return context == AnimeListContext::Search ? akyuu::session.searchListHiddenColumns()
                                              : akyuu::session.animeListHiddenColumns();
+}
+
+std::optional<QList<int>> savedColumnWidths(const AnimeListContext context) {
+  return context == AnimeListContext::Search ? akyuu::session.searchListColumnWidths()
+                                             : akyuu::session.animeListColumnWidths();
+}
+
+void saveColumnWidths(const AnimeListContext context, const QList<int>& widths) {
+  if (context == AnimeListContext::Search) {
+    akyuu::session.setSearchListColumnWidths(widths);
+  } else {
+    akyuu::session.setAnimeListColumnWidths(widths);
+  }
 }
 
 void saveHiddenColumns(const AnimeListContext context, const QList<int>& columns) {
@@ -114,12 +129,14 @@ ListView::ListView(QWidget* parent, AnimeListModel* model, AnimeListProxyModel* 
       connect(action, &QAction::toggled, this, [this, context, column](const bool checked) {
         header()->setSectionHidden(column, !checked);
         saveHiddenColumns(context, hiddenColumns());
+        fillWidth();
       });
     }
     menu.addSeparator();
     menu.addAction(tr("Reset to defaults"), this, [this, context]() {
       setHiddenColumns(defaultHiddenColumns(context));
       saveHiddenColumns(context, hiddenColumns());
+      fillWidth();
     });
     menu.exec(header()->viewport()->mapToGlobal(pos));
   });
@@ -131,9 +148,24 @@ ListView::ListView(QWidget* parent, AnimeListModel* model, AnimeListProxyModel* 
   header()->resizeSection(AnimeListModel::COLUMN_TYPE, 75);
   header()->resizeSection(AnimeListModel::COLUMN_SEASON, 135);
   header()->resizeSection(AnimeListModel::COLUMN_LAST_UPDATED, 130);
+  if (const auto widths = savedColumnWidths(context)) {
+    for (int column = 0; column < std::min(header()->count(), int(widths->size())); ++column) {
+      if (widths->at(column) > 0) header()->resizeSection(column, widths->at(column));
+    }
+  }
   fitColumns();
-  // Like v1, the title takes whatever width the other columns leave.
-  header()->setSectionResizeMode(AnimeListModel::COLUMN_TITLE, QHeaderView::Stretch);
+
+  // Like v1, the title takes whatever width the other columns leave, but it can still be dragged.
+  // A dragged edge moves only between its two columns, so that the row keeps the width of the
+  // list.
+  connect(header(), &QHeaderView::sectionResized, this,
+          [this, context](const int column, const int oldSize, const int newSize) {
+            if (m_adjusting || !(QGuiApplication::mouseButtons() & Qt::LeftButton)) return;
+            moveEdge(column, newSize - oldSize);
+            QList<int> widths;
+            for (int i = 0; i < header()->count(); ++i) widths.append(header()->sectionSize(i));
+            saveColumnWidths(context, widths);
+          });
 
   // `sortByColumn` needs to be called before `setSortingEnabled`.
   // Otherwise the sort column is set to `0`.
@@ -142,6 +174,57 @@ ListView::ListView(QWidget* parent, AnimeListModel* model, AnimeListProxyModel* 
 
   connect(this, &QAbstractItemView::clicked, this,
           qOverload<const QModelIndex&>(&QAbstractItemView::edit));
+}
+
+void ListView::resizeEvent(QResizeEvent* event) {
+  QTreeView::resizeEvent(event);
+  fillWidth();
+}
+
+void ListView::fillWidth() {
+  int others = 0;
+  for (int column = 0; column < header()->count(); ++column) {
+    if (column == AnimeListModel::COLUMN_TITLE || header()->isSectionHidden(column)) continue;
+    others += header()->sectionSize(column);
+  }
+  const int width = std::max(viewport()->width() - others, kMinimumTitleWidth);
+  m_adjusting = true;
+  header()->resizeSection(AnimeListModel::COLUMN_TITLE, width);
+  m_adjusting = false;
+}
+
+// Gives the width a column gained to the next column on the right, or takes the width it lost
+// from it. The last column trades with the title instead.
+void ListView::moveEdge(const int column, const int delta) {
+  int neighbor = -1;
+  for (int visual = header()->visualIndex(column) + 1; visual < header()->count(); ++visual) {
+    const int next = header()->logicalIndex(visual);
+    if (!header()->isSectionHidden(next)) {
+      neighbor = next;
+      break;
+    }
+  }
+  if (neighbor < 0 && column != AnimeListModel::COLUMN_TITLE) {
+    neighbor = AnimeListModel::COLUMN_TITLE;
+  }
+  if (neighbor < 0) return;
+
+  // A column keeps room for its name, as an unreadable header is hard to find and drag back
+  const auto label = model()->headerData(neighbor, Qt::Horizontal).toString();
+  const int minimum = neighbor == AnimeListModel::COLUMN_TITLE
+                          ? kMinimumTitleWidth
+                          : header()->fontMetrics().horizontalAdvance(label) + 32;
+  const int available = header()->sectionSize(neighbor) - minimum;
+
+  m_adjusting = true;
+  if (delta > available) {
+    // The neighbor cannot give more, so the dragged column stops there
+    header()->resizeSection(column, header()->sectionSize(column) - delta + available);
+    header()->resizeSection(neighbor, minimum);
+  } else {
+    header()->resizeSection(neighbor, header()->sectionSize(neighbor) - delta);
+  }
+  m_adjusting = false;
 }
 
 void ListView::changeEvent(QEvent* event) {
@@ -180,7 +263,10 @@ void ListView::fitColumn(const int column, const QStringList& texts) {
                      style()->sizeFromContents(QStyle::CT_ItemViewItem, &option, {}, this).width());
   }
 
-  if (header()->sectionSize(column) < width) header()->resizeSection(column, width);
+  if (header()->sectionSize(column) < width) {
+    header()->resizeSection(column, width);
+    fillWidth();
+  }
 }
 
 bool ListView::event(QEvent* event) {

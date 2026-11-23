@@ -48,16 +48,22 @@ public:
 
 protected:
   void changeEvent(QEvent* event) override;
+  void resizeEvent(QResizeEvent* event) override;
   bool event(QEvent* event) override;
   void keyPressEvent(QKeyEvent* event) override;
   void mousePressEvent(QMouseEvent* event) override;
   void paintEvent(QPaintEvent* event) override;
 
 private:
+  void fillWidth();
+  void moveEdge(int column, int delta);
   void fitColumns();
   void fitColumn(int column, const QStringList& texts);
 
+  static constexpr int kMinimumTitleWidth = 120;
+
   ListViewBase* m_base = nullptr;
+  bool m_adjusting = false;
 };
 
 }  // namespace gui
