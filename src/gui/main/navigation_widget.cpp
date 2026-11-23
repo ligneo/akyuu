@@ -134,7 +134,7 @@ void NavigationWidget::refresh() {
 
   auto historyItem = addItem("History", "history", MainWindowPage::History);
   setItemData(historyItem, NavigationItemDataRole::Counter, services::queue.count());
-  addItem("Statistics", "bar_chart", MainWindowPage::Profile);
+  addItem("Profile", "account_circle", MainWindowPage::Profile);
 
   addSeparator();
   addItem("Search", "search", MainWindowPage::Search);

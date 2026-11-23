@@ -19,15 +19,21 @@
 #pragma once
 
 #include <QFormLayout>
+#include <QGridLayout>
+#include <QGroupBox>
 #include <QLabel>
 #include <QList>
 #include <QProgressBar>
+#include <QPushButton>
 #include <QScrollArea>
+#include <QVBoxLayout>
 
 #include "gui/common/page_widget.hpp"
 #include "media/anime_stats.hpp"
 
 namespace gui {
+
+class ActivityChart;
 
 class ProfileWidget final : public PageWidget {
   Q_OBJECT
@@ -38,6 +44,8 @@ public:
   ~ProfileWidget() = default;
 
   void refresh();
+  void refreshAccount();
+  void refreshActivity();
   void refreshLocalDatabase();
 
 protected:
@@ -48,10 +56,36 @@ protected:
 
 private:
   void alignForms();
-  void fitToWindow();
+  void arrangeColumns();
+  void openLink(const QString& link);
 
   QWidget* m_container = nullptr;
   QScrollArea* m_scrollArea = nullptr;
+  QBoxLayout* m_columns = nullptr;
+  QVBoxLayout* m_leftColumn = nullptr;
+  QVBoxLayout* m_rightColumn = nullptr;
+  QList<QGroupBox*> m_leftGroups;
+  QList<QGroupBox*> m_rightGroups;
+  int m_columnCount = 0;
+
+  QLabel* m_avatar = nullptr;
+  QLabel* m_userName = nullptr;
+  QLabel* m_userService = nullptr;
+  QPushButton* m_userButton = nullptr;
+  QString m_userUrl;
+
+  QGridLayout* m_tiles = nullptr;
+  QList<QFrame*> m_tileFrames;
+  QLabel* m_weekEpisodes = nullptr;
+  QLabel* m_streak = nullptr;
+  QLabel* m_readyEpisodes = nullptr;
+  QLabel* m_airingSoon = nullptr;
+
+  QLabel* m_airing = nullptr;
+  QLabel* m_ready = nullptr;
+  ActivityChart* m_activityChart = nullptr;
+  QLabel* m_recent = nullptr;
+  QTimer* m_activityTimer = nullptr;
 
   QLabel* m_animeCount = nullptr;
   QLabel* m_episodeCount = nullptr;

@@ -126,3 +126,14 @@ QStatusBar#statusbar {
   border-top-style: solid;
   min-height: 32px;
 }
+
+/* Profile */
+
+QFrame#profileTile {
+  background: rgba(128, 128, 128, 12%);
+  border-radius: 8px;
+}
+
+QLabel#profileCaption {
+  color: palette(placeholder-text);
+}
