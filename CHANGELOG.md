@@ -16,6 +16,10 @@
 - Clapper, Dragon Player, GNOME Videos (Totem), MPlayer, Parole and Showtime are detected on
   Linux. Showtime runs as Python, so a player started from a script is now known by the script.
 - Icons are drawn once on a scaled display, such as at 125% or 160%, instead of on every repaint.
+- List updates keep being sent when MyAnimeList or Kitsu cannot renew an expired sign-in. The
+  update waiting for it was never finished, so the ones after it stayed in History until Akyuu
+  was restarted. An update the service keeps refusing no longer holds back the others either.
+  Thanks to SGalazzo, who found both in Taiga.
 
 ## 0.5.0
 

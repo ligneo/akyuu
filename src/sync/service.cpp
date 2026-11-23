@@ -67,7 +67,12 @@ void Service::onAuthenticationCompleted(bool authenticated) {
 
   if (authenticated) {
     synchronize();
+    return;
   }
+
+  // A list update that ran into an expired token waits for the token to be refreshed. If that
+  // fails, the update is over as well, or the queue would wait for it until Akyuu is restarted.
+  queue.complete(false, "Could not authenticate.");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
