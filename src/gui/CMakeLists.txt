@@ -79,6 +79,9 @@ target_sources(akyuu-gui PRIVATE
 	profile/profile_widget.cpp
 	profile/profile_widget.hpp
 
+	statistics/statistics_widget.cpp
+	statistics/statistics_widget.hpp
+
 	seasons/seasons_widget.cpp
 	seasons/seasons_widget.hpp
 	search/search_widget.cpp

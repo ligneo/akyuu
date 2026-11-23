@@ -51,6 +51,7 @@ class NavigationWidget;
 class NowPlayingWidget;
 class PageZoom;
 class ProfileWidget;
+class StatisticsWidget;
 class SearchWidget;
 class SeasonsWidget;
 class TorrentsWidget;
@@ -140,6 +141,7 @@ private:
   NowPlayingWidget* m_nowPlayingWidget = nullptr;
   int m_draggedSidebarWidth = 0;
   ProfileWidget* m_profileWidget = nullptr;
+  StatisticsWidget* m_statisticsWidget = nullptr;
   QAction* m_actionZoomIn = nullptr;
   QAction* m_actionZoomOut = nullptr;
   QAction* m_actionResetZoom = nullptr;

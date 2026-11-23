@@ -18,18 +18,15 @@
 
 #pragma once
 
-#include <QFormLayout>
 #include <QGridLayout>
 #include <QGroupBox>
 #include <QLabel>
 #include <QList>
-#include <QProgressBar>
 #include <QPushButton>
 #include <QScrollArea>
 #include <QVBoxLayout>
 
 #include "gui/common/page_widget.hpp"
-#include "media/anime_stats.hpp"
 
 namespace gui {
 
@@ -43,10 +40,8 @@ public:
   ProfileWidget(QWidget* parent);
   ~ProfileWidget() = default;
 
-  void refresh();
   void refreshAccount();
   void refreshActivity();
-  void refreshLocalDatabase();
 
 protected:
   void changeEvent(QEvent* event) override;
@@ -55,7 +50,6 @@ protected:
   void showEvent(QShowEvent* event) override;
 
 private:
-  void alignForms();
   void arrangeColumns();
   void openLink(const QString& link);
 
@@ -86,23 +80,6 @@ private:
   ActivityChart* m_activityChart = nullptr;
   QLabel* m_recent = nullptr;
   QTimer* m_activityTimer = nullptr;
-
-  QLabel* m_animeCount = nullptr;
-  QLabel* m_episodeCount = nullptr;
-  QLabel* m_timeSpentWatching = nullptr;
-  QLabel* m_timeToComplete = nullptr;
-  QLabel* m_scoreMean = nullptr;
-  QLabel* m_scoreDeviation = nullptr;
-  QTimer* m_refreshTimer = nullptr;
-  QLabel* m_animeItems = nullptr;
-  QLabel* m_imageFiles = nullptr;
-  QLabel* m_torrentFiles = nullptr;
-  QLabel* m_uptime = nullptr;
-  QLabel* m_owlsWoken = nullptr;
-
-  QList<QProgressBar*> m_scoreBars;
-  QList<QLabel*> m_scoreCounts;
-  QList<QFormLayout*> m_forms;
 };
 
 }  // namespace gui

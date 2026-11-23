@@ -41,6 +41,7 @@ enum class MainWindowPage {
   Seasons,
   Torrents,
   Profile,
+  Statistics,
 };
 
 class NavigationController final : public QObject {

@@ -44,6 +44,7 @@
 #include "gui/search/search_widget.hpp"
 #include "gui/seasons/seasons_widget.hpp"
 #include "gui/settings/settings_dialog.hpp"
+#include "gui/statistics/statistics_widget.hpp"
 #include "gui/torrents/torrents_widget.hpp"
 #include "gui/utils/format.hpp"
 #include "gui/utils/page_zoom.hpp"
@@ -499,6 +500,7 @@ void MainWindow::switchSearchText(MainWindowPage from, MainWindowPage to) {
     case MainWindowPage::Home:
     case MainWindowPage::History:
     case MainWindowPage::Profile:
+    case MainWindowPage::Statistics:
     case MainWindowPage::Search:
       placeholder = tr("Search %1 for anime").arg(service);
       break;
@@ -569,7 +571,12 @@ void MainWindow::initPage(MainWindowPage page) {
 
     case MainWindowPage::Profile:
       m_profileWidget = new ProfileWidget(ui_->profilePage);
-      init_page(ui_->profilePage, m_profileWidget, u"statistics"_s);
+      init_page(ui_->profilePage, m_profileWidget, u"profile"_s);
+      break;
+
+    case MainWindowPage::Statistics:
+      m_statisticsWidget = new StatisticsWidget(ui_->statisticsPage);
+      init_page(ui_->statisticsPage, m_statisticsWidget, u"statistics"_s);
       break;
   }
 
@@ -934,7 +941,7 @@ void MainWindow::initViewMenu() {
   // Named as in the sidebar, in the same order
   static const QList<QPair<QString, MainWindowPage>> pages{
       {tr("Now Playing"), MainWindowPage::Home},  {tr("Anime List"), MainWindowPage::List},
-      {tr("History"), MainWindowPage::History},   {tr("Profile"), MainWindowPage::Profile},
+      {tr("History"), MainWindowPage::History},   {tr("Statistics"), MainWindowPage::Statistics},
       {tr("Search"), MainWindowPage::Search},     {tr("Seasons"), MainWindowPage::Seasons},
       {tr("Torrents"), MainWindowPage::Torrents}, {tr("Library"), MainWindowPage::Library},
   };
@@ -1012,7 +1019,7 @@ void MainWindow::initToolbar() {
     connect(m_searchBox, &QLineEdit::returnPressed, this, [this]() {
       const auto page = static_cast<MainWindowPage>(ui_->stackedWidget->currentIndex());
       if (page != MainWindowPage::Home && page != MainWindowPage::History &&
-          page != MainWindowPage::Profile) {
+          page != MainWindowPage::Profile && page != MainWindowPage::Statistics) {
         return;
       }
       const auto text = m_searchBox->text();

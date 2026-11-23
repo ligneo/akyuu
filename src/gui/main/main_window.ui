@@ -59,6 +59,7 @@
        <widget class="QWidget" name="seasonsPage"/>
        <widget class="QWidget" name="torrentsPage"/>
        <widget class="QWidget" name="profilePage"/>
+       <widget class="QWidget" name="statisticsPage"/>
       </widget>
      </widget>
     </item>

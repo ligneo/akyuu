@@ -2,10 +2,10 @@
 
 ## Unreleased
 
-- The Statistics page became the Profile page, which the profile button opens. Above the
-  statistics it shows the account with a link to it, this week's episodes and day streak, what
-  airs next on the Watching list with a countdown, the unwatched episodes in the library folders,
-  and the episodes watched on each of the last two weeks. Titles open their details.
+- The profile button opens a Profile page, which the statistics stay apart from. It shows the
+  account with a link to it, this week's episodes and day streak, what airs next on the Watching
+  list with a countdown, the unwatched episodes in the library folders, and the episodes watched
+  on each of the last two weeks. Titles open their details.
 - Torrents can be sent to qBittorrent through its Web UI, in Settings > Torrents > Downloads.
   This works when qBittorrent runs without a window, such as `qbittorrent-nox`, or on another
   computer, and the download folder and an optional category always reach it. Test checks the

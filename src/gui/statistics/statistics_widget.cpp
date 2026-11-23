@@ -1,0 +1,303 @@
+/**
+ * Akyuu
+ * Copyright (C) 2026, cenky <cenkkgl@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+#include "statistics_widget.hpp"
+
+#include <QDir>
+#include <QFormLayout>
+#include <QGridLayout>
+#include <QGroupBox>
+#include <QLocale>
+#include <QScrollArea>
+#include <QTimer>
+#include <QVBoxLayout>
+#include <algorithm>
+#include <chrono>
+
+#include "akyuu/application.hpp"
+#include "akyuu/path.hpp"
+#include "akyuu/session.hpp"
+#include "base/chrono.hpp"
+#include "base/string.hpp"
+#include "gui/utils/format.hpp"
+#include "gui/utils/image_provider.hpp"
+#include "gui/utils/page_zoom.hpp"
+#include "media/anime_db.hpp"
+#include "media/anime_list.hpp"
+
+namespace gui {
+
+using namespace Qt::StringLiterals;
+
+namespace {
+
+constexpr int kBarHeight = 16;
+// In percent of the zoom, as far as the page shrinks before it scrolls
+constexpr int kFitMin = 80;
+constexpr int kFitStep = 5;
+
+// The bars are not text, so they take their height from the font and grow with the zoom
+class ScoreBar final : public QProgressBar {
+public:
+  using QProgressBar::QProgressBar;
+
+  QSize sizeHint() const override {
+    return {QProgressBar::sizeHint().width(), zoomed(kBarHeight, this)};
+  }
+  QSize minimumSizeHint() const override {
+    return sizeHint();
+  }
+};
+
+// Some styles (e.g. Adwaita) align the labels of a form to the right, but the statistics read as
+// a table
+QFormLayout* createForm(QWidget* parent) {
+  const auto form = new QFormLayout(parent);
+  form->setLabelAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+  form->setFormAlignment(Qt::AlignLeft | Qt::AlignTop);
+  return form;
+}
+
+}  // namespace
+
+StatisticsWidget::StatisticsWidget(QWidget* parent) : PageWidget(parent) {
+  const auto container = new QWidget(this);
+  const auto containerLayout = new QVBoxLayout(container);
+  containerLayout->setContentsMargins(16, 8, 16, 16);
+
+  // Anime list
+  {
+    const auto group = new QGroupBox(tr("Anime list"), container);
+    const auto form = createForm(group);
+    m_forms.append(form);
+
+    const auto add_row = [this, form](const QString& text) {
+      const auto label = new QLabel("-", form->parentWidget());
+      form->addRow(text, label);
+      return label;
+    };
+
+    m_animeCount = add_row(tr("Anime count:"));
+    m_episodeCount = add_row(tr("Episode count:"));
+    m_timeSpentWatching = add_row(tr("Time spent watching:"));
+    m_timeToComplete = add_row(tr("Time to complete:"));
+    m_scoreMean = add_row(tr("Mean score:"));
+    m_scoreDeviation = add_row(tr("Score deviation:"));
+
+    containerLayout->addWidget(group);
+  }
+
+  // Score distribution
+  {
+    const auto group = new QGroupBox(tr("Score distribution"), container);
+    const auto grid = new QGridLayout(group);
+    grid->setColumnStretch(1, 1);
+
+    for (size_t i = anime::kScoreBucketCount; i > 1; --i) {
+      const auto score = static_cast<int>(i - 1);
+      const auto row = grid->rowCount();
+
+      const auto label = new QLabel(QString::number(score), group);
+      label->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+
+      const auto bar = new ScoreBar(group);
+      bar->setTextVisible(false);
+      bar->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
+      const auto count = new QLabel("0", group);
+
+      grid->addWidget(label, row, 0);
+      grid->addWidget(bar, row, 1);
+      grid->addWidget(count, row, 2);
+
+      m_scoreBars.append(bar);
+      m_scoreCounts.append(count);
+    }
+
+    containerLayout->addWidget(group);
+  }
+
+  // Local database
+  // v1's `dlg_stats.cpp:220`: what the local database and the caches next to it hold.
+  {
+    const auto group = new QGroupBox(tr("Local database"), container);
+    const auto form = createForm(group);
+    m_forms.append(form);
+
+    m_animeItems = new QLabel("-", group);
+    m_imageFiles = new QLabel("-", group);
+    m_torrentFiles = new QLabel("-", group);
+
+    form->addRow(tr("Anime items:"), m_animeItems);
+    form->addRow(tr("Image files:"), m_imageFiles);
+    form->addRow(tr("Torrent files:"), m_torrentFiles);
+
+    containerLayout->addWidget(group);
+  }
+
+  // Akyuu
+  // v1's own statistics block also counts connections (`stats.connections_*`), which nothing in
+  // v2 keeps track of yet.
+  {
+    const auto group = new QGroupBox(tr("Akyuu"), container);
+    const auto form = createForm(group);
+    m_forms.append(form);
+
+    m_uptime = new QLabel("-", group);
+    m_owlsWoken = new QLabel("-", group);
+
+    form->addRow(tr("Uptime:"), m_uptime);
+    form->addRow(tr("Owls woken:"), m_owlsWoken);
+
+    containerLayout->addWidget(group);
+  }
+
+  // v1 counts the uptime in its one-second timer and refreshes the whole statistics dialog while
+  // it is visible (`timer.cpp:163`), so everything on it stays current, not just the clock.
+  // Recomputing costs ~20 microseconds on a 479 entry list, which is nothing once a second.
+  m_refreshTimer = new QTimer(this);
+  m_refreshTimer->setInterval(std::chrono::seconds{1});
+  connect(m_refreshTimer, &QTimer::timeout, this, &StatisticsWidget::refresh);
+
+  containerLayout->addStretch();
+  alignForms();
+
+  // The page shrinks to fit a small window, see `fitToWindow`, and scrolls below that instead of
+  // squeezing the groups
+  const auto scrollArea = new QScrollArea(this);
+  m_container = container;
+  m_scrollArea = scrollArea;
+  scrollArea->setFrameShape(QFrame::NoFrame);
+  scrollArea->setWidgetResizable(true);
+  // Themes give the scroll areas of pages the background of a list, which this page is not
+  scrollArea->setStyleSheet(u"QScrollArea { background: transparent; }"_s);
+  scrollArea->setWidget(container);
+  // `setWidget` fills the background of the container, which the window already paints
+  container->setAutoFillBackground(false);
+  layout()->addWidget(scrollArea);
+
+  m_toolbar->hide();
+}
+
+void StatisticsWidget::refresh() {
+  const auto stats = anime::computeStatistics();
+
+  m_animeCount->setText(QString::number(stats.anime_count));
+  m_episodeCount->setText(QString::number(stats.episode_count));
+  m_timeSpentWatching->setText(formatTimeSpan(base::Duration{stats.time_spent_watching}));
+  m_timeToComplete->setText(formatTimeSpan(base::Duration{stats.time_to_complete}));
+  // Scores are stored in the 0-100 range, but users are used to seeing them out of ten.
+  const auto format_score = [](const float value) { return QString::number(value / 10.0, 'f', 2); };
+  m_scoreMean->setText(format_score(stats.score_mean));
+  m_scoreDeviation->setText(format_score(stats.score_deviation));
+
+  const auto maximum = *std::ranges::max_element(stats.score_count);
+
+  for (qsizetype i = 0; i < m_scoreBars.size(); ++i) {
+    // Bars are listed from the highest score to the lowest
+    const auto bucket = stats.score_count.size() - 1 - static_cast<size_t>(i);
+    const auto count = stats.score_count[bucket];
+
+    m_scoreBars[i]->setRange(0, std::max(maximum, 1));
+    m_scoreBars[i]->setValue(count);
+    m_scoreCounts[i]->setText(QString::number(count));
+  }
+
+  m_uptime->setText(formatDuration(akyuu::app()->uptime()));
+  m_owlsWoken->setText(QString::number(akyuu::session.owlsWoken()));
+}
+
+// Walks two folders, so it runs when the page is shown rather than with the one-second refresh.
+void StatisticsWidget::refreshLocalDatabase() {
+  const auto describeFolder = [](const QString& path) {
+    const auto files = QDir{path}.entryInfoList(QDir::Files);
+    qint64 size = 0;
+    for (const auto& file : files) {
+      size += file.size();
+    }
+    return u"%1 (%2)"_s.arg(files.size()).arg(QLocale::system().formattedDataSize(size, 1));
+  };
+
+  m_animeItems->setText(QString::number(anime::db.items().size()));
+  m_imageFiles->setText(describeFolder(imageProvider.cachePath()));
+  m_torrentFiles->setText(
+      describeFolder(u"%1/torrents"_s.arg(QString::fromStdString(akyuu::get_data_path()))));
+}
+
+// The zoom sets the size, and the page shrinks from there until it fits the window
+void StatisticsWidget::fitToWindow() {
+  // The main window gives the page its zoom once the page is built
+  const auto zoom = PageZoom::of(this);
+  if (!zoom) return;
+  connect(zoom, &PageZoom::changed, this, &StatisticsWidget::fitToWindow, Qt::UniqueConnection);
+
+  const auto available = m_scrollArea->viewport()->height();
+  for (auto fit = 100; fit > kFitMin; fit -= kFitStep) {
+    zoom->setFit(fit);
+    if (m_container->sizeHint().height() <= available) return;
+  }
+  zoom->setFit(kFitMin);
+}
+
+void StatisticsWidget::hideEvent(QHideEvent* event) {
+  m_refreshTimer->stop();
+  PageWidget::hideEvent(event);
+}
+
+void StatisticsWidget::showEvent(QShowEvent* event) {
+  refresh();
+  refreshLocalDatabase();
+  m_refreshTimer->start();
+  PageWidget::showEvent(event);
+  fitToWindow();
+}
+
+// Each group has a form of its own, so their values would start wherever their longest label
+// ends. They start at the same place in all of them instead, which reads as one table.
+void StatisticsWidget::alignForms() {
+  int width = 0;
+  for (const auto form : m_forms) {
+    for (int row = 0; row < form->rowCount(); ++row) {
+      if (const auto item = form->itemAt(row, QFormLayout::LabelRole); item && item->widget()) {
+        width = std::max(width, item->widget()->sizeHint().width());
+      }
+    }
+  }
+  for (const auto form : m_forms) {
+    for (int row = 0; row < form->rowCount(); ++row) {
+      if (const auto item = form->itemAt(row, QFormLayout::LabelRole); item && item->widget()) {
+        item->widget()->setMinimumWidth(width);
+      }
+    }
+  }
+}
+
+void StatisticsWidget::changeEvent(QEvent* event) {
+  PageWidget::changeEvent(event);
+  // The labels take the new font of a zoomed page only afterwards
+  if (event->type() == QEvent::FontChange) {
+    QMetaObject::invokeMethod(this, &StatisticsWidget::alignForms, Qt::QueuedConnection);
+  }
+}
+
+void StatisticsWidget::resizeEvent(QResizeEvent* event) {
+  PageWidget::resizeEvent(event);
+  fitToWindow();
+}
+
+}  // namespace gui
