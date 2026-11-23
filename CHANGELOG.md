@@ -46,6 +46,8 @@
   row and could not be resized. Dragging an edge moves it between its two columns only, and the
   widths are kept the next time.
 - The names and values in Settings > Advanced keep apart, and its rows are easier to tell apart.
+- The pages of Settings scroll, so the window opens smaller and can be made shorter. With a large
+  font it could not be made shorter than its longest page, which took up most of the screen.
 - Icons are drawn once on a scaled display, such as at 125% or 160%, instead of on every repaint.
 
 ## 0.5.0

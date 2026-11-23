@@ -19,6 +19,7 @@
 
 #include "settings_dialog.hpp"
 
+#include <QScrollArea>
 #include <QTabWidget>
 
 #include "base/string.hpp"
@@ -47,6 +48,22 @@
 
 namespace gui {
 
+namespace {
+
+// Each page scrolls, so that the dialog can be smaller than its longest page. It could not be
+// made shorter than that page, which with a large font took up most of the screen.
+QWidget* scrollable(QWidget* page) {
+  auto area = new QScrollArea();
+  area->setWidget(page);
+  area->setWidgetResizable(true);
+  area->setFrameShape(QFrame::NoFrame);
+  area->viewport()->setAutoFillBackground(false);
+  page->setAutoFillBackground(false);
+  return area;
+}
+
+}  // namespace
+
 SettingsDialog::SettingsDialog(QWidget* parent) : QDialog(parent), ui_(new Ui::SettingsDialog) {
   ui_->setupUi(this);
 
@@ -73,7 +90,7 @@ SettingsDialog::SettingsDialog(QWidget* parent) : QDialog(parent), ui_(new Ui::S
 
   // The accounts page brings its own tabs, one per service.
   const auto accountsPage = new AccountsPage(this);
-  add_item("account_circle", "Services", accountsPage);
+  add_item("account_circle", "Services", scrollable(accountsPage));
   accountsPage->load();
   pages_.push_back(accountsPage);
   const auto library = add_section("folder", "Library");
@@ -102,7 +119,7 @@ SettingsDialog::SettingsDialog(QWidget* parent) : QDialog(parent), ui_(new Ui::S
   const auto filtersIndex = addPage(torrents, "Filters", new TorrentFiltersPage(this));
   const auto advancedPage = new AdvancedPage(this);
   addPage(advanced, "Settings", advancedPage);
-  advanced->addTab(advancedPage->proxyPage(), "Proxy");
+  advanced->addTab(scrollable(advancedPage->proxyPage()), "Proxy");
   addPage(advanced, "Cache", new CachePage(this));
 
   connect(ui_->treeWidget, &QTreeWidget::currentItemChanged, this,
@@ -142,7 +159,7 @@ void SettingsDialog::accept() {
 }
 
 int SettingsDialog::addPage(QTabWidget* tabs, const QString& title, SettingsPage* page) {
-  const auto index = tabs->addTab(page, title);
+  const auto index = tabs->addTab(scrollable(page), title);
   page->load();
   pages_.push_back(page);
   return index;
