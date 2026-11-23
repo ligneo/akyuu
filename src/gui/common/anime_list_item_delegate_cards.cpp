@@ -70,8 +70,9 @@ void ListItemDelegateCards::paint(QPainter* painter, const QStyleOptionViewItem&
 
   const bool blurred = m_contentFilter && item && contentFilter().blurs(*item);
 
+  // As round as the other cards and buttons of the window, which a 4 pixel radius was not
   QPainterPath path;
-  path.addRoundedRect(rect, 4, 4);
+  path.addRoundedRect(rect, px(8), px(8));
   painter->setClipPath(path);
 
   // Background

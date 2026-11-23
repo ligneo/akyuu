@@ -83,6 +83,10 @@ void Library::scan() {
   episodes_ = std::move(episodes);
   scanned_ = true;
 
+  // A folder made since the folders were last watched is watched too, or a file put in it later
+  // would not be noticed. Only when watching was set up, as the settings may have turned it off.
+  if (watcher_) applyWatchSettings();
+
   qInfo() << "Found" << episodeCount << "episodes of" << episodes_.size() << "anime";
 
   emit availabilityChanged();

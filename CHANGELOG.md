@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- A folder made in the library folders while Akyuu runs is watched as well, so episodes put in it
+  afterwards show as available without a scan. Before, only the first file that made the folder
+  was noticed.
+- The cards of the list are as round as the other cards and buttons of the window.
 - Dates known only by month or year, as for anime that have not aired, show as "Oct 2027" or
   "2027" instead of nothing.
 - The profile button opens a Profile page, which the statistics stay apart from. It shows the

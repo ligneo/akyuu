@@ -322,9 +322,33 @@ protected:
         }
 
         case Line::Kind::More: {
-          painter.setPen(palette().color(i == m_hovered ? QPalette::Highlight : QPalette::Link));
-          painter.drawText(rect.adjusted(rail, 0, 0, 0), Qt::AlignLeft | Qt::AlignVCenter,
-                           line.text);
+          // A quiet button across the rows, shaded like the tiles at the top of the page
+          const QRectF button = QRectF{rect.adjusted(rail, 6, 0, 0)}.adjusted(0.5, 0.5, -0.5, -0.5);
+          auto fill = i == m_hovered ? palette().color(QPalette::Highlight)
+                                     : palette().color(QPalette::WindowText);
+          fill.setAlphaF(i == m_hovered ? 0.22 : 0.06);
+          painter.setPen(Qt::NoPen);
+          painter.setBrush(fill);
+          painter.drawRoundedRect(button, 8, 8);
+
+          // The text with a chevron after it, pointing where the list goes
+          const auto chevron = fm.height() * 0.3;
+          const auto textWidth = fm.horizontalAdvance(line.text);
+          const auto left = button.center().x() - (textWidth + 8 + chevron * 2) / 2;
+          painter.setPen(
+              palette().color(i == m_hovered ? QPalette::WindowText : QPalette::PlaceholderText));
+          painter.drawText(
+              QRectF{left, button.top(), static_cast<qreal>(textWidth), button.height()},
+              Qt::AlignLeft | Qt::AlignVCenter, line.text);
+          const QPointF center{left + textWidth + 8 + chevron, button.center().y()};
+          const auto direction = m_expanded ? -1.0 : 1.0;
+          painter.setPen(
+              QPen{painter.pen().color(), 1.6, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin});
+          painter.drawPolyline(QList<QPointF>{
+              {center.x() - chevron, center.y() - chevron / 2 * direction},
+              {center.x(), center.y() + chevron / 2 * direction},
+              {center.x() + chevron, center.y() - chevron / 2 * direction},
+          });
           break;
         }
 
@@ -470,8 +494,8 @@ private:
       }
     }
     if (total > m_limit) {
-      const auto text = m_expanded ? tr("Show less") : tr("Show all (%1)").arg(total);
-      add({Line::Kind::More, nullptr, text, 0, labelHeight()});
+      const auto text = m_expanded ? tr("Show less") : tr("Show %1 more").arg(total - m_limit);
+      add({Line::Kind::More, nullptr, text, 0, labelHeight() + 10});
     }
 
     updateGeometry();
