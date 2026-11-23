@@ -21,12 +21,13 @@
 
 #include <QGuiApplication>
 #include <QPainter>
-#include <QProxyStyle>
+#include <QPainterPath>
 
 #include "akyuu/settings.hpp"
 #include "base/string.hpp"
 #include "gui/models/anime_list_model.hpp"
 #include "gui/utils/format.hpp"
+#include "gui/utils/painter_state_saver.hpp"
 #include "gui/utils/theme.hpp"
 #include "media/anime.hpp"
 #include "media/anime_list.hpp"
@@ -70,52 +71,64 @@ void paintProgressBar(QPainter* painter, const QStyleOption& option, const Anime
     barRect.setHeight(height);
   }
 
-  QStyleOptionProgressBar styleOption{};
-  styleOption.state = option.state | QStyle::State_Horizontal;
-  styleOption.direction = option.direction;
-  styleOption.rect = barRect;
-  styleOption.palette = option.palette;
-  styleOption.palette.setCurrentColorGroup(QPalette::ColorGroup::Active);
-  styleOption.palette.setColor(QPalette::ColorRole::Highlight, theme.isDark()
-                                                                   ? QColor{12, 164, 12, 128}
-                                                                   : QColor{12, 164, 12, 255});
-  styleOption.fontMetrics = option.fontMetrics;
-  styleOption.maximum = 100;
-  styleOption.minimum = 0;
-  styleOption.progress = static_cast<int>(anime::list::getProgressRatio(anime, entry) * 100);
-  styleOption.text = text;
-  styleOption.textAlignment = Qt::AlignCenter;
-  styleOption.textVisible = !textOutside;
+  // A rounded track rather than the style's square boxes, with the watched part, the bands and the
+  // text kept to the same shape
+  const qreal radius = std::min(6.0, barRect.height() / 2.0);
+  QPainterPath track;
+  track.addRoundedRect(QRectF{barRect}, radius, radius);
 
-  static const auto proxyStyle{new QProxyStyle{"fusion"}};
-  proxyStyle->drawControl(QStyle::CE_ProgressBar, &styleOption, painter);
+  const PainterStateSaver painterStateSaver(painter);
+  painter->setRenderHint(QPainter::Antialiasing);
+  painter->setClipPath(track, Qt::IntersectClip);
+  painter->fillRect(barRect, theme.isDark() ? QColor{255, 255, 255, 20} : QColor{0, 0, 0, 20});
+
+  QRectF watchedRect{barRect};
+  watchedRect.setWidth(barRect.width() * anime::list::getProgressRatio(anime, entry));
+  painter->fillRect(watchedRect,
+                    theme.isDark() ? QColor{12, 164, 12, 160} : QColor{12, 164, 12, 255});
 
   // v1 draws two more bands over the bar: the episodes that have aired and the ones already on
   // disk. Both are faint, so the watched part and the text stay readable.
-  if (episodes <= 0) return;
+  if (episodes > 0) {
+    const auto band = [&](const int from, const int to, const QColor& color) {
+      if (to <= from) return;
+      const auto width = static_cast<double>(barRect.width()) / episodes;
+      QRectF rect{barRect};
+      rect.setLeft(barRect.left() + width * from);
+      // In a long series an episode is narrower than a pixel, and would otherwise not be drawn.
+      rect.setWidth(std::max(1.0, width * (to - from)));
+      painter->fillRect(rect, color);
+    };
 
-  const auto band = [&](const int from, const int to, const QColor& color) {
-    if (to <= from) return;
-    const auto width = static_cast<double>(barRect.width()) / episodes;
-    QRectF rect{barRect};
-    rect.setLeft(barRect.left() + width * from);
-    // In a long series an episode is narrower than a pixel, and would otherwise not be drawn.
-    rect.setWidth(std::max(1.0, width * (to - from)));
-    painter->fillRect(rect, color);
-  };
+    if (akyuu::settings.listShowAvailableEpisodes()) {
+      // Each run is one rectangle, because the color is translucent and overlaps would show.
+      const auto ranges = track::library()->availableEpisodeRanges(anime->id);
+      for (const auto& [from, to] : track::progressBands(ranges, watched, episodes)) {
+        band(from, to, QColor{12, 164, 12, 64});
+      }
+    }
 
-  if (akyuu::settings.listShowAvailableEpisodes()) {
-    // Each run is one rectangle, because the color is translucent and overlaps would show.
-    const auto ranges = track::library()->availableEpisodeRanges(anime->id);
-    for (const auto& [from, to] : track::progressBands(ranges, watched, episodes)) {
-      band(from, to, QColor{12, 164, 12, 64});
+    if (akyuu::settings.listShowAiredEpisodes()) {
+      const auto aired = std::min(anime::estimateLastAiredEpisodeNumber(*anime), episodes);
+      band(watched, aired, QColor{190, 190, 190, 40});
     }
   }
 
-  if (akyuu::settings.listShowAiredEpisodes()) {
-    const auto aired = std::min(anime::estimateLastAiredEpisodeNumber(*anime), episodes);
-    band(watched, aired, QColor{190, 190, 190, 40});
-  }
+  if (textOutside) return;
+
+  // White over the watched part and the text color over the rest, so that a count that crosses
+  // the end of the watched part stays readable on both sides
+  const auto drawText = [&](const QRectF& clip, const QColor& color) {
+    painter->save();
+    painter->setClipRect(clip, Qt::IntersectClip);
+    painter->setPen(color);
+    painter->drawText(barRect, Qt::AlignCenter, text);
+    painter->restore();
+  };
+  drawText(watchedRect, Qt::white);
+  QRectF restRect{barRect};
+  restRect.setLeft(watchedRect.right());
+  drawText(restRect, option.palette.color(QPalette::ColorGroup::Active, QPalette::Text));
 }
 
 void paintSpinner(QPainter* painter, const QPixmap& pixmap, const QPointF& center, qreal angle) {

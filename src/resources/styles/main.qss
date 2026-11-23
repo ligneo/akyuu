@@ -20,7 +20,14 @@ QMainWindow > QToolBar {
 }
 
 QMainWindow > QToolBar QLineEdit {
+  background-color: palette(base);
+  border: 1px solid palette(mid);
+  border-radius: 6px;
   padding: 4px 8px;
+}
+
+QMainWindow > QToolBar QLineEdit:focus {
+  border-color: palette(highlight);
 }
 
 QToolButton::menu-indicator {

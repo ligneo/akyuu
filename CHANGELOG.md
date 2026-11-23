@@ -15,7 +15,8 @@
   only the synchronize button on its left, so the page starts higher up. The search box narrows
   in a small window instead of pushing the buttons out of sight.
 - The progress bar of the anime list is larger and carries the episode count inside it, as the
-  cards do, instead of a thin bar with the count next to it.
+  cards do, instead of a thin bar with the count next to it. It has rounded corners, as does the
+  search box.
 - The tabs above the anime list show their counts in a small badge, like the sidebar, instead
   of in parentheses.
 - The sidebar follows the size of the application font, with 10 points at least. It was fixed
