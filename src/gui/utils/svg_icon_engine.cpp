@@ -58,7 +58,8 @@ QPixmap SvgIconEngine::scaledPixmap(const QSize& size, QIcon::Mode mode, QIcon::
   // The color comes from the palette, so a new theme needs new pixmaps
   const qint64 paletteKey = QApplication::palette().cacheKey();
 
-  if (cacheKey != m_cacheKey || paletteKey != m_paletteKey || m_pixmap.size() != size ||
+  // The pixmap is in device pixels, so it is compared by the size it was asked for
+  if (cacheKey != m_cacheKey || paletteKey != m_paletteKey || size != m_size ||
       m_pixmap.devicePixelRatio() != scale) {
     const QRect rect({0, 0}, size);
 
@@ -83,6 +84,7 @@ QPixmap SvgIconEngine::scaledPixmap(const QSize& size, QIcon::Mode mode, QIcon::
 
     m_cacheKey = cacheKey;
     m_paletteKey = paletteKey;
+    m_size = size;
     m_pixmap = QPixmap(size * scale);
     m_pixmap.fill(Qt::transparent);
     m_pixmap.setDevicePixelRatio(scale);

@@ -41,6 +41,7 @@ public:
 private:
   const QString m_iconName;
   QPixmap m_pixmap;
+  QSize m_size;
   quint64 m_cacheKey{};
   qint64 m_paletteKey{};
 };

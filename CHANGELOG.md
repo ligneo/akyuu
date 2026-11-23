@@ -15,6 +15,7 @@
   became a space, so a Kitsu password with one could not sign in.
 - Clapper, Dragon Player, GNOME Videos (Totem), MPlayer, Parole and Showtime are detected on
   Linux. Showtime runs as Python, so a player started from a script is now known by the script.
+- Icons are drawn once on a scaled display, such as at 125% or 160%, instead of on every repaint.
 
 ## 0.5.0
 
