@@ -5,6 +5,8 @@
 - The Discord activity card is headed with the title being watched, such as "Watching
   Re:CREATORS", instead of "Watching Akyuu" (#14). Thanks to @Recehan-Slayer for pointing it
   out.
+- Episodes named like `Title - 07 (S01E07)`, as some groups do, are recognized. The number
+  before the season and episode was read as part of the title, so the anime was not found.
 - Files with an uppercase extension, such as `.MOV` from a phone or `.MKV`, are recognized.
   They were taken for something other than a video, so playing them went unnoticed and library
   scans skipped them.
