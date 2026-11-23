@@ -7,6 +7,9 @@
   out.
 - Episodes named like `Title - 07 (S01E07)`, as some groups do, are recognized. The number
   before the season and episode was read as part of the title, so the anime was not found.
+- More file names are read right, and recognized: episode 1080 of One Piece is not taken for a
+  resolution, `EAC-3` and `AC-3` are audio rather than episode 3, a checksum such as `ED204890`
+  is not an ending, and a release group such as `Y-467` does not give the episode number.
 - Files with an uppercase extension, such as `.MOV` from a phone or `.MKV`, are recognized.
   They were taken for something other than a video, so playing them went unnoticed and library
   scans skipped them.
