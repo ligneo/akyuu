@@ -156,6 +156,8 @@ target_sources(akyuu PRIVATE
 	track/media_stream.hpp
 	track/play.cpp
 	track/play.hpp
+	track/qbittorrent.cpp
+	track/qbittorrent.hpp
 	track/recognition.cpp
 	track/recognition.hpp
 	track/recognition_cache.cpp
@@ -259,6 +261,19 @@ if (AKYUU_BUILD_TESTS AND BUILD_TESTING)
 	target_include_directories(akyuu-form-tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 	target_link_libraries(akyuu-form-tests PRIVATE Qt6::Core)
 	add_test(NAME form COMMAND akyuu-form-tests)
+
+	add_executable(akyuu-qbittorrent-tests
+		${CMAKE_SOURCE_DIR}/tests/qbittorrent.cpp
+		base/form.cpp
+		track/qbittorrent.cpp
+		track/qbittorrent.hpp
+	)
+	set_target_properties(akyuu-qbittorrent-tests PROPERTIES
+		RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests
+	)
+	target_include_directories(akyuu-qbittorrent-tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+	target_link_libraries(akyuu-qbittorrent-tests PRIVATE Qt6::Core Qt6::Network)
+	add_test(NAME qbittorrent COMMAND akyuu-qbittorrent-tests)
 
 	add_executable(akyuu-private-settings-tests
 		${CMAKE_SOURCE_DIR}/tests/private_settings.cpp
