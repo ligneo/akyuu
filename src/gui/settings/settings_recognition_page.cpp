@@ -32,6 +32,7 @@
 #include "gui/main/main_window.hpp"
 #include "gui/main/now_playing_widget.hpp"
 #include "track/media.hpp"
+#include "track/update_session.hpp"
 
 namespace gui {
 
@@ -147,6 +148,7 @@ void RecognitionPage::save() {
                                        ? track::UpdateTrigger::OnPlayerClose
                                        : track::UpdateTrigger::AfterDelay);
   akyuu::settings.setUpdateAskToConfirm(m_checkAskToConfirm->isChecked());
+  track::updateSession()->applySettings();
   akyuu::settings.setNowPlayingPanel(
       static_cast<akyuu::NowPlayingPanel>(m_comboNowPlayingPanel->currentData().toInt()));
   mainWindow()->nowPlaying()->updateVisibility();

@@ -44,12 +44,14 @@ public:
 
   void accept();
   void cancel();
+  void applySettings();
 
 signals:
   void stateChanged(const UpdateState& state) const;
   void confirmationRequested(const UpdateState& state) const;
 
 private:
+  void loadSettings();
   void onEpisodeChanged(std::optional<Episode> episode);
   void onMediaClosed();
   void tick();

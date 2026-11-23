@@ -89,10 +89,7 @@ void UpdateSession::onEpisodeChanged(std::optional<Episode> episode) {
 
   if (!episode_ || !isSameMedia(*episode_, *episode)) {
     elapsed_ = std::chrono::seconds{0};
-    delay_ = akyuu::settings.updateDelay();
-    trigger_ = akyuu::settings.updateTrigger();
-    askToConfirm_ = akyuu::settings.updateAskToConfirm();
-    pauseWhenUnfocused_ = akyuu::settings.updatePauseWhenUnfocused();
+    loadSettings();
     paused_ = false;
     dismissed_ = false;
     committed_ = false;
@@ -106,6 +103,22 @@ void UpdateSession::onEpisodeChanged(std::optional<Episode> episode) {
   if (!committed_ && !timer_->isActive()) timer_->start();
 
   evaluate();
+}
+
+// Settings changed while an episode plays apply to it as well, and the time already watched still
+// counts towards the new delay.
+void UpdateSession::applySettings() {
+  loadSettings();
+  if (!episode_) return;
+  outsideLibrary_ = isOutsideLibrary();
+  evaluate();
+}
+
+void UpdateSession::loadSettings() {
+  delay_ = akyuu::settings.updateDelay();
+  trigger_ = akyuu::settings.updateTrigger();
+  askToConfirm_ = akyuu::settings.updateAskToConfirm();
+  pauseWhenUnfocused_ = akyuu::settings.updatePauseWhenUnfocused();
 }
 
 void UpdateSession::onMediaClosed() {

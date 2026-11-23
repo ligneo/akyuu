@@ -20,6 +20,8 @@
   update waiting for it was never finished, so the ones after it stayed in History until Akyuu
   was restarted. An update the service keeps refusing no longer holds back the others either.
   Thanks to SGalazzo, who found both in Taiga.
+- Changing the update delay, its trigger or the confirmation in Settings applies to the episode
+  that is playing. They applied from the next episode on. The time already watched still counts.
 
 ## 0.5.0
 
