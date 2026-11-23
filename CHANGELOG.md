@@ -14,6 +14,8 @@
 - The menus share one row with the search box and the buttons, which had a row of their own with
   only the synchronize button on its left, so the page starts higher up. The search box narrows
   in a small window instead of pushing the buttons out of sight.
+- The progress bar of the anime list is larger and carries the episode count inside it, as the
+  cards do, instead of a thin bar with the count next to it.
 - Episodes named like `Title - 07 (S01E07)`, as some groups do, are recognized. The number
   before the season and episode was read as part of the title, so the anime was not found.
 - More file names are read right, and recognized: episode 1080 of One Piece is not taken for a
