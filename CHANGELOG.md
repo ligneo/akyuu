@@ -16,6 +16,8 @@
   in a small window instead of pushing the buttons out of sight.
 - The progress bar of the anime list is larger and carries the episode count inside it, as the
   cards do, instead of a thin bar with the count next to it.
+- The tabs above the anime list show their counts in a small badge, like the sidebar, instead
+  of in parentheses.
 - Episodes named like `Title - 07 (S01E07)`, as some groups do, are recognized. The number
   before the season and episode was read as part of the title, so the anime was not found.
 - More file names are read right, and recognized: episode 1080 of One Piece is not taken for a

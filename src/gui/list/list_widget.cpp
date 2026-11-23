@@ -20,6 +20,7 @@
 #include "list_widget.hpp"
 
 #include <QActionGroup>
+#include <QLabel>
 #include <QLineEdit>
 #include <QListView>
 #include <QMenu>
@@ -104,6 +105,10 @@ void ListWidget::initTabs() {
   for (const auto status : anime::list::kStatuses) {
     const auto index = m_tabs->addTab(formatListStatus(status));
     m_tabs->setTabData(index, QVariant::fromValue(status));
+    // The count sits apart from the name, as the counters of the sidebar do
+    auto counter = new QLabel(m_tabs);
+    counter->setObjectName("tabCounter");
+    m_tabs->setTabButton(index, QTabBar::RightSide, counter);
   }
 
   m_toolbarLayout->insertWidget(0, m_tabs);
@@ -147,7 +152,12 @@ void ListWidget::refreshTabs() {
         !text.isEmpty() ? matches[status]
         : item          ? item->data(0, static_cast<int>(NavigationItemDataRole::Counter)).toInt()
                         : 0;
-    m_tabs->setTabText(i, u"%1 (%2)"_s.arg(formatListStatus(status)).arg(count));
+    if (auto counter = qobject_cast<QLabel*>(m_tabs->tabButton(i, QTabBar::RightSide))) {
+      counter->setText(QString::number(count));
+      counter->adjustSize();
+      // The tab bar sizes its tabs again only when a tab changes
+      m_tabs->setTabText(i, m_tabs->tabText(i));
+    }
   }
 }
 

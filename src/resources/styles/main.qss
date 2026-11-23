@@ -27,6 +27,15 @@ QToolButton::menu-indicator {
   width: 0px;
 }
 
+/* List tabs */
+
+QTabBar QLabel#tabCounter {
+  background-color: rgba(128, 128, 128, 22%);
+  border-radius: 8px;
+  color: palette(placeholder-text);
+  padding: 0px 6px;
+}
+
 /* Navigation */
 
 QTreeWidget#navigation {
