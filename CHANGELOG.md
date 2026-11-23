@@ -9,6 +9,8 @@
   They were taken for something other than a video, so playing them went unnoticed and library
   scans skipped them.
 - Anime List in the sidebar no longer stays highlighted after another page is picked.
+- Opening a completed title that is being rewatched no longer sets its progress to 0, which
+  was saved with OK. This happened with MyAnimeList and Kitsu, where such a title stays completed.
 
 ## 0.5.0
 

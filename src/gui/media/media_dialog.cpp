@@ -25,6 +25,7 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QResizeEvent>
+#include <QSignalBlocker>
 #include <QUrl>
 #include <algorithm>
 
@@ -324,8 +325,12 @@ void MediaDialog::initList() {
   // Times rewatched
   ui_->spinRewatches->setValue(m_entry->rewatched_times);
 
-  // Rewatching
-  ui_->checkRewatching->setChecked(m_entry->rewatching);
+  // Rewatching. The handler is for the user's clicks: run here, it would reset the progress of a
+  // completed entry that is being rewatched, and accepting the dialog would save that.
+  {
+    const QSignalBlocker blocker(ui_->checkRewatching);
+    ui_->checkRewatching->setChecked(m_entry->rewatching);
+  }
 
   // Status
   ui_->comboStatus->clear();
