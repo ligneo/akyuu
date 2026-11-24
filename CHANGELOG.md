@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Groups of settings and details have a title over a thin line instead of a box around them, in
+  Settings, the anime details, Statistics and the Profile page.
 - In the details of an anime, titles and tags that wrap onto more lines keep all of them. With a
   larger font or a narrower window, the next row was drawn over their last line.
 - A folder made in the library folders while Akyuu runs is watched as well, so episodes put in it

@@ -655,8 +655,6 @@ ProfileWidget::ProfileWidget(QWidget* parent) : PageWidget(parent) {
 
   const auto addListGroup = [this, container](const QString& title, QLabel*& label) {
     const auto group = new QGroupBox(title, container);
-    // A title over a line rather than a box, which made the page look like a form; see the style
-    group->setObjectName("profileSection");
     const auto layout = new QVBoxLayout(group);
     label = createRichLabel(group);
     connect(label, &QLabel::linkActivated, this, &ProfileWidget::openLink);

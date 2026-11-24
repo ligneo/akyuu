@@ -134,20 +134,24 @@ QFrame#profileTile {
   border-radius: 8px;
 }
 
-QGroupBox#profileSection {
+QLabel#profileCaption {
+  color: palette(placeholder-text);
+}
+
+/* Group boxes */
+
+/* A title over a thin line rather than a box around the group, which made the pages and dialogs
+   look like forms */
+QGroupBox {
   border: none;
   border-top: 1px solid rgba(128, 128, 128, 30%);
   margin-top: 1.4em;
   padding-top: 10px;
 }
 
-QGroupBox#profileSection::title {
+QGroupBox::title {
   subcontrol-origin: margin;
   subcontrol-position: top left;
   left: 0px;
   padding: 0px;
-}
-
-QLabel#profileCaption {
-  color: palette(placeholder-text);
 }
