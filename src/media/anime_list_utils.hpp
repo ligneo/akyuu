@@ -19,6 +19,8 @@
 
 #pragma once
 
+#include <algorithm>
+
 namespace anime {
 struct Details;
 }
@@ -28,6 +30,14 @@ namespace anime::list {
 struct Entry;
 
 float getProgressRatio(const Details* item, const Entry* entry);
+
+// `total` is the episode count, known or estimated, and 0 for a long series without an end in
+// sight. Such a series is drawn up to 80%, as in v1, so the bar never looks finished.
+constexpr float progressRatio(const int watched, const int total, const int lastAired) {
+  if (watched <= 0) return 0.0f;
+  if (total > 0) return std::min(watched / static_cast<float>(total), 1.0f);
+  return std::min(0.8f, 0.8f * watched / std::max(lastAired, watched));
+}
 
 bool isInList(const Entry* entry);
 

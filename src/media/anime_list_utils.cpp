@@ -26,15 +26,16 @@
 #include "media/anime_db.hpp"
 #include "media/anime_history.hpp"
 #include "media/anime_list.hpp"
+#include "media/anime_utils.hpp"
 #include "sync/queue.hpp"
 
 namespace anime::list {
 
 float getProgressRatio(const Details* item, const Entry* entry) {
-  const auto progress = (entry ? entry->watched_episodes : 0);
-  const auto total = (item ? item->episode_count : 0);
-  if (!total) return 0.8f;
-  return std::min(progress / static_cast<float>(total), 1.0f);
+  if (!item) return 0.0f;
+  const auto watched = (entry ? entry->watched_episodes : 0);
+  const auto lastAired = std::max(watched, estimateLastAiredEpisodeNumber(*item));
+  return progressRatio(watched, estimateEpisodeCount(*item, lastAired), lastAired);
 }
 
 bool isInList(const Entry* entry) {
