@@ -87,6 +87,7 @@ private:
   QGroupBox* m_airingGroup = nullptr;
   QLabel* m_airing = nullptr;
   WeekSchedule* m_airingSchedule = nullptr;
+  QLabel* m_airingLater = nullptr;
   QGroupBox* m_upcomingGroup = nullptr;
   QLabel* m_upcoming = nullptr;
   Timeline* m_upcomingTimeline = nullptr;

@@ -22,12 +22,15 @@
 #include <QDesktopServices>
 #include <QGridLayout>
 #include <QGroupBox>
+#include <QHash>
 #include <QHBoxLayout>
 #include <QLocale>
 #include <QMouseEvent>
 #include <QPainter>
 #include <QPainterPath>
 #include <QScrollArea>
+#include <QSet>
+#include <QTextLayout>
 #include <QTimer>
 #include <QToolTip>
 #include <QUrl>
@@ -71,6 +74,11 @@ constexpr int kTimelineLimit = 8;
 constexpr int kRecentLimit = 100;
 // In characters, below which the page has a single column
 constexpr int kTwoColumnWidth = 90;
+// Between the sections, about twice what is between a title and its content, so that each title
+// reads as part of what is under it rather than of what is over it
+constexpr int kSectionSpacing = 28;
+// Inside a section, a little room for the highlight of a row, which goes past its sides
+constexpr QMargins kSectionMargins{4, 6, 4, 0};
 
 QLabel* createRichLabel(QWidget* parent) {
   const auto label = new QLabel(parent);
@@ -526,16 +534,19 @@ private:
 
 // What airs in the coming days, a column for each day side by side, as a week on a calendar.
 // Each column has the episodes of its day by the hour they air, a poster with the title, the time
-// and the episode. A narrow window puts the days that do not fit on a row under the first.
+// and the episode. A narrow window puts the days that do not fit on a row under the first. A busy
+// day shows its first few and opens to the rest, which keeps the section short and the posters
+// loaded few, as each poster is kept at its full size by the image provider.
 struct ScheduleItem {
   int id = 0;
   QString time;
-  QString episode;
+  int episode = 0;
   bool planning = false;
 };
 
 struct ScheduleDay {
   QString label;
+  QString shortLabel;
   QString date;
   bool today = false;
   std::vector<ScheduleItem> items;
@@ -550,6 +561,7 @@ public:
     policy.setHeightForWidth(true);
     setSizePolicy(policy);
     connect(&imageProvider, &ImageProvider::posterChanged, this, [this](const int id) {
+      m_thumbnails.remove(id);
       for (const auto& card : m_cards) {
         if (card.item->id == id) update(card.rect);
       }
@@ -558,6 +570,12 @@ public:
 
   void setDays(std::vector<ScheduleDay> days) {
     m_days = std::move(days);
+    // The days are set again every minute, and the small posters of what is still there are kept
+    QSet<int> ids;
+    for (const auto& day : m_days) {
+      for (const auto& item : day.items) ids.insert(item.id);
+    }
+    m_thumbnails.removeIf([&ids](const auto& it) { return !ids.contains(it.key()); });
     layoutCards(width());
     updateGeometry();
     update();
@@ -611,6 +629,20 @@ protected:
     const auto text = palette().color(QPalette::WindowText);
     const auto highlight = palette().color(QPalette::Highlight);
 
+    // The short names of the days for all of them when one of the long ones leaves no room for its
+    // date, so that they read alike
+    bool shortLabels = false;
+    {
+      auto font = this->font();
+      font.setWeight(QFont::Weight::DemiBold);
+      const QFontMetrics bold{font};
+      for (const auto& block : m_blocks) {
+        const auto& day = m_days[block.day];
+        const auto room = block.rect.width() - kPadding * 2 - fm.horizontalAdvance(day.date) - 8;
+        if (bold.horizontalAdvance(day.label) > room) shortLabels = true;
+      }
+    }
+
     for (const auto& block : m_blocks) {
       if (!block.rect.intersects(event->rect())) continue;
       const auto& day = m_days[block.day];
@@ -622,18 +654,22 @@ protected:
       painter.setBrush(fill);
       painter.drawRoundedRect(QRectF{block.rect}.adjusted(0.5, 0.5, -0.5, -0.5), 8, 8);
 
-      // The name of the day on the left and its date on the right
+      // The name of the day on the left and its date on the right, the short name of the day when
+      // the long one leaves no room for the date
       const QRect header{block.rect.left() + kPadding, block.rect.top() + 6,
                          block.rect.width() - kPadding * 2, fm.height()};
       auto font = this->font();
       font.setWeight(QFont::Weight::DemiBold);
+      const QFontMetrics bold{font};
+      const auto dateWidth = day.date.isEmpty() ? 0 : fm.horizontalAdvance(day.date) + 8;
+      auto label = shortLabels && !day.shortLabel.isEmpty() ? day.shortLabel : day.label;
       painter.setFont(font);
       painter.setPen(day.today ? highlight.lighter(130) : text);
-      painter.drawText(header, Qt::AlignLeft | Qt::AlignVCenter, day.label);
+      painter.drawText(header, Qt::AlignLeft | Qt::AlignVCenter,
+                       bold.elidedText(label, Qt::ElideRight, header.width()));
       painter.setFont(this->font());
       painter.setPen(muted);
-      const auto labelWidth = QFontMetrics{font}.horizontalAdvance(day.label) + 8;
-      if (labelWidth + fm.horizontalAdvance(day.date) <= header.width()) {
+      if (dateWidth && bold.horizontalAdvance(label) + dateWidth <= header.width()) {
         painter.drawText(header, Qt::AlignRight | Qt::AlignVCenter, day.date);
       }
 
@@ -641,6 +677,24 @@ protected:
         const QRect empty{header.left(), header.bottom() + kPadding, header.width(), cardHeight()};
         painter.drawText(empty, Qt::AlignCenter, u"-"_s);
       }
+    }
+
+    // A quiet button under a busy day, which opens every day at once
+    for (int i = 0; i < std::ssize(m_mores); ++i) {
+      const auto& more = m_mores[i];
+      if (!more.rect.intersects(event->rect())) continue;
+      const auto hovered = i == m_hoveredMore;
+      if (hovered) {
+        auto fill = highlight;
+        fill.setAlphaF(0.18);
+        painter.setPen(Qt::NoPen);
+        painter.setBrush(fill);
+        painter.drawRoundedRect(QRectF{more.rect}.adjusted(-4, 2, 4, -2), 6, 6);
+      }
+      const auto hidden = static_cast<int>(m_days[more.day].items.size()) - kDayLimit;
+      painter.setPen(hovered ? text : muted);
+      painter.drawText(more.rect, Qt::AlignCenter,
+                       m_expanded ? tr("Show less") : tr("+%1 more").arg(hidden));
     }
 
     for (int i = 0; i < std::ssize(m_cards); ++i) {
@@ -664,46 +718,45 @@ protected:
       path.addRoundedRect(thumb, 4, 4);
       painter.save();
       painter.setClipPath(path);
-      if (const auto pixmap = imageProvider.loadPoster(item.id); !pixmap.isNull()) {
-        const auto scaled =
-            pixmap.size().scaled(thumb.size().toSize(), Qt::KeepAspectRatioByExpanding);
-        painter.drawPixmap(QRectF{thumb.center().x() - scaled.width() / 2.0,
-                                  thumb.center().y() - scaled.height() / 2.0, scaled.width() * 1.0,
-                                  scaled.height() * 1.0},
-                           pixmap, pixmap.rect());
+      if (const auto pixmap = thumbnail(item.id, thumb.size().toSize()); !pixmap.isNull()) {
+        painter.drawPixmap(thumb.topLeft(), pixmap);
       } else {
         painter.fillRect(thumb, palette().color(QPalette::Mid));
       }
       painter.restore();
 
-      // The title, then the time and the episode, then whether it is only planned
+      // What is being watched has a dot on its poster, as the one to look out for
+      if (!item.planning) {
+        const QPointF dot{thumb.right() - 4, thumb.top() + 4};
+        painter.setPen(QPen{palette().color(QPalette::Window), 1.5});
+        painter.setBrush(highlight);
+        painter.drawEllipse(dot, 4, 4);
+      }
+
+      // The time, with the episode on the right, then the title over two lines, which a narrow day
+      // would otherwise cut after a word
       const auto left = static_cast<int>(thumb.right()) + 8;
       const auto width = card.rect.right() - left;
-      const auto anime = anime::db.item(item.id);
-      const auto title = anime ? QString::fromStdString(anime::preferredTitle(*anime)) : QString{};
-      const auto lines = item.planning ? 3 : 2;
-      auto top = card.rect.top() + (card.rect.height() - fm.height() * lines) / 2;
-      painter.setPen(text);
-      painter.drawText(QRect{left, top, width, fm.height()}, Qt::AlignLeft | Qt::AlignVCenter,
-                       fm.elidedText(title, Qt::ElideRight, width));
-      top += fm.height();
-      // The time on the left and the episode on the right, so that a narrow day cuts neither
+      auto top = card.rect.top() + (card.rect.height() - fm.height() * 3) / 2;
       const QRect timeLine{left, top, width, fm.height()};
       painter.setPen(text);
-      painter.drawText(timeLine, Qt::AlignLeft | Qt::AlignVCenter, item.time);
-      const auto episodeWidth = width - fm.horizontalAdvance(item.time) - 6;
-      if (!item.episode.isEmpty() && episodeWidth > 0) {
-        painter.setPen(muted);
-        painter.drawText(timeLine, Qt::AlignRight | Qt::AlignVCenter,
-                         fm.elidedText(item.episode, Qt::ElideRight, episodeWidth));
+      painter.drawText(timeLine, Qt::AlignLeft | Qt::AlignVCenter,
+                       fm.elidedText(item.time, Qt::ElideRight, width));
+      if (item.episode > 0) {
+        const auto room = width - fm.horizontalAdvance(item.time) - 8;
+        for (const auto& episode : {tr("Ep %1").arg(item.episode), u"#%1"_s.arg(item.episode)}) {
+          if (fm.horizontalAdvance(episode) > room) continue;
+          painter.setPen(muted);
+          painter.drawText(timeLine, Qt::AlignRight | Qt::AlignVCenter, episode);
+          break;
+        }
       }
-      if (item.planning) {
-        top += fm.height();
-        auto planned = highlight;
-        planned.setAlphaF(0.9);
-        painter.setPen(planned);
+      top += fm.height();
+      painter.setPen(text);
+      for (const auto& line : titleLines(item.id, width)) {
         painter.drawText(QRect{left, top, width, fm.height()}, Qt::AlignLeft | Qt::AlignVCenter,
-                         fm.elidedText(tr("Planning"), Qt::ElideRight, width));
+                         line);
+        top += fm.height();
       }
     }
   }
@@ -714,9 +767,14 @@ protected:
       const auto help = static_cast<QHelpEvent*>(event);
       const auto index = cardAt(help->pos());
       if (index >= 0) {
-        if (const auto anime = anime::db.item(m_cards[index].item->id)) {
-          QToolTip::showText(help->globalPos(),
-                             QString::fromStdString(anime::preferredTitle(*anime)), this);
+        const auto& item = *m_cards[index].item;
+        if (const auto anime = anime::db.item(item.id)) {
+          QStringList lines{QString::fromStdString(anime::preferredTitle(*anime))};
+          QStringList details{item.planning ? tr("Planning") : tr("Watching")};
+          if (item.episode > 0) details.append(tr("Episode %1").arg(item.episode));
+          details.append(item.time);
+          lines.append(details.join(u", "_s));
+          QToolTip::showText(help->globalPos(), lines.join(u'\n'), this);
           return true;
         }
       }
@@ -728,23 +786,39 @@ protected:
   }
 
   void mouseMoveEvent(QMouseEvent* event) override {
-    const auto index = cardAt(event->position().toPoint());
-    if (index == m_hovered) return;
+    const auto point = event->position().toPoint();
+    const auto index = cardAt(point);
+    const auto more = moreAt(point);
+    if (index == m_hovered && more == m_hoveredMore) return;
     const auto previous = m_hovered;
+    const auto previousMore = m_hoveredMore;
     m_hovered = index;
-    setCursor(index >= 0 ? Qt::PointingHandCursor : Qt::ArrowCursor);
+    m_hoveredMore = more;
+    setCursor(index >= 0 || more >= 0 ? Qt::PointingHandCursor : Qt::ArrowCursor);
     if (previous >= 0) update(m_cards[previous].rect.adjusted(-4, 0, 4, 0));
     if (index >= 0) update(m_cards[index].rect.adjusted(-4, 0, 4, 0));
+    if (previousMore >= 0) update(m_mores[previousMore].rect.adjusted(-4, 0, 4, 0));
+    if (more >= 0) update(m_mores[more].rect.adjusted(-4, 0, 4, 0));
   }
 
   void leaveEvent(QEvent*) override {
     if (m_hovered >= 0) update(m_cards[m_hovered].rect.adjusted(-4, 0, 4, 0));
+    if (m_hoveredMore >= 0) update(m_mores[m_hoveredMore].rect.adjusted(-4, 0, 4, 0));
     m_hovered = -1;
+    m_hoveredMore = -1;
   }
 
   void mouseReleaseEvent(QMouseEvent* event) override {
     if (event->button() != Qt::LeftButton) return;
-    const auto index = cardAt(event->position().toPoint());
+    const auto point = event->position().toPoint();
+    if (moreAt(point) >= 0) {
+      m_expanded = !m_expanded;
+      layoutCards(width());
+      updateGeometry();
+      update();
+      return;
+    }
+    const auto index = cardAt(point);
     if (index >= 0) m_clicked(m_cards[index].item->id);
   }
 
@@ -752,6 +826,8 @@ private:
   static constexpr int kSpacing = 8;
   static constexpr int kPadding = 8;
   static constexpr int kCardGap = 2;
+  // Episodes of a day before the rest is opened
+  static constexpr int kDayLimit = 4;
 
   struct Block {
     int day = 0;
@@ -759,6 +835,10 @@ private:
   };
   struct Card {
     const ScheduleItem* item = nullptr;
+    QRect rect;
+  };
+  struct More {
+    int day = 0;
     QRect rect;
   };
   struct Measure {
@@ -777,9 +857,63 @@ private:
   int headerHeight() const {
     return fontMetrics().height() + 12;
   }
+  int moreHeight() const {
+    return fontMetrics().height() + 10;
+  }
+  bool overflows(const ScheduleDay& day) const {
+    return std::ssize(day.items) > kDayLimit;
+  }
+  int shownCount(const ScheduleDay& day) const {
+    const auto count = static_cast<int>(day.items.size());
+    return m_expanded ? count : std::min(count, kDayLimit);
+  }
   int blockHeight(const ScheduleDay& day) const {
-    const auto cards = std::max<int>(1, std::ssize(day.items));
-    return headerHeight() + cards * cardHeight() + (cards - 1) * kCardGap + kPadding;
+    const auto cards = std::max(1, shownCount(day));
+    return headerHeight() + cards * cardHeight() + (cards - 1) * kCardGap +
+           (overflows(day) ? moreHeight() : 0) + kPadding;
+  }
+
+  // The title in two lines at most, broken between words where it can be, the second cut short
+  QStringList titleLines(const int id, const int width) const {
+    const auto anime = anime::db.item(id);
+    if (!anime || width <= 0) return {};
+    const auto title = QString::fromStdString(anime::preferredTitle(*anime));
+    const auto fm = fontMetrics();
+    if (fm.horizontalAdvance(title) <= width) return {title};
+    // Between words only, a word broken in two being harder to read than one cut short
+    QTextLayout layout{title, font()};
+    QTextOption option;
+    option.setWrapMode(QTextOption::WordWrap);
+    layout.setTextOption(option);
+    layout.beginLayout();
+    auto line = layout.createLine();
+    line.setLineWidth(width);
+    const auto length = line.textLength();
+    layout.endLayout();
+    const auto first = title.left(length).trimmed();
+    const auto rest = title.mid(length).trimmed();
+    QStringList lines{fm.elidedText(first, Qt::ElideRight, width)};
+    if (!rest.isEmpty()) lines.append(fm.elidedText(rest, Qt::ElideRight, width));
+    return lines;
+  }
+
+  // The poster at the size of its card, made once rather than on every paint, from a picture of
+  // some hundred pixels across
+  QPixmap thumbnail(const int id, const QSize size) {
+    const auto ratio = devicePixelRatioF();
+    const auto pixels = (QSizeF{size} * ratio).toSize();
+    if (const auto it = m_thumbnails.constFind(id);
+        it != m_thumbnails.cend() && it->size() == pixels) {
+      return *it;
+    }
+    const auto poster = imageProvider.loadPoster(id);
+    if (poster.isNull() || pixels.isEmpty()) return {};
+    auto scaled = poster.scaled(pixels, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+    scaled = scaled.copy((scaled.width() - pixels.width()) / 2,
+                         (scaled.height() - pixels.height()) / 2, pixels.width(), pixels.height());
+    scaled.setDevicePixelRatio(ratio);
+    m_thumbnails.insert(id, scaled);
+    return scaled;
   }
 
   // As many days on a row as have room, the rows as tall as their longest day
@@ -805,7 +939,9 @@ private:
   void layoutCards(const int width) {
     m_blocks.clear();
     m_cards.clear();
+    m_mores.clear();
     m_hovered = -1;
+    m_hoveredMore = -1;
     const auto count = static_cast<int>(m_days.size());
     if (!count || width <= 0) return;
     const auto perRow = measure(width).perRow;
@@ -819,10 +955,14 @@ private:
         const auto left = (i - first) * (columnWidth + kSpacing);
         m_blocks.push_back({i, QRect{left, top, columnWidth, tallest}});
         auto y = top + headerHeight();
-        for (const auto& item : m_days[i].items) {
+        const auto& day = m_days[i];
+        for (int j = 0; j < shownCount(day); ++j) {
           m_cards.push_back(
-              {&item, QRect{left + kPadding, y, columnWidth - kPadding * 2, cardHeight()}});
+              {&day.items[j], QRect{left + kPadding, y, columnWidth - kPadding * 2, cardHeight()}});
           y += cardHeight() + kCardGap;
+        }
+        if (overflows(day)) {
+          m_mores.push_back({i, QRect{left + kPadding, y, columnWidth - kPadding * 2, moreHeight()}});
         }
       }
       top += tallest + kSpacing;
@@ -836,6 +976,13 @@ private:
     return -1;
   }
 
+  int moreAt(const QPoint& point) const {
+    for (int i = 0; i < std::ssize(m_mores); ++i) {
+      if (m_mores[i].rect.contains(point)) return i;
+    }
+    return -1;
+  }
+
   static QString tr(const char* text) {
     return QCoreApplication::translate("gui::ProfileWidget", text);
   }
@@ -843,9 +990,13 @@ private:
   std::vector<ScheduleDay> m_days;
   std::vector<Block> m_blocks;
   std::vector<Card> m_cards;
+  std::vector<More> m_mores;
+  QHash<int, QPixmap> m_thumbnails;
   std::function<void(int)> m_clicked;
   int m_hovered = -1;
+  int m_hoveredMore = -1;
   int m_rows = 0;
+  bool m_expanded = false;
 };
 
 // The account at the top of the page, over the banner of the profile when the service has one
@@ -963,6 +1114,7 @@ ProfileWidget::ProfileWidget(QWidget* parent) : PageWidget(parent) {
     m_weekTime = addTile(tr("Time this week"), tr("Time spent watching in the last 7 days"));
     m_completedYear = addTile(tr("Completed this year"), tr("Anime completed this year"));
     containerLayout->addLayout(m_tiles);
+    containerLayout->addSpacing(kSectionSpacing - containerLayout->spacing());
   }
 
   // What airs this week, across the page over the two columns, as the days read left to right. An
@@ -970,6 +1122,7 @@ ProfileWidget::ProfileWidget(QWidget* parent) : PageWidget(parent) {
   {
     m_airingGroup = new QGroupBox(tr("Airing This Week"), container);
     const auto layout = new QVBoxLayout(m_airingGroup);
+    layout->setContentsMargins(kSectionMargins);
     m_airing = createRichLabel(m_airingGroup);
     connect(m_airing, &QLabel::linkActivated, this, &ProfileWidget::openLink);
     layout->addWidget(m_airing);
@@ -979,18 +1132,22 @@ ProfileWidget::ProfileWidget(QWidget* parent) : PageWidget(parent) {
       }
     });
     layout->addWidget(m_airingSchedule);
+    m_airingLater = createRichLabel(m_airingGroup);
+    connect(m_airingLater, &QLabel::linkActivated, this, &ProfileWidget::openLink);
+    layout->addWidget(m_airingLater);
     containerLayout->addWidget(m_airingGroup);
+    containerLayout->addSpacing(kSectionSpacing - containerLayout->spacing());
   }
 
   // Two columns side by side in a wide window, what comes next on the left and what has been
   // watched on the right. A narrow window stacks them, see `arrangeColumns`.
   {
     m_columns = new QBoxLayout(QBoxLayout::LeftToRight);
-    m_columns->setSpacing(12);
+    m_columns->setSpacing(kSectionSpacing);
     m_leftColumn = new QVBoxLayout();
     m_rightColumn = new QVBoxLayout();
-    m_leftColumn->setSpacing(12);
-    m_rightColumn->setSpacing(12);
+    m_leftColumn->setSpacing(kSectionSpacing);
+    m_rightColumn->setSpacing(kSectionSpacing);
     m_columns->addLayout(m_leftColumn, 1);
     m_columns->addLayout(m_rightColumn, 1);
     containerLayout->addLayout(m_columns);
@@ -999,6 +1156,7 @@ ProfileWidget::ProfileWidget(QWidget* parent) : PageWidget(parent) {
   const auto addListGroup = [this, container](const QString& title, QLabel*& label) {
     const auto group = new QGroupBox(title, container);
     const auto layout = new QVBoxLayout(group);
+    layout->setContentsMargins(kSectionMargins);
     label = createRichLabel(group);
     connect(label, &QLabel::linkActivated, this, &ProfileWidget::openLink);
     layout->addWidget(label);
@@ -1267,34 +1425,50 @@ void ProfileWidget::refreshActivity() {
       days[i].label = i == 0   ? tr("Today")
                       : i == 1 ? tr("Tomorrow")
                                : QLocale::system().dayName(date.dayOfWeek());
+      if (i > 1) {
+        days[i].shortLabel = QLocale::system().dayName(date.dayOfWeek(), QLocale::ShortFormat);
+      }
       days[i].date = QLocale::system().toString(date, u"d MMM"_s);
       days[i].today = i == 0;
     }
-    ScheduleDay later{tr("Later"), {}, false, {}};
+    // What airs later, after a break, in a line under the week rather than a column of its own,
+    // which would take its room from the days
+    QStringList later;
+    int laterCount = 0;
+    constexpr int kLaterLimit = 6;
     for (const auto anime : airing) {
       const auto time = QDateTime::fromSecsSinceEpoch(anime->next_episode_time).toLocalTime();
       const auto offset = today.daysTo(time.date());
       const auto entry = anime::db.entry(anime->id);
-      ScheduleItem item{anime->id, QLocale::system().toString(time.time(), u"HH:mm"_s), {},
+      ScheduleItem item{anime->id, QLocale::system().toString(time.time(), u"HH:mm"_s), 0,
                         entry && entry->status == anime::list::Status::PlanToWatch};
-      if (anime->last_aired_episode >= 0) {
-        item.episode = tr("Ep %1").arg(anime->last_aired_episode + 1);
-      }
+      if (anime->last_aired_episode >= 0) item.episode = anime->last_aired_episode + 1;
       if (offset >= 0 && offset < kWeekDays) {
         days[offset].items.push_back(std::move(item));
-      } else {
-        item.time = QLocale::system().toString(time, u"d MMM HH:mm"_s);
-        later.items.push_back(std::move(item));
+      } else if (laterCount++ < kLaterLimit) {
+        // The date alone, the hour being less to go by this far ahead
+        later.append(u"<a href=\"akyuu:anime/%1\" style=\"text-decoration: none;\">%2</a> %3"_s.arg(
+            QString::number(anime->id),
+            QString::fromStdString(anime::preferredTitle(*anime)).toHtmlEscaped(),
+            QLocale::system().toString(time.date(), u"d MMM"_s).toHtmlEscaped()));
       }
     }
-    if (!later.items.empty()) days.push_back(std::move(later));
+    if (laterCount > kLaterLimit) later.append(tr("%n more", nullptr, laterCount - kLaterLimit));
+    if (!later.empty()) {
+      const auto muted = palette().color(QPalette::PlaceholderText).name();
+      m_airingLater->setText(u"<p style=\"margin: 0;\"><span style=\"color: %1;\">%2</span> %3</p>"_s.arg(
+          muted, tr("Later:").toHtmlEscaped(), later.join(u", "_s)));
+    }
+    m_airingLater->setVisible(!later.empty());
 
     m_airing->setText(u"<p style=\"margin: 0;\">%1 <a href=\"akyuu:seasons\">%2</a></p>"_s.arg(
         tr("Nothing on your list airs this week.").toHtmlEscaped(),
         tr("See this season").toHtmlEscaped()));
-    m_airing->setVisible(airing.empty());
-    m_airingSchedule->setVisible(!airing.empty());
-    m_airingSchedule->setDays(airing.empty() ? std::vector<ScheduleDay>{} : std::move(days));
+    // Seven empty days say less than a line, when all of it airs later or nothing does
+    const auto thisWeek = std::ranges::any_of(days, [](const auto& day) { return !day.items.empty(); });
+    m_airing->setVisible(!thisWeek);
+    m_airingSchedule->setVisible(thisWeek);
+    m_airingSchedule->setDays(thisWeek ? std::move(days) : std::vector<ScheduleDay>{});
   }
 
   // Upcoming, from Watching and Planning, by when they start
@@ -1397,6 +1571,12 @@ void ProfileWidget::openLink(const QString& link) {
     mainWindow()->navigateTo(MainWindowPage::Seasons);
     return;
   }
+  if (url.path().startsWith(u"anime/"_s)) {
+    if (const auto anime = anime::db.item(url.path().mid(6).toInt())) {
+      MediaDialog::show(this, MediaDialogPage::Details, *anime);
+    }
+    return;
+  }
   if (url.path() == u"library-settings"_s) {
     SettingsDialog::show(this, SettingsPageId::Library);
   }
@@ -1446,6 +1626,8 @@ void ProfileWidget::arrangeColumns() {
   for (int i = 0; i < 4; ++i) m_tiles->setColumnStretch(i, i < tilesPerRow ? 1 : 0);
 
   m_columns->setStretch(1, columnCount == 2 ? 1 : 0);
+  // The second column is empty in a narrow window, and its spacing would be a margin on the right
+  m_columns->setSpacing(columnCount == 2 ? kSectionSpacing : 0);
   balanceColumns();
 }
 

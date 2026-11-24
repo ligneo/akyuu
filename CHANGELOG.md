@@ -18,9 +18,11 @@
   account with its avatar and banner, the episodes and time watched this week, the days in a row,
   the anime completed this year, what is airing with a countdown, what is upcoming, the available
   episodes in library folders, and what was recently watched. Airing This Week runs across the
-  page as the next seven days side by side, each with its episodes, their time and number, and a
-  column for what airs later; a narrow window splits the days into even rows, and an empty week
-  is one line with a link to this season. Upcoming is a timeline by the date each starts, and
+  page as the next seven days side by side, each with its episodes, their time and number and the
+  title over two lines, a dot on what is being watched, and the first four of a busy day with the
+  rest a click away; what airs after the week is a line of links under it. A narrow window splits
+  the days into even rows, and an empty week is one line with a link to this season. The sections
+  have more room between them than between a title and its content. Upcoming is a timeline by the date each starts, and
   Recently Watched one by the day. Airing and Upcoming include the Planning list, and Upcoming
   shows only when something is upcoming. Each row has a small poster and opens
   the details of its anime. A long list shows its first rows and opens to the rest, and only the
