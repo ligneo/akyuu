@@ -50,6 +50,8 @@ private:
   struct Content {
     QString title;
     QString progress;
+    // Whether the file name has an episode number, rather than the one assumed for a movie
+    bool hasEpisode = false;
     QString episodeTitle;
     QString details;
     bool isPlaying = false;

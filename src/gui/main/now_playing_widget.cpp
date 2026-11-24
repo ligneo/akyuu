@@ -374,6 +374,7 @@ void NowPlayingWidget::refresh() {
   render(Content{
       .title = QString::fromStdString(title),
       .progress = u"%1/%2"_s.arg(episodeNumber).arg(episodeCount),
+      .hasEpisode = m_episode->contains(anitomy::ElementKind::Episode),
       .episodeTitle =
           QString::fromStdString(m_episode->element(anitomy::ElementKind::EpisodeTitle)),
       .details = lines.join("<br>"),
@@ -407,8 +408,15 @@ void NowPlayingWidget::render(const std::optional<Content>& content) {
   m_titleLabel->setText(content->title);
   m_titleLabel->setCursor(content->isRecognized ? Qt::PointingHandCursor : Qt::ArrowCursor);
 
-  auto details = u"%1 · Episode %2"_s.arg(content->isPlaying ? u"Watching"_s : u"Watched"_s)
-                     .arg(content->progress);
+  // What is not on the list says so, rather than reading as an episode being watched. It is
+  // not counted, and its episode is only what the file name says, if it says one.
+  auto details =
+      content->isRecognized
+          ? u"%1 · Episode %2"_s.arg(content->isPlaying ? u"Watching"_s : u"Watched"_s)
+                .arg(content->progress)
+          : (content->hasEpisode
+                 ? tr("Not recognized · Episode %1").arg(content->progress.section(u'/', 0, 0))
+                 : tr("Not recognized"));
   if (!content->episodeTitle.isEmpty()) details += u" · "_s + content->episodeTitle;
   m_detailsLabel->setText(details);
 
