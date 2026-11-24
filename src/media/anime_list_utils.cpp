@@ -34,6 +34,7 @@ namespace anime::list {
 float getProgressRatio(const Details* item, const Entry* entry) {
   if (!item) return 0.0f;
   const auto watched = (entry ? entry->watched_episodes : 0);
+  if (item->episode_count > 0) return progressRatio(watched, item->episode_count, watched);
   const auto lastAired = std::max(watched, estimateLastAiredEpisodeNumber(*item));
   return progressRatio(watched, estimateEpisodeCount(*item, lastAired), lastAired);
 }
