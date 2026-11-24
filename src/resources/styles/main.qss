@@ -74,7 +74,8 @@ QTreeView#animeList QHeaderView {
 
 QTreeView#animeList QHeaderView::section,
 QTreeView#historyView QHeaderView::section,
-QTreeView#libraryView QHeaderView::section {
+QTreeView#libraryView QHeaderView::section,
+QTreeView#torrentsView QHeaderView::section {
   font-weight: 600;
   padding-top: 5px;
   padding-bottom: 5px;

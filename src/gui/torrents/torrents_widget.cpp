@@ -28,6 +28,7 @@
 #include <QLineEdit>
 #include <QMenu>
 #include <QUrl>
+#include <algorithm>
 #include <map>
 
 #include "base/log.hpp"
@@ -82,8 +83,17 @@ TorrentsWidget::TorrentsWidget(QWidget* parent)
       {TorrentModel::COLUMN_DESCRIPTION, 200}, {TorrentModel::COLUMN_FILENAME, 200},
       {TorrentModel::COLUMN_DATE, 140},
   };
+  // The widths of v1 are in pixels of its font, so they grow with a larger one, and a column is
+  // never narrower than its header, which ran into the next one otherwise
+  const auto fm = m_view->header()->fontMetrics();
+  constexpr int kV1CharWidth = 7;
+  // The padding of the section in the style, and the sort indicator
+  constexpr int kHeaderPadding = 44;
   for (const auto& [column, width] : widths) {
-    m_view->header()->resizeSection(column, width);
+    const auto label = m_model->headerData(column, Qt::Horizontal, Qt::DisplayRole).toString();
+    const auto scaled = width * std::max(fm.averageCharWidth(), kV1CharWidth) / kV1CharWidth;
+    m_view->header()->resizeSection(column,
+                                    std::max(scaled, fm.horizontalAdvance(label) + kHeaderPadding));
   }
 
   layout()->addWidget(m_view);

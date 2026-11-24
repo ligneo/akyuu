@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- The columns of Torrents grow with the font and are never narrower than their headers, which
+  have the padding of the other lists. With a larger font, the headers ran into each other.
 - Groups of settings and details have a title over a thin line instead of a box around them, in
   Settings, the anime details, Statistics and the Profile page.
 - In the details of an anime, titles and tags that wrap onto more lines keep all of them. With a
