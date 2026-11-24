@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.6.0
+## 0.6.1
 
 - More release names are read right: a year before the season, as in `Show.2019.S02`, `Episode`
   in a title with no number after it, DTS-HD and Opus audio, a title after `-Group |`, volumes
@@ -12,6 +12,9 @@
 - Media that is not recognized says so in the Now Playing panel, instead of showing as being
   watched, and shows an episode number only when its file name has one. A movie read as
   "Watching · Episode 1/?".
+
+## 0.6.0
+
 - The columns of Torrents grow with the font and are never narrower than their headers, which
   have the padding of the other lists. With a larger font, the headers ran into each other.
 - Groups of settings and details have a title over a thin line instead of a box around them, in
