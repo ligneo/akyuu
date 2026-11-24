@@ -40,8 +40,6 @@
 
 #include "akyuu/accounts.hpp"
 #include "akyuu/settings.hpp"
-#include "gui/main/main_window.hpp"
-#include "gui/main/navigation_controller.hpp"
 #include "gui/media/media_dialog.hpp"
 #include "gui/settings/settings_dialog.hpp"
 #include "gui/utils/format.hpp"
@@ -213,7 +211,7 @@ protected:
       const QRectF dayLabel{center - slot / 2, chartBottom + 4, slot, static_cast<qreal>(line)};
       // The first letter alone when the short names would run into each other
       auto day = QLocale::system().dayName(date.dayOfWeek(), QLocale::ShortFormat);
-      if (painter.fontMetrics().horizontalAdvance(day) > slot - 4) day = day.left(1);
+      if (painter.fontMetrics().horizontalAdvance(day) > slot * 0.75) day = day.left(1);
       painter.drawText(dayLabel, Qt::AlignCenter, day);
       font.setBold(false);
       painter.setFont(font);
@@ -453,8 +451,9 @@ private:
   int rowHeight() const {
     return fontMetrics().height() * 3;
   }
+  // With room over and under the label, so that it does not sit on the row after it
   int labelHeight() const {
-    return fontMetrics().height() + 10;
+    return fontMetrics().height() + 18;
   }
   int railWidth() const {
     return fontMetrics().averageCharWidth() * 3;
@@ -677,7 +676,8 @@ ProfileWidget::ProfileWidget(QWidget* parent) : PageWidget(parent) {
   };
 
   // In this order, each in the shorter of the two columns of a wide window, see `balanceColumns`
-  addTimelineGroup(tr("Airing"), m_airing, m_airingTimeline);
+  // Airing, only when something on the list airs, as an empty section took a column for nothing
+  m_airingGroup = addTimelineGroup(tr("Airing"), m_airing, m_airingTimeline);
   addTimelineGroup(tr("Available Episodes"), m_ready, m_readyTimeline);
   {
     const auto group = addTimelineGroup(tr("Recently Watched"), m_recent, m_recentTimeline);
@@ -939,10 +939,8 @@ void ProfileWidget::refreshActivity() {
       groups.back().rows.push_back(
           {anime->id, note.join(u", "_s), QLocale::system().toString(time.time(), u"HH:mm"_s)});
     }
-    m_airing->setText(u"<p style=\"margin: 0;\">%1 <a href=\"akyuu:seasons\">%2</a></p>"_s.arg(
-        tr("Nothing on your list is airing.").toHtmlEscaped(),
-        tr("See this season").toHtmlEscaped()));
-    m_airing->setVisible(groups.empty());
+    m_airing->hide();
+    m_airingGroup->setVisible(!groups.empty());
     m_airingTimeline->setGroups(std::move(groups));
   }
 
@@ -1042,10 +1040,6 @@ void ProfileWidget::refreshActivity() {
 void ProfileWidget::openLink(const QString& link) {
   const QUrl url{link};
   if (url.scheme() != u"akyuu"_s) return;
-  if (url.path() == u"seasons"_s) {
-    mainWindow()->navigateTo(MainWindowPage::Seasons);
-    return;
-  }
   if (url.path() == u"library-settings"_s) {
     SettingsDialog::show(this, SettingsPageId::Library);
   }

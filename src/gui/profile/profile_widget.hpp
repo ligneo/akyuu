@@ -83,6 +83,7 @@ private:
   QLabel* m_weekTime = nullptr;
   QLabel* m_completedYear = nullptr;
 
+  QGroupBox* m_airingGroup = nullptr;
   QLabel* m_airing = nullptr;
   Timeline* m_airingTimeline = nullptr;
   QGroupBox* m_upcomingGroup = nullptr;
