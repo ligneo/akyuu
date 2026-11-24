@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.6.0
 
 - The columns of Torrents grow with the font and are never narrower than their headers, which
   have the padding of the other lists. With a larger font, the headers ran into each other.
