@@ -33,6 +33,7 @@ namespace gui {
 class ActivityChart;
 class Timeline;
 class ProfileHeader;
+class WeekSchedule;
 
 class ProfileWidget final : public PageWidget {
   Q_OBJECT
@@ -85,7 +86,7 @@ private:
 
   QGroupBox* m_airingGroup = nullptr;
   QLabel* m_airing = nullptr;
-  Timeline* m_airingTimeline = nullptr;
+  WeekSchedule* m_airingSchedule = nullptr;
   QGroupBox* m_upcomingGroup = nullptr;
   QLabel* m_upcoming = nullptr;
   Timeline* m_upcomingTimeline = nullptr;
