@@ -73,7 +73,7 @@ void paintProgressBar(QPainter* painter, const QStyleOption& option, const Anime
 
   // A rounded track rather than the style's square boxes, with the watched part, the bands and the
   // text kept to the same shape
-  const qreal radius = std::min(6.0, barRect.height() / 2.0);
+  const qreal radius = theme.cornerRadius(std::min(6.0, barRect.height() / 2.0));
   QPainterPath track;
   track.addRoundedRect(QRectF{barRect}, radius, radius);
 

@@ -282,6 +282,8 @@ QPalette Theme::schemePalette() const {
 }
 
 void Theme::applyStyle() {
+  m_roundedCorners = akyuu::settings.appRoundedCorners();
+
   // Remember the platform's style and palette, so that they can be restored later on.
   if (m_systemStyle.isEmpty()) {
     m_systemStyle = qApp->style()->name();
@@ -324,10 +326,23 @@ void Theme::applyStyle() {
                                                    : akyuuStyle ? "akyuu"
                                                    : isDark()   ? "dark"
                                                                 : "light");
-    qApp->setStyleSheet(mainStylesheet + themeStylesheet);
+    // Square corners for what the stylesheets round, the rest being drawn with `cornerRadius`
+    const QString squareStylesheet =
+        m_roundedCorners ? QString{}
+                         : u"QMainWindow > QToolBar QLineEdit, QTabBar QLabel#tabCounter, "
+                           u"QTreeWidget#navigation::item, QFrame#profileTile "
+                           u"{ border-radius: 0px; }"_s;
+    qApp->setStyleSheet(mainStylesheet + themeStylesheet + squareStylesheet);
   } else {
     qApp->setStyleSheet({});
   }
+
+  // What is drawn by hand follows a change of the corners only when it is drawn again
+  for (const auto widget : QApplication::allWidgets()) widget->update();
+}
+
+qreal Theme::cornerRadius(const qreal radius) const {
+  return m_roundedCorners ? radius : 0;
 }
 
 void Theme::initStyle() {

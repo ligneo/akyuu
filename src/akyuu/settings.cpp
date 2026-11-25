@@ -163,6 +163,12 @@ bool Settings::appCloseToTray() const {
   return value("app.closeToTray", false).toBool();
 }
 
+// The bars, badges, cards and boxes drawn with round corners, or square ones for those who like
+// them so (#15)
+bool Settings::appRoundedCorners() const {
+  return value("app.roundedCorners", true).toBool();
+}
+
 bool Settings::appMinimizeToTray() const {
   return value("app.minimizeToTray", false).toBool();
 }
@@ -772,6 +778,10 @@ void Settings::setAppAutoStart(const bool enabled) const {
 
 void Settings::setAppCloseToTray(const bool enabled) const {
   setValue("app.closeToTray", enabled);
+}
+
+void Settings::setAppRoundedCorners(const bool enabled) const {
+  setValue("app.roundedCorners", enabled);
 }
 
 void Settings::setAppMinimizeToTray(const bool enabled) const {

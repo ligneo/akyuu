@@ -50,6 +50,7 @@
 #include "gui/settings/settings_dialog.hpp"
 #include "gui/utils/format.hpp"
 #include "gui/utils/image_provider.hpp"
+#include "gui/utils/theme.hpp"
 #include "media/anime_db.hpp"
 #include "media/anime_history.hpp"
 #include "media/anime_list.hpp"
@@ -192,7 +193,7 @@ protected:
     const auto chartTop = line + 2.0;
     const auto chartBottom = height() - line - 6.0;
     const auto chartHeight = chartBottom - chartTop;
-    const auto radius = std::min(4.0, barWidth / 2);
+    const auto radius = theme.cornerRadius(std::min(4.0, barWidth / 2));
 
     for (int i = 0; i < kActivityDays; ++i) {
       const auto count = m_days[i];
@@ -338,7 +339,7 @@ protected:
           fill.setAlphaF(i == m_hovered ? 0.22 : 0.06);
           painter.setPen(Qt::NoPen);
           painter.setBrush(fill);
-          painter.drawRoundedRect(button, 8, 8);
+          painter.drawRoundedRect(button, theme.cornerRadius(8), theme.cornerRadius(8));
 
           // The text with a chevron after it, pointing where the list goes
           const auto chevron = fm.height() * 0.3;
@@ -368,7 +369,7 @@ protected:
             hover.setAlphaF(0.15);
             painter.setPen(Qt::NoPen);
             painter.setBrush(hover);
-            painter.drawRoundedRect(row.adjusted(-4, 1, 4, -1), 6, 6);
+            painter.drawRoundedRect(row.adjusted(-4, 1, 4, -1), theme.cornerRadius(6), theme.cornerRadius(6));
           }
 
           // The poster, small, as in the lists of v1
@@ -376,7 +377,7 @@ protected:
           const QRectF thumb{static_cast<qreal>(row.left()), row.top() + 4.0, thumbHeight * 2 / 3.0,
                              static_cast<qreal>(thumbHeight)};
           QPainterPath path;
-          path.addRoundedRect(thumb, 4, 4);
+          path.addRoundedRect(thumb, theme.cornerRadius(4), theme.cornerRadius(4));
           painter.save();
           painter.setClipPath(path);
           if (const auto pixmap = imageProvider.loadPoster(line.row->id); !pixmap.isNull()) {
@@ -652,7 +653,8 @@ protected:
       fill.setAlphaF(day.today ? 0.12 : 0.04);
       painter.setPen(Qt::NoPen);
       painter.setBrush(fill);
-      painter.drawRoundedRect(QRectF{block.rect}.adjusted(0.5, 0.5, -0.5, -0.5), 8, 8);
+      painter.drawRoundedRect(QRectF{block.rect}.adjusted(0.5, 0.5, -0.5, -0.5),
+                              theme.cornerRadius(8), theme.cornerRadius(8));
 
       // The name of the day on the left and its date on the right, the short name of the day when
       // the long one leaves no room for the date
@@ -689,7 +691,8 @@ protected:
         fill.setAlphaF(0.18);
         painter.setPen(Qt::NoPen);
         painter.setBrush(fill);
-        painter.drawRoundedRect(QRectF{more.rect}.adjusted(-4, 2, 4, -2), 6, 6);
+        painter.drawRoundedRect(QRectF{more.rect}.adjusted(-4, 2, 4, -2), theme.cornerRadius(6),
+                                theme.cornerRadius(6));
       }
       const auto hidden = static_cast<int>(m_days[more.day].items.size()) - kDayLimit;
       painter.setPen(hovered ? text : muted);
@@ -707,7 +710,8 @@ protected:
         hover.setAlphaF(0.18);
         painter.setPen(Qt::NoPen);
         painter.setBrush(hover);
-        painter.drawRoundedRect(QRectF{card.rect}.adjusted(-4, 0, 4, 0), 6, 6);
+        painter.drawRoundedRect(QRectF{card.rect}.adjusted(-4, 0, 4, 0), theme.cornerRadius(6),
+                                theme.cornerRadius(6));
       }
 
       // The poster, as small as in the other sections
@@ -715,7 +719,7 @@ protected:
       const QRectF thumb{static_cast<qreal>(card.rect.left()), card.rect.top() + 4.0,
                          thumbHeight * 2 / 3.0, static_cast<qreal>(thumbHeight)};
       QPainterPath path;
-      path.addRoundedRect(thumb, 4, 4);
+      path.addRoundedRect(thumb, theme.cornerRadius(4), theme.cornerRadius(4));
       painter.save();
       painter.setClipPath(path);
       if (const auto pixmap = thumbnail(item.id, thumb.size().toSize()); !pixmap.isNull()) {
@@ -1022,7 +1026,7 @@ protected:
     painter.setRenderHint(QPainter::SmoothPixmapTransform);
 
     QPainterPath path;
-    path.addRoundedRect(rect(), 8, 8);
+    path.addRoundedRect(rect(), theme.cornerRadius(8), theme.cornerRadius(8));
     painter.setClipPath(path);
 
     // Covers the header and keeps the middle of the picture, as the services show it
@@ -1288,9 +1292,9 @@ void ProfileWidget::refreshAccount() {
       banner.isNull()
           ? QString{}
           : u"QPushButton { color: white; background: rgba(0, 0, 0, 90); border: 1px solid "
-            u"rgba(255, 255, 255, 70); border-radius: 8px; padding: 5px 14px; }"
+            u"rgba(255, 255, 255, 70); border-radius: %1px; padding: 5px 14px; }"
             u"QPushButton:hover { background: rgba(255, 255, 255, 40); }"
-            u"QPushButton:pressed { background: rgba(255, 255, 255, 25); }"_s);
+            u"QPushButton:pressed { background: rgba(255, 255, 255, 25); }"_s.arg(theme.cornerRadius(8)));
   m_userService->setStyleSheet(banner.isNull() ? QString{} : u"color: rgba(255, 255, 255, 200);"_s);
 
   // The avatar, or the first letter of the name, in a circle sized by the font so that it follows

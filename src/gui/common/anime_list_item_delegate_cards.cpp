@@ -72,7 +72,7 @@ void ListItemDelegateCards::paint(QPainter* painter, const QStyleOptionViewItem&
 
   // As round as the other cards and buttons of the window, which a 4 pixel radius was not
   QPainterPath path;
-  path.addRoundedRect(rect, px(8), px(8));
+  path.addRoundedRect(rect, theme.cornerRadius(px(8)), theme.cornerRadius(px(8)));
   painter->setClipPath(path);
 
   // Background

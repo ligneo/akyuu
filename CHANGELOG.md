@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Settings > Application has a Rounded corners option. Turned off, the progress bars, badges,
+  cards, search box and the boxes of the Profile page have square corners (#15).
+
 ## 0.6.1
 
 - More release names are read right: a year before the season, as in `Show.2019.S02`, `Episode`

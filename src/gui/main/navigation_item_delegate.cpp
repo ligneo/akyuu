@@ -111,7 +111,7 @@ void NavigationItemDelegate::paintCounter(QPainter* painter, QRect rect, const i
   }
 
   QPainterPath path;
-  path.addRoundedRect(rect, 8, 8);
+  path.addRoundedRect(rect, theme.cornerRadius(8), theme.cornerRadius(8));
   painter->setClipPath(path);
 
   painter->fillRect(rect, theme.isDark() ? lineColorDark : lineColorLight);

@@ -103,6 +103,7 @@ public:
   int pageZoom(const QString& page) const;
   bool appAutoStart() const;
   bool appCloseToTray() const;
+  bool appRoundedCorners() const;
   bool appMinimizeToTray() const;
   bool appStartMinimized() const;
   bool appCheckForUpdates() const;
@@ -198,6 +199,7 @@ public:
   void setPageZoom(const QString& page, const int zoom) const;
   void setAppAutoStart(const bool enabled) const;
   void setAppCloseToTray(const bool enabled) const;
+  void setAppRoundedCorners(const bool enabled) const;
   void setAppMinimizeToTray(const bool enabled) const;
   void setAppStartMinimized(const bool enabled) const;
   void setAppCheckForUpdates(const bool enabled) const;

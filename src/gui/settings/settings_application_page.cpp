@@ -37,6 +37,7 @@ ApplicationPage::ApplicationPage(QWidget* parent)
     : SettingsPage(parent),
       m_comboStyle(new QComboBox(this)),
       m_comboColorScheme(new QComboBox(this)),
+      m_checkRoundedCorners(new QCheckBox(tr("Rounded corners"), this)),
       m_checkAutoStart(new QCheckBox(tr("Start automatically at login"), this)),
       m_checkStartMinimized(new QCheckBox(tr("Start minimized"), this)),
       m_checkScanOnStartup(new QCheckBox(tr("Scan library folders for available episodes"), this)),
@@ -69,6 +70,8 @@ ApplicationPage::ApplicationPage(QWidget* parent)
     m_comboColorScheme->addItem(tr("Light"), static_cast<int>(Qt::ColorScheme::Light));
     m_comboColorScheme->addItem(tr("Dark"), static_cast<int>(Qt::ColorScheme::Dark));
     form->addRow(tr("Color scheme:"), m_comboColorScheme);
+    // Bars, badges, cards and boxes, square for those who prefer them so (#15)
+    form->addRow({}, m_checkRoundedCorners);
 
     layout->addWidget(group);
   }
@@ -113,6 +116,7 @@ void ApplicationPage::load() {
 
   const auto scheme = static_cast<int>(akyuu::settings.appColorScheme());
   m_comboColorScheme->setCurrentIndex(m_comboColorScheme->findData(scheme));
+  m_checkRoundedCorners->setChecked(akyuu::settings.appRoundedCorners());
 
   m_checkAutoStart->setChecked(akyuu::settings.appAutoStart());
   m_checkStartMinimized->setChecked(akyuu::settings.appStartMinimized());
@@ -144,10 +148,15 @@ void ApplicationPage::save() {
 
   const auto style = m_comboStyle->currentData().toString().toStdString();
   const auto scheme = m_comboColorScheme->currentData().value<Qt::ColorScheme>();
-  if (style == akyuu::settings.appStyle() && scheme == akyuu::settings.appColorScheme()) return;
+  const auto rounded = m_checkRoundedCorners->isChecked();
+  if (style == akyuu::settings.appStyle() && scheme == akyuu::settings.appColorScheme() &&
+      rounded == akyuu::settings.appRoundedCorners()) {
+    return;
+  }
 
   akyuu::settings.setAppStyle(style);
   akyuu::settings.setAppColorScheme(scheme);
+  akyuu::settings.setAppRoundedCorners(rounded);
   theme.applyStyle();
 }
 

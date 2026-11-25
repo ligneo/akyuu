@@ -39,6 +39,8 @@ public:
   void applyStyle();
   void initStyle();
   bool isDark() const;
+  // The radius of a round corner, or none when the corners are set to be square
+  qreal cornerRadius(const qreal radius) const;
 
   static QColor errorColor();
   static QColor successColor();
@@ -55,6 +57,7 @@ private:
   QString m_systemBaseStyle;
   QPalette m_systemPalette;
   bool m_hasSystemPalette = false;
+  bool m_roundedCorners = true;
 };
 
 inline Theme theme;

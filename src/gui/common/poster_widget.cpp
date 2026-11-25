@@ -82,9 +82,9 @@ void PosterWidget::paintEvent(QPaintEvent*) {
   QPainter painter(this);
   painter.setRenderHint(QPainter::Antialiasing);
 
-  if (m_cornerRadius > 0) {
+  if (const auto radius = theme.cornerRadius(m_cornerRadius); radius > 0) {
     QPainterPath path;
-    path.addRoundedRect(rect(), m_cornerRadius, m_cornerRadius);
+    path.addRoundedRect(rect(), radius, radius);
     painter.setClipPath(path);
   }
 
